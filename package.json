@@ -1,0 +1,24 @@
+{
+  "name": "tmgo-monorepo",
+  "version": "1.0.0",
+  "description": "Monorepo for TMGO Logistics Platform",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"bun run dev:backend\" \"bun run dev:frontend\"",
+    "dev:backend": "cd packages/backend && bun run dev",
+    "dev:frontend": "cd packages/frontend && bun run dev",
+    "build": "bun run build:backend && bun run build:frontend",
+    "build:backend": "cd packages/backend && bun run build",
+    "build:frontend": "cd packages/frontend && bun run build",
+    "db:generate": "cd packages/backend && bun run db:generate",
+    "db:migrate": "cd packages/backend && bun run db:migrate",
+    "db:push": "cd packages/backend && bun run db:push",
+    "db:studio": "cd packages/backend && bun run db:studio",
+    "clean": "rm -rf packages/backend/node_modules packages/frontend/node_modules packages/shared/node_modules node_modules bun.lockb"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
