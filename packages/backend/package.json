@@ -9,20 +9,21 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "seed:admin": "bun run scripts/seed-admin.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/swagger": "^1.2.0",
     "@tmgo/shared": "workspace:*",
-    "better-auth": "^1.1.21",
-    "drizzle-orm": "^0.40.0",
+    "better-auth": "^1.5.0",
+    "drizzle-orm": "^0.45.1",
     "elysia": "latest",
     "postgres": "^3.4.5",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "bun-types": "latest",
-    "drizzle-kit": "^0.30.5"
+    "drizzle-kit": "^0.31.8"
   }
 }

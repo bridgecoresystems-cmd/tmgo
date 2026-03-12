@@ -10,9 +10,33 @@
         <div class="hero-card">
           <n-h1 class="hero-title">Грузовые перевозки для юридических лиц</n-h1>
           <n-p class="hero-subtitle">Организуйте грузовые перевозки с выгодой для компании</n-p>
-          <n-button type="primary" size="large" class="hero-btn" @click="navigateTo('/auth')">
-            Оставить заявку
-          </n-button>
+          
+          <div class="order-form-box">
+            <n-h3 class="form-title">Выберите направление</n-h3>
+            <n-space vertical size="large">
+              <n-grid :cols="2" :x-gap="12">
+                <n-gi>
+                  <n-select
+                    v-model:value="orderForm.fromCity"
+                    :options="fromCityOptions"
+                    placeholder="Откуда"
+                    filterable
+                  />
+                </n-gi>
+                <n-gi>
+                  <n-select
+                    v-model:value="orderForm.toCity"
+                    :options="toCityOptions"
+                    placeholder="Куда"
+                    filterable
+                  />
+                </n-gi>
+              </n-grid>
+              <n-button type="primary" block size="large" class="hero-btn" @click="handleSubmit">
+                Оставить заявку
+              </n-button>
+            </n-space>
+          </div>
         </div>
       </div>
     </section>
@@ -117,6 +141,39 @@ const scrollTo = (id: string) => {
   if (el) el.scrollIntoView({ behavior: 'smooth' })
 }
 
+const orderForm = reactive({
+  fromCity: null,
+  toCity: null
+})
+
+const allCities = ref<any[]>([])
+
+onMounted(async () => {
+  try {
+    const data = await $fetch('http://localhost:8000/cities')
+    allCities.value = data as any[]
+  } catch (e) {
+    console.error('Failed to fetch cities')
+  }
+})
+
+const fromCityOptions = computed(() => 
+  allCities.value
+    .filter(c => c.type === 'FROM' || c.type === 'BOTH')
+    .map(c => ({ label: c.name, value: c.id }))
+)
+
+const toCityOptions = computed(() => 
+  allCities.value
+    .filter(c => c.type === 'TO' || c.type === 'BOTH')
+    .map(c => ({ label: c.name, value: c.id }))
+)
+
+const handleSubmit = () => {
+  if (!orderForm.fromCity || !orderForm.toCity) return
+  navigateTo('/auth')
+}
+
 useHead({
   title: 'tmGo — Платформа для бизнеса',
   meta: [
@@ -192,15 +249,29 @@ useHead({
 }
 
 .hero-card {
-  background: #ff6b4a; /* Оранжевый цвет со скрина */
-  padding: 48px;
+  background: #ff6b4a;
+  padding: 40px;
   border-radius: 24px;
-  max-width: 500px;
+  max-width: 550px;
   color: #fff;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  /* Специфичная форма как на скрине */
   border-top-left-radius: 40px;
   border-bottom-right-radius: 40px;
+}
+
+.order-form-box {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 20px;
+}
+
+.form-title {
+  color: #fff;
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
 }
 
 .hero-title {

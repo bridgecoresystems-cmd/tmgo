@@ -1,37 +1,112 @@
 <template>
   <div class="auth-container">
-    <n-card :title="isLogin ? 'Вход в систему' : 'Регистрация'" style="max-width: 400px; margin: 100px auto;">
-      <n-form @submit.prevent="handleAuth">
-        <n-form-item label="Email">
-          <n-input v-model:value="form.email" placeholder="example@mail.com" />
-        </n-form-item>
-        <n-form-item label="Пароль">
-          <n-input v-model:value="form.password" type="password" show-password-on="click" />
-        </n-form-item>
-        
-        <template v-if="!isLogin">
-          <n-form-item label="Ваша роль">
-            <n-radio-group v-model:value="form.role">
-              <n-radio value="CLIENT">Заказчик</n-radio>
-              <n-radio value="DRIVER">Перевозчик</n-radio>
-            </n-radio-group>
-          </n-form-item>
-          <n-form-item label="Имя">
-            <n-input v-model:value="form.name" placeholder="Иван Иванов" />
-          </n-form-item>
-        </template>
+    <div class="auth-main">
+      <!-- Скрытый чекбокс для переключения через CSS (если нужно) или просто через v-model -->
+      <input 
+        type="checkbox" 
+        id="chk" 
+        v-model="isSignupMode"
+        aria-hidden="true"
+      >
+      
+      <!-- Форма регистрации -->
+      <div class="signup" :class="{ active: isSignupMode }">
+        <form @submit.prevent="handleRegister">
+          <label for="chk" class="form-title">Регистрация</label>
+          
+          <div class="form-group">
+            <label class="form-label">Email (логин) *</label>
+            <input 
+              type="email" 
+              v-model="registerForm.email"
+              placeholder="example@mail.com" 
+              required 
+            >
+          </div>
 
-        <n-button type="primary" block attr-type="submit" :loading="loading">
-          {{ isLogin ? 'Войти' : 'Зарегистрироваться' }}
-        </n-button>
-      </n-form>
+          <div class="form-group">
+            <label class="form-label">Роль *</label>
+            <select v-model="registerForm.role" class="custom-select">
+              <option value="client">Заказчик</option>
+              <option value="driver">Перевозчик</option>
+            </select>
+          </div>
 
-      <template #footer>
-        <n-button quaternary block @click="isLogin = !isLogin">
-          {{ isLogin ? 'Нет аккаунта? Регистрация' : 'Уже есть аккаунт? Вход' }}
-        </n-button>
-      </template>
-    </n-card>
+          <div class="form-group">
+            <label class="form-label">Пароль *</label>
+            <input 
+              type="password" 
+              v-model="registerForm.password"
+              placeholder="Минимум 8 символов"
+              required 
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Подтвердите пароль *</label>
+            <input 
+              type="password" 
+              v-model="registerForm.passwordConfirm"
+              placeholder="Повторите пароль"
+              required 
+            >
+          </div>
+
+          <button 
+            type="submit" 
+            class="btn-submit"
+            :disabled="loading"
+          >
+            {{ loading ? 'Регистрация...' : 'Зарегистрироваться' }}
+          </button>
+          
+          <p class="form-switch">
+            Уже зарегистрированы? 
+            <span @click="isSignupMode = false" class="switch-link">Войти</span>
+          </p>
+        </form>
+      </div>
+
+      <!-- Форма входа -->
+      <div class="login" :class="{ active: !isSignupMode }">
+        <form @submit.prevent="handleLogin">
+          <label for="chk" class="form-title">Вход</label>
+          
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input 
+              type="email" 
+              v-model="loginForm.email"
+              placeholder="your@email.com" 
+              required 
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Пароль</label>
+            <input 
+              type="password" 
+              v-model="loginForm.password"
+              placeholder="Введите пароль" 
+              required 
+            >
+          </div>
+
+          <button 
+            type="submit" 
+            class="btn-submit"
+            :disabled="loading"
+          >
+            {{ loading ? 'Вход...' : 'Войти' }}
+          </button>
+          
+          <p class="form-switch">
+            Нет аккаунта? 
+            <span @click="isSignupMode = true" class="switch-link">Регистрация</span>
+          </p>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -42,39 +117,63 @@ const { signIn, signUp } = useAuth()
 const router = useRouter()
 const message = useMessage()
 
-const isLogin = ref(true)
+const isSignupMode = ref(false)
 const loading = ref(false)
 
-const form = reactive({
+const loginForm = reactive({
   email: '',
-  password: '',
-  role: 'CLIENT',
-  name: ''
+  password: ''
 })
 
-const handleAuth = async () => {
+const registerForm = reactive({
+  email: '',
+  password: '',
+  passwordConfirm: '',
+  role: 'client'
+})
+
+const handleLogin = async () => {
   loading.value = true
   try {
-    if (isLogin.value) {
-      const { data, error } = await signIn.email({
-        email: form.email,
-        password: form.password,
-        callbackURL: '/'
-      })
-      if (error) throw error
+    const user = await signIn(loginForm.email, loginForm.password)
+    if (user?.role === 'admin') {
+      await navigateTo('/admin')
+    } else if (user?.role === 'driver') {
+      await navigateTo('/cabinet/driver')
     } else {
-      const { data, error } = await signUp.email({
-        email: form.email,
-        password: form.password,
-        name: form.name,
-        role: form.role,
-        callbackURL: '/'
-      })
-      if (error) throw error
+      await navigateTo('/cabinet/client')
     }
-    router.push('/')
   } catch (e: any) {
-    message.error(e.message || 'Ошибка авторизации')
+    message.error(e.message || 'Ошибка входа')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleRegister = async () => {
+  if (registerForm.password !== registerForm.passwordConfirm) {
+    message.error('Пароли не совпадают')
+    return
+  }
+
+  loading.value = true
+  try {
+    const user = await signUp(
+      registerForm.email,
+      registerForm.password,
+      registerForm.email.split('@')[0],
+      registerForm.role
+    )
+    
+    if (user?.role === 'admin') {
+      await navigateTo('/admin')
+    } else if (user?.role === 'driver') {
+      await navigateTo('/cabinet/driver')
+    } else {
+      await navigateTo('/cabinet/client')
+    }
+  } catch (e: any) {
+    message.error(e.message || 'Ошибка регистрации')
   } finally {
     loading.value = false
   }
@@ -83,9 +182,153 @@ const handleAuth = async () => {
 
 <style scoped>
 .auth-container {
-  min-height: 80vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, #ff6b4a 0%, #ff8e71 100%);
+  padding: 20px;
+}
+
+.auth-main {
+  width: 100%;
+  max-width: 450px;
+  background: white;
+  border-radius: 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  position: relative;
+  min-height: 700px;
+  display: flex;
+  flex-direction: column;
+}
+
+#chk {
+  display: none;
+}
+
+.signup,
+.login {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  padding: 30px 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Центрируем содержимое по вертикали */
+  box-sizing: border-box;
+}
+
+.signup {
+  transform: translateY(100%);
+  opacity: 0;
+  z-index: 1;
+}
+
+.login {
+  transform: translateY(0);
+  opacity: 1;
+  z-index: 2;
+}
+
+#chk:checked ~ .signup {
+  transform: translateY(0);
+  opacity: 1;
+  z-index: 2;
+}
+
+#chk:checked ~ .login {
+  transform: translateY(-100%);
+  opacity: 0;
+  z-index: 1;
+}
+
+.form-title {
+  font-size: 24px; /* Немного уменьшил */
+  font-weight: 800;
+  color: #ff6b4a;
+  margin-bottom: 20px; /* Уменьшил отступ */
+  text-align: center;
+  display: block;
+}
+
+.form-group {
+  margin-bottom: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 13px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+input, .custom-select {
+  width: 100%;
+  padding: 10px 15px;
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  font-size: 14px;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+
+input:focus, .custom-select:focus {
+  outline: none;
+  border-color: #ff6b4a;
+  background: #fffcfb;
+}
+
+.custom-select {
+  appearance: none;
+  background: #fff;
+  cursor: pointer;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 12px; /* Уменьшил паддинг */
+  background: #ff6b4a;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 15px; /* Уменьшил отступ */
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #e55a3d;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(255, 107, 74, 0.3);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-switch {
+  text-align: center;
+  margin-top: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.switch-link {
+  color: #ff6b4a;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.switch-link:hover {
+  color: #e55a3d;
 }
 </style>
