@@ -1,9 +1,8 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 import { authRoutes } from './routes/auth';
+import { verifyAttachmentToken, serveAttachment } from './lib/chat-attachments';
 import { adminUsersRoutes } from './routes/admin/users';
 import { adminMailingRoutes } from './routes/admin/mailing';
 import { adminCitiesRoutes, publicCitiesRoutes } from './routes/admin/cities';
@@ -17,30 +16,28 @@ import { cabinetChatRoutes } from './routes/cabinet/chat';
 
 const app = new Elysia()
   .use(cors({
-    origin: (request) => {
-      const origin = request.headers.get('origin');
-      if (!origin) return false;
-      return true;
-    },
+    origin: true,
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-    exposeHeaders: ['Set-Cookie'],
+    allowedHeaders: true, // Эхо заголовков из preflight — важно для мобильных браузеров
+    exposeHeaders: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    maxAge: 86400,
   }))
   .use(swagger())
   .get('/', () => ({ status: 'ok', message: 'TMGO API is running' }))
-  .get('/uploads/chat/:filename', async ({ params, set }) => {
-    try {
-      const filepath = join(process.cwd(), 'public', 'uploads', 'chat', params.filename);
-      const buf = await readFile(filepath);
-      const ext = params.filename.split('.').pop()?.toLowerCase();
-      const types: Record<string, string> = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' };
-      set.headers['Content-Type'] = types[ext || ''] || 'application/octet-stream';
-      return buf;
-    } catch {
+  .get('/cabinet/chat/attachments/:filename', async ({ params, query, set }) => {
+    const token = (query as { token?: string }).token;
+    if (!token || !verifyAttachmentToken(params.filename, token)) {
+      set.status = 403;
+      return 'Forbidden';
+    }
+    const result = await serveAttachment(params.filename);
+    if (!result) {
       set.status = 404;
       return 'Not found';
     }
+    set.headers['Content-Type'] = result.contentType;
+    return result.buf;
   })
   .use(authRoutes)
   .use(publicCitiesRoutes)
@@ -54,8 +51,8 @@ const app = new Elysia()
   .use(cabinetDriverOrdersRoutes)
   .use(cabinetDriverServicesRoutes)
   .use(cabinetChatRoutes)
-  .listen(8000);
+  .listen({ port: 8000, hostname: '0.0.0.0' });
 
-console.log(`🚀 Backend is running at ${app.server?.hostname}:${app.server?.port}`);
+console.log(`🚀 Backend is running at http://0.0.0.0:8000 (LAN: http://<your-IP>:8000)`);
 
 export type App = typeof app;

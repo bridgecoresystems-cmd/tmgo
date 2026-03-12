@@ -147,10 +147,11 @@ const orderForm = reactive({
 })
 
 const allCities = ref<any[]>([])
+const { apiBase } = useApiBase()
 
 onMounted(async () => {
   try {
-    const data = await $fetch('http://localhost:8000/cities')
+    const data = await $fetch(`${apiBase}/cities`)
     allCities.value = data as any[]
   } catch (e) {
     console.error('Failed to fetch cities')

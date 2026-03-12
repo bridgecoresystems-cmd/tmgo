@@ -32,7 +32,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
-const API = 'http://localhost:8000'
+const { apiBase: API } = useApiBase()
 const route = useRoute()
 const { openChat } = useOrderChat()
 const order = ref<any>(null)

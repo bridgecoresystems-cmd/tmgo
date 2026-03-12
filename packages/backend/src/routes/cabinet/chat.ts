@@ -1,11 +1,12 @@
 import { Elysia, t } from 'elysia';
+import { randomUUID } from 'crypto';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 import { db } from '../../db';
 import { orders, orderMessages, orderResponses, carrierProfiles, users } from '../../db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
-import { randomUUID } from 'crypto';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { signAttachmentUrls } from '../../lib/chat-attachments';
 
 const rooms = new Map<string, Set<any>>();
 
@@ -105,15 +106,18 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
       .orderBy(desc(orderMessages.createdAt))
       .limit(100);
 
-    return rows.reverse().map((r) => ({
-      id: r.id,
-      orderId: r.orderId,
-      userId: r.senderId,
-      content: r.message,
-      attachments: (r.attachments as { urls?: string[] })?.urls || [],
-      createdAt: r.createdAt?.toISOString(),
-      user: { id: r.senderId, name: r.senderName || 'Unknown' },
-    }));
+    return rows.reverse().map((r) => {
+      const urls = (r.attachments as { urls?: string[] })?.urls || [];
+      return {
+        id: r.id,
+        orderId: r.orderId,
+        userId: r.senderId,
+        content: r.message,
+        attachments: signAttachmentUrls(urls),
+        createdAt: r.createdAt?.toISOString(),
+        user: { id: r.senderId, name: r.senderName || 'Unknown' },
+      };
+    });
   })
   .post('/upload', async ({ user, body, set }) => {
     const file = body.file;
@@ -131,14 +135,14 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
       return { error: 'File too large (max 5MB)' };
     }
 
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'chat');
+    const uploadDir = join(process.cwd(), 'storage', 'chat');
     await mkdir(uploadDir, { recursive: true });
     const filename = `${randomUUID()}.${ext}`;
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
 
-    const url = `/uploads/chat/${filename}`;
+    const url = `/chat/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -197,7 +201,7 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
             orderId,
             userId: user.id,
             content: saved.message,
-            attachments: attachmentUrls,
+            attachments: signAttachmentUrls(attachmentUrls),
             createdAt: saved.createdAt?.toISOString(),
             user: { id: user.id, name: user.name },
           },

@@ -1,5 +1,3 @@
-const API = 'http://localhost:8000'
-
 interface AuthUser {
   id: string
   name: string
@@ -19,6 +17,7 @@ const state = reactive<SessionState>({ user: null, loading: true })
 let initialized = false
 
 export const useAuth = () => {
+  const { apiBase: API } = useApiBase()
   const session = computed(() => state.user ? { user: state.user } : null)
 
   async function fetchSession() {

@@ -45,7 +45,7 @@ import type { DataTableColumns } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
-const API = 'http://localhost:8000'
+const { apiBase: API } = useApiBase()
 const message = useMessage()
 const loading = ref(true)
 const creating = ref(false)

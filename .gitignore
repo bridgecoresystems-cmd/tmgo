@@ -7,3 +7,4 @@ bun.lockb
 *.log
 .claude/
 
+packages/backend/public/

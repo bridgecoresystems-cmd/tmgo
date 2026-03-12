@@ -144,7 +144,12 @@ const handleLogin = async () => {
       await navigateTo('/cabinet/client')
     }
   } catch (e: any) {
-    message.error(e.message || 'Ошибка входа')
+    const msg = e?.message || ''
+    if (msg.toLowerCase().includes('failed to fetch') || msg.includes('network')) {
+      message.error('Сервер недоступен. Проверьте: 1) Телефон на той же Wi‑Fi, что и ПК. 2) Backend запущен (bun run dev в packages/backend). 3) Откройте в браузере телефона http://<IP-ПК>:8000 — должна быть надпись "TMGO API is running".')
+    } else {
+      message.error(msg || 'Ошибка входа')
+    }
   } finally {
     loading.value = false
   }
@@ -173,7 +178,12 @@ const handleRegister = async () => {
       await navigateTo('/cabinet/client')
     }
   } catch (e: any) {
-    message.error(e.message || 'Ошибка регистрации')
+    const msg = e?.message || ''
+    if (msg.toLowerCase().includes('failed to fetch') || msg.includes('network')) {
+      message.error('Сервер недоступен. Телефон на той же Wi‑Fi, что и ПК? Backend запущен?')
+    } else {
+      message.error(msg || 'Ошибка регистрации')
+    }
   } finally {
     loading.value = false
   }

@@ -52,7 +52,7 @@ import { useMessage } from 'naive-ui'
 
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
-const API = 'http://localhost:8000'
+const { apiBase: API } = useApiBase()
 const message = useMessage()
 const route = useRoute()
 const formRef = ref()

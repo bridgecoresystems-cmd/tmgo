@@ -26,7 +26,7 @@ import type { DataTableColumns } from 'naive-ui'
 
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
-const API = 'http://localhost:8000'
+const { apiBase: API } = useApiBase()
 const message = useMessage()
 const loading = ref(true)
 const orderList = ref<any[]>([])

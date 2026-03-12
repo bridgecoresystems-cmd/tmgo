@@ -26,7 +26,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
-const API = 'http://localhost:8000'
+const { apiBase: API } = useApiBase()
 const route = useRoute()
 const messageId = parseInt(route.params.id as string)
 const msg = ref<any>(null)

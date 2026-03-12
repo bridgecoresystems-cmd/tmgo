@@ -61,16 +61,14 @@
               <div class="cw-msg__bubble">
                 <template v-if="msg.content && msg.content !== '[Фото]'">{{ msg.content }}</template>
                 <div v-if="msg.attachments?.length" class="cw-msg__imgs">
-                  <a
+                  <div
                     v-for="(url, i) in msg.attachments"
                     :key="i"
-                    :href="imageUrl(url)"
-                    target="_blank"
-                    rel="noopener"
                     class="cw-msg__img-link"
+                    @click="previewImage = imageUrl(url)"
                   >
                     <img :src="imageUrl(url)" alt="Фото" class="cw-msg__img" />
-                  </a>
+                  </div>
                 </div>
               </div>
               <div class="cw-msg__time">{{ fmtTime(msg.createdAt) }}</div>
@@ -134,11 +132,15 @@
         </div>
       </div>
     </div>
+
+    <NModal v-model:show="imageModalShow" preset="card" title="Фото" style="width: 90vw; max-width: 900px">
+      <img v-if="previewImage" :src="previewImage" alt="Фото" style="width: 100%; height: auto; display: block" />
+    </NModal>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
 import { NButton, NIcon, NAvatar, NSpin } from 'naive-ui'
 import {
   ChatbubbleEllipsesOutline as ChatIcon,
@@ -159,9 +161,7 @@ const emit = defineEmits<{
   'update:modelValue': [val: boolean]
 }>()
 
-const config = useRuntimeConfig()
-const API = (config.public.apiBase as string) || 'http://localhost:8000'
-const WS_BASE = (config.public.wsUrl as string) || 'ws://localhost:8000'
+const { apiBase: API, wsUrl: WS_BASE } = useApiBase()
 
 const messages = ref<any[]>([])
 const loading = ref(false)
@@ -172,6 +172,11 @@ const bodyEl = ref<HTMLElement | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const uploading = ref(false)
 const pendingPhotos = ref<{ file: File; preview: string }[]>([])
+const previewImage = ref('')
+const imageModalShow = computed({
+  get: () => !!previewImage.value,
+  set: (v) => { if (!v) previewImage.value = '' },
+})
 
 let ws: WebSocket | null = null
 let typingTimer: ReturnType<typeof setTimeout> | null = null
@@ -526,7 +531,7 @@ onUnmounted(() => {
 }
 
 .cw-msg__imgs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-.cw-msg__img-link { display: block; }
+.cw-msg__img-link { display: block; cursor: pointer; }
 .cw-msg__img {
   max-width: 120px;
   max-height: 120px;

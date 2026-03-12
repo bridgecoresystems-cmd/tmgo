@@ -22,6 +22,7 @@ import type { DataTableColumns } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
+const { apiBase } = useApiBase()
 const message = useMessage()
 const search = ref('')
 const loading = ref(true)
@@ -65,7 +66,7 @@ const filteredUsers = computed(() => {
 
 onMounted(async () => {
   try {
-    const data = await $fetch<any[]>('http://localhost:8000/admin/users')
+    const data = await $fetch<any[]>(`${apiBase}/admin/users`)
     users.value = data
   } catch {
     message.error('Ошибка загрузки пользователей')

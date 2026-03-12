@@ -53,6 +53,7 @@ import type { FormInst, FormRules } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
+const { apiBase } = useApiBase()
 const message = useMessage()
 const formRef = ref<FormInst | null>(null)
 const loading = ref(false)
@@ -74,7 +75,7 @@ async function handleSubmit() {
   await formRef.value?.validate()
   loading.value = true
   try {
-    await $fetch('http://localhost:8000/admin/cities', {
+    await $fetch(`${apiBase}/admin/cities`, {
       method: 'POST',
       body: form,
     })

@@ -55,6 +55,7 @@ import type { FormInst, FormRules } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
+const { apiBase } = useApiBase()
 const route = useRoute()
 const message = useMessage()
 const formRef = ref<FormInst | null>(null)
@@ -76,7 +77,7 @@ const rules: FormRules = {
 
 onMounted(async () => {
   try {
-    const data = await $fetch<any>(`http://localhost:8000/admin/cities/${route.params.id}`)
+    const data = await $fetch<any>(`${apiBase}/admin/cities/${route.params.id}`)
     Object.assign(form, data)
   } catch {
     message.error('Город не найден')
@@ -90,7 +91,7 @@ async function handleSubmit() {
   await formRef.value?.validate()
   loading.value = true
   try {
-    await $fetch(`http://localhost:8000/admin/cities/${route.params.id}`, {
+    await $fetch(`${apiBase}/admin/cities/${route.params.id}`, {
       method: 'PATCH',
       body: form,
     })

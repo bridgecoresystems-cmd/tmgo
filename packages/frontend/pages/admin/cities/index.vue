@@ -38,6 +38,7 @@ import { h, ref, computed, onMounted } from 'vue'
 import { NButton, NSpace, useMessage } from 'naive-ui'
 
 definePageMeta({ layout: 'admin' })
+const { apiBase } = useApiBase()
 const message = useMessage()
 const loading = ref(false)
 const showAddModal = ref(false)
@@ -56,7 +57,7 @@ const typeOptions = [
 
 const fetchCities = async () => {
   try {
-    const data = await $fetch('http://localhost:8000/admin/cities')
+    const data = await $fetch(`${apiBase}/admin/cities`)
     allCities.value = data as any[]
   } catch (e) {
     message.error('Ошибка при загрузке городов')
@@ -66,7 +67,7 @@ const fetchCities = async () => {
 const handleAddCity = async () => {
   loading.value = true
   try {
-    await $fetch('http://localhost:8000/admin/cities', {
+    await $fetch(`${apiBase}/admin/cities`, {
       method: 'POST',
       body: {
         name: newCity.name,
@@ -87,7 +88,7 @@ const handleAddCity = async () => {
 
 const deleteCity = async (id: string) => {
   try {
-    await $fetch(`http://localhost:8000/admin/cities/${id}`, { method: 'DELETE' })
+    await $fetch(`${apiBase}/admin/cities/${id}`, { method: 'DELETE' })
     message.success('Удалено')
     await fetchCities()
   } catch (e) {
