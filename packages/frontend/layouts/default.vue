@@ -38,7 +38,10 @@ const handleUserSelect = async (key: string) => {
     await signOut()
     navigateTo('/auth')
   } else if (key === 'profile') {
-    navigateTo('/profile')
+    const role = session.value?.user?.role
+    if (role === 'admin') navigateTo('/admin')
+    else if (role === 'driver') navigateTo('/cabinet/driver')
+    else navigateTo('/cabinet/client')
   }
 }
 </script>

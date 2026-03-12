@@ -46,6 +46,13 @@
       </n-layout-content>
     </n-layout>
   </n-layout>
+
+  <ChatWidget
+    v-model="chatOpen"
+    :order-id="chatOrderId"
+    :title="chatTitle"
+    :current-user-id="session?.user?.id"
+  />
 </template>
 
 <script setup lang="ts">
@@ -53,6 +60,7 @@ import { h, ref, computed } from 'vue'
 import type { MenuOption } from 'naive-ui'
 
 const { session, signOut } = useAuth()
+const { chatOpen, chatOrderId, chatTitle } = useOrderChat()
 const route = useRoute()
 const collapsed = ref(false)
 
@@ -66,6 +74,8 @@ const menuOptions: MenuOption[] = [
   { label: 'Главная', key: '/cabinet/driver', icon: renderIcon('🏠') },
   { label: 'Мой транспорт', key: '/cabinet/driver/vehicles', icon: renderIcon('🚛') },
   { label: 'Мои заказы', key: '/cabinet/driver/orders', icon: renderIcon('📦') },
+  { label: 'Доступные заказы', key: '/cabinet/driver/orders/available', icon: renderIcon('📋') },
+  { label: 'Мои услуги', key: '/cabinet/driver/services', icon: renderIcon('🛣️') },
   { label: 'Рассылки', key: '/cabinet/driver/mailing', icon: renderIcon('📧') },
   { label: 'Профиль', key: '/cabinet/driver/profile', icon: renderIcon('👤') },
 ]
