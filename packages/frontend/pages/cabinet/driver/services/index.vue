@@ -37,7 +37,8 @@ const columns: DataTableColumns<any> = [
 async function loadServices() {
   loading.value = true
   try {
-    serviceList.value = await $fetch<any[]>(`${API}/cabinet/driver/services`, { credentials: 'include' })
+    const data = await $fetch<any[]>(`${API}/cabinet/driver/services`, { credentials: 'include' })
+    serviceList.value = Array.isArray(data) ? data : []
   } catch (e: any) {
     message.error(e?.data?.error || 'Ошибка загрузки')
   } finally {

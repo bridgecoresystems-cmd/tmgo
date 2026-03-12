@@ -1,5 +1,11 @@
 <template>
   <div>
+    <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
+      {{ loadError }}
+      <template #footer>
+        <n-button size="small" @click="loadOrders">Повторить</n-button>
+      </template>
+    </n-alert>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <n-h3 style="margin: 0;">Мои заказы</n-h3>
       <n-button type="primary" @click="navigateTo('/cabinet/driver/orders/available')">Взять заказ</n-button>
@@ -29,6 +35,7 @@ definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 const { apiBase: API } = useApiBase()
 const message = useMessage()
 const loading = ref(true)
+const loadError = ref<string | null>(null)
 const orderList = ref<any[]>([])
 const search = ref('')
 const statusFilter = ref<string>('')
@@ -40,7 +47,7 @@ const statusOptions = [{ label: 'Все', value: '' }, ...Object.entries(statusL
 const statusTypes: Record<string, any> = { PENDING: 'warning', ACCEPTED: 'info', IN_TRANSIT: 'info', DELIVERED: 'success', CANCELLED: 'error' }
 
 const filteredOrders = computed(() => {
-  let list = orderList.value
+  let list = Array.isArray(orderList.value) ? orderList.value : []
   if (statusFilter.value) list = list.filter((o) => o.status === statusFilter.value)
   if (search.value) {
     const q = search.value.toLowerCase()
@@ -60,11 +67,16 @@ const columns: DataTableColumns<any> = [
 ]
 
 async function loadOrders() {
+  loadError.value = null
   loading.value = true
   try {
-    orderList.value = await $fetch<any[]>(`${API}/cabinet/driver/orders`, { credentials: 'include' })
+    const data = await $fetch<any[]>(`${API || ''}/cabinet/driver/orders`, { credentials: 'include' })
+    orderList.value = Array.isArray(data) ? data : []
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    const err = e?.data?.error || e?.data?.message || e?.message || 'Ошибка загрузки'
+    loadError.value = err
+    message.error(err)
+    if (import.meta.dev) console.error('Driver orders fetch failed:', e)
   } finally {
     loading.value = false
   }

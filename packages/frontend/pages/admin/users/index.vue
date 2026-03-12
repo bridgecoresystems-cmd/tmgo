@@ -1,5 +1,11 @@
 <template>
   <div>
+    <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
+      {{ loadError }}
+      <template #footer>
+        <n-button size="small" @click="loadUsers">Повторить</n-button>
+      </template>
+    </n-alert>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <n-h3 style="margin: 0;">Пользователи</n-h3>
       <n-input v-model:value="search" placeholder="Поиск по email / имени" style="width: 280px;" clearable />
@@ -26,6 +32,7 @@ const { apiBase } = useApiBase()
 const message = useMessage()
 const search = ref('')
 const loading = ref(true)
+const loadError = ref<string | null>(null)
 const users = ref<any[]>([])
 
 const roleColors: Record<string, any> = {
@@ -57,21 +64,32 @@ const columns: DataTableColumns = [
 ]
 
 const filteredUsers = computed(() => {
-  if (!search.value) return users.value
+  const list = Array.isArray(users.value) ? users.value : []
+  if (!search.value) return list
   const q = search.value.toLowerCase()
-  return users.value.filter(
+  return list.filter(
     (u) => u.email?.toLowerCase().includes(q) || u.name?.toLowerCase().includes(q)
   )
 })
 
-onMounted(async () => {
+async function loadUsers() {
+  loadError.value = null
+  loading.value = true
   try {
-    const data = await $fetch<any[]>(`${apiBase}/admin/users`)
-    users.value = data
-  } catch {
-    message.error('Ошибка загрузки пользователей')
+    const url = `${apiBase || ''}/admin/users`
+    const data = await $fetch<any[]>(url, { credentials: 'include' })
+    users.value = Array.isArray(data) ? data : []
+  } catch (e: any) {
+    const msg = e?.data?.message || e?.message || 'Ошибка загрузки'
+    const isNetwork = String(e?.message || '').toLowerCase().includes('fetch') || String(e?.message || '').includes('network')
+    const err = isNetwork ? `${msg}. Проверь: backend запущен? (bun run dev в packages/backend)` : msg
+    loadError.value = err
+    message.error(loadError.value)
+    if (import.meta.dev) console.error('Admin users fetch failed:', e)
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(loadUsers)
 </script>

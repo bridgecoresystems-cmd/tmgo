@@ -1,5 +1,11 @@
 <template>
   <div>
+    <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
+      {{ loadError }}
+      <template #footer>
+        <n-button size="small" @click="loadMessages">Повторить</n-button>
+      </template>
+    </n-alert>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <n-h3 style="margin: 0;">Рассылки</n-h3>
       <n-button type="primary" @click="showCreate = true">
@@ -51,6 +57,7 @@ const loading = ref(true)
 const creating = ref(false)
 const sending = ref<number | null>(null)
 const messages = ref<any[]>([])
+const loadError = ref<string | null>(null)
 const showCreate = ref(false)
 const formRef = ref()
 
@@ -133,11 +140,16 @@ const columns: DataTableColumns<any> = [
 ]
 
 async function loadMessages() {
+  loadError.value = null
   loading.value = true
   try {
-    messages.value = await $fetch<any[]>(`${API}/admin/mailing`, { credentials: 'include' })
-  } catch {
-    message.error('Ошибка загрузки')
+    const data = await $fetch<any[]>(`${API || ''}/admin/mailing`, { credentials: 'include' })
+    messages.value = Array.isArray(data) ? data : []
+  } catch (e: any) {
+    const err = e?.data?.message || e?.message || 'Ошибка загрузки'
+    loadError.value = err
+    message.error(err)
+    if (import.meta.dev) console.error('Admin mailing fetch failed:', e)
   } finally {
     loading.value = false
   }

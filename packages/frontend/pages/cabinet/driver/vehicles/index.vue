@@ -39,7 +39,8 @@ const columns: DataTableColumns<any> = [
 async function loadVehicles() {
   loading.value = true
   try {
-    vehicleList.value = await $fetch<any[]>(`${API}/cabinet/driver/vehicles`, { credentials: 'include' })
+    const data = await $fetch<any[]>(`${API}/cabinet/driver/vehicles`, { credentials: 'include' })
+    vehicleList.value = Array.isArray(data) ? data : []
   } catch (e: any) {
     message.error(e?.data?.error || 'Ошибка загрузки')
   } finally {

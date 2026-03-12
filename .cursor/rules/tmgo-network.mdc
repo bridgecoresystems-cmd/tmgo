@@ -1,0 +1,44 @@
+---
+description: TMGO dev network & API URLs (direct backend, no proxy)
+alwaysApply: true
+---
+
+# TMGO Network & API Rules
+
+## Backend & Ports
+
+- Backend runs on **Elysia** at `http://0.0.0.0:8000`.
+- Frontend Nuxt dev server listens on `0.0.0.0:3000`, доступен по IP в LAN.
+
+## Запуск
+
+```bash
+# Backend
+cd packages/backend && bun run dev
+
+# Frontend (в другом терминале)
+cd packages/frontend && bun run dev
+```
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+
+## `useApiBase` — прямой доступ к backend
+
+- API запросы идут **напрямую** на backend `:8000` (без proxy).
+- `composables/useApiBase.ts`:
+  - **На клиенте:** `apiBase = http://${host}:8000` (host = window.location.hostname)
+  - **На сервере:** `apiBase = http://localhost:8000`
+
+- Использование: `const { apiBase } = useApiBase()` и `$fetch(\`${apiBase}/admin/users\`, { credentials: 'include' })`
+
+## LAN / Mobile
+
+- С телефона: `http://<IP-ПК>:3000` — frontend
+- API запросы: `http://<IP-ПК>:8000` (useApiBase подставляет host из URL)
+- Backend и frontend должны слушать `0.0.0.0`
+
+## Защита массивов
+
+- Всегда `Array.isArray(data) ? data : []` при получении данных с API.
+- В computed перед `.filter`/`.map`: `(Array.isArray(ref.value) ? ref.value : [])`

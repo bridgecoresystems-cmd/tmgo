@@ -152,20 +152,21 @@ const { apiBase } = useApiBase()
 onMounted(async () => {
   try {
     const data = await $fetch(`${apiBase}/cities`)
-    allCities.value = data as any[]
+    allCities.value = Array.isArray(data) ? data : []
   } catch (e) {
-    console.error('Failed to fetch cities')
+    console.error('Failed to fetch cities', e)
+    allCities.value = []
   }
 })
 
 const fromCityOptions = computed(() => 
-  allCities.value
+  (Array.isArray(allCities.value) ? allCities.value : [])
     .filter(c => c.type === 'FROM' || c.type === 'BOTH')
     .map(c => ({ label: c.name, value: c.id }))
 )
 
 const toCityOptions = computed(() => 
-  allCities.value
+  (Array.isArray(allCities.value) ? allCities.value : [])
     .filter(c => c.type === 'TO' || c.type === 'BOTH')
     .map(c => ({ label: c.name, value: c.id }))
 )

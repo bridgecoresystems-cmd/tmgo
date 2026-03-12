@@ -104,8 +104,8 @@ async function loadData() {
       $fetch<any[]>(`${API}/cabinet/driver/orders/available`, { credentials: 'include' }),
       $fetch<any[]>(`${API}/cabinet/driver/vehicles`, { credentials: 'include' }),
     ])
-    availableOrders.value = orders
-    vehicles.value = veh
+    availableOrders.value = Array.isArray(orders) ? orders : []
+    vehicles.value = Array.isArray(veh) ? veh : []
   } catch (e: any) {
     message.error(e?.data?.error || 'Ошибка загрузки')
   } finally {

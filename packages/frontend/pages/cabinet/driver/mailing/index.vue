@@ -59,28 +59,33 @@ const loading = ref(true)
 const markingAll = ref(false)
 const filterKey = ref('all')
 
-const unreadCount = computed(() => messages.value.filter((m) => !m.is_read).length)
+const unreadCount = computed(() => (Array.isArray(messages.value) ? messages.value : []).filter((m) => !m.is_read).length)
 
 const filteredMessages = computed(() => {
-  if (filterKey.value === 'all') return messages.value
+  const list = Array.isArray(messages.value) ? messages.value : []
+  if (filterKey.value === 'all') return list
   const isRead = filterKey.value === 'read'
-  return messages.value.filter((m) => m.is_read === isRead)
+  return list.filter((m) => m.is_read === isRead)
 })
 
-function truncate(text: string, max: number) {
-  return text.length > max ? text.slice(0, max) + '...' : text
+function truncate(text: string | undefined, max: number) {
+  const t = text || ''
+  return t.length > max ? t.slice(0, max) + '...' : t
 }
 
-function formatDate(s: string) {
+function formatDate(s: string | undefined) {
+  if (!s) return '—'
   return new Date(s).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })
 }
 
 async function loadMessages() {
   loading.value = true
   try {
-    messages.value = await $fetch<any[]>(`${API}/cabinet/mailing`, { credentials: 'include' })
-  } catch {
-    message.error('Ошибка загрузки')
+    const data = await $fetch<any[]>(`${API || ''}/cabinet/mailing`, { credentials: 'include' })
+    messages.value = Array.isArray(data) ? data : []
+  } catch (e: any) {
+    message.error(e?.data?.message || e?.message || 'Ошибка загрузки')
+    messages.value = []
   } finally {
     loading.value = false
   }
@@ -93,8 +98,8 @@ function openMessage(msg: any) {
 async function handleMarkAllRead() {
   markingAll.value = true
   try {
-    await $fetch(`${API}/cabinet/mailing/read-all`, { method: 'POST', credentials: 'include' })
-    messages.value.forEach((m) => (m.is_read = true))
+    await $fetch(`${API || ''}/cabinet/mailing/read-all`, { method: 'POST', credentials: 'include' })
+    ;(Array.isArray(messages.value) ? messages.value : []).forEach((m) => (m.is_read = true))
     message.success('Все прочитано')
   } catch {
     message.error('Ошибка')

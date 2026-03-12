@@ -32,9 +32,10 @@ const serviceList = ref<any[]>([])
 const search = ref('')
 
 const filteredServices = computed(() => {
-  if (!search.value) return serviceList.value
+  const list = Array.isArray(serviceList.value) ? serviceList.value : []
+  if (!search.value) return list
   const q = search.value.toLowerCase()
-  return serviceList.value.filter(
+  return list.filter(
     (s) =>
       (s.from_city || '').toLowerCase().includes(q) ||
       (s.to_city || '').toLowerCase().includes(q) ||
@@ -53,7 +54,8 @@ const columns: DataTableColumns<any> = [
 async function loadServices() {
   loading.value = true
   try {
-    serviceList.value = await $fetch<any[]>(`${API}/cabinet/client/services`, { credentials: 'include' })
+    const data = await $fetch<any[]>(`${API}/cabinet/client/services`, { credentials: 'include' })
+    serviceList.value = Array.isArray(data) ? data : []
   } catch (e: any) {
     message.error(e?.data?.error || 'Ошибка загрузки')
   } finally {

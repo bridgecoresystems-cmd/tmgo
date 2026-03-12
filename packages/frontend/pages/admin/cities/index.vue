@@ -1,5 +1,11 @@
 <template>
   <div class="admin-cities">
+    <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
+      {{ loadError }}
+      <template #footer>
+        <n-button size="small" @click="fetchCities">Повторить</n-button>
+      </template>
+    </n-alert>
     <n-card title="Управление направлениями" class="shadow-sm">
       <template #header-extra>
         <n-button type="primary" @click="showAddModal = true">
@@ -41,6 +47,7 @@ definePageMeta({ layout: 'admin' })
 const { apiBase } = useApiBase()
 const message = useMessage()
 const loading = ref(false)
+const loadError = ref<string | null>(null)
 const showAddModal = ref(false)
 const allCities = ref<any[]>([])
 
@@ -56,11 +63,15 @@ const typeOptions = [
 ]
 
 const fetchCities = async () => {
+  loadError.value = null
   try {
-    const data = await $fetch(`${apiBase}/admin/cities`)
-    allCities.value = data as any[]
-  } catch (e) {
-    message.error('Ошибка при загрузке городов')
+    const data = await $fetch(`${apiBase || ''}/admin/cities`, { credentials: 'include' })
+    allCities.value = Array.isArray(data) ? data : []
+  } catch (e: any) {
+    const err = e?.data?.message || e?.message || 'Ошибка при загрузке городов'
+    loadError.value = err
+    message.error(err)
+    if (import.meta.dev) console.error('Admin cities fetch failed:', e)
   }
 }
 
@@ -96,8 +107,8 @@ const deleteCity = async (id: string) => {
   }
 }
 
-const fromCities = computed(() => allCities.value.filter(c => c.type === 'FROM' || c.type === 'BOTH'))
-const toCities = computed(() => allCities.value.filter(c => c.type === 'TO' || c.type === 'BOTH'))
+const fromCities = computed(() => (Array.isArray(allCities.value) ? allCities.value : []).filter(c => c.type === 'FROM' || c.type === 'BOTH'))
+const toCities = computed(() => (Array.isArray(allCities.value) ? allCities.value : []).filter(c => c.type === 'TO' || c.type === 'BOTH'))
 
 const columns = [
   { title: 'Название', key: 'name' },
