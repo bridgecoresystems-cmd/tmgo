@@ -66,7 +66,7 @@ const menuOptions: MenuOption[] = [
   { label: 'Главная', key: '/cabinet/driver', icon: renderIcon('🏠') },
   { label: 'Мой транспорт', key: '/cabinet/driver/vehicles', icon: renderIcon('🚛') },
   { label: 'Мои заказы', key: '/cabinet/driver/orders', icon: renderIcon('📦') },
-  { label: 'Сообщения', key: '/cabinet/driver/chat', icon: renderIcon('💬') },
+  { label: 'Рассылки', key: '/cabinet/driver/mailing', icon: renderIcon('📧') },
   { label: 'Профиль', key: '/cabinet/driver/profile', icon: renderIcon('👤') },
 ]
 

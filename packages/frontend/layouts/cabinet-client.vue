@@ -65,7 +65,7 @@ function renderIcon(icon: string) {
 const menuOptions: MenuOption[] = [
   { label: 'Главная', key: '/cabinet/client', icon: renderIcon('🏠') },
   { label: 'Мои заказы', key: '/cabinet/client/orders', icon: renderIcon('📦') },
-  { label: 'Сообщения', key: '/cabinet/client/chat', icon: renderIcon('💬') },
+  { label: 'Рассылки', key: '/cabinet/client/mailing', icon: renderIcon('📧') },
   { label: 'Профиль', key: '/cabinet/client/profile', icon: renderIcon('👤') },
 ]
 

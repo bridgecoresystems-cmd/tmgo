@@ -102,6 +102,7 @@ const pageTitle = computed(() => {
   const titles: Record<string, string> = {
     '/admin': 'Дашборд',
     '/admin/users': 'Пользователи',
+    '/admin/mailing': 'Рассылки',
     '/admin/cities': 'Города',
     '/admin/cities/add': 'Добавить город',
     '/admin/orders': 'Все заказы',
@@ -119,6 +120,7 @@ const menuOptions: MenuOption[] = [
   { label: 'Дашборд', key: '/admin', icon: renderIcon('📊') },
   { label: 'Заказы', key: '/admin/orders', icon: renderIcon('📦') },
   { label: 'Пользователи', key: '/admin/users', icon: renderIcon('👥') },
+  { label: 'Рассылки', key: '/admin/mailing', icon: renderIcon('📧') },
   { label: 'Транспорт', key: '/admin/vehicles', icon: renderIcon('🚛') },
   {
     label: 'Настройки',
