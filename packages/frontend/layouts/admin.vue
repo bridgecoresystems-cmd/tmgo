@@ -159,7 +159,7 @@ const menuOptions: MenuOption[] = [
 ]
 
 const userMenuOptions = [
-  { label: 'Профиль', key: 'profile' },
+  { label: 'Главная', key: 'home' },
   { label: 'Выйти', key: 'logout' },
 ]
 
@@ -173,8 +173,8 @@ async function handleUserSelect(key: string) {
   if (key === 'logout') {
     await signOut()
     navigateTo('/auth')
-  } else if (key === 'profile') {
-    navigateTo('/admin/profile')
+  } else if (key === 'home') {
+    navigateTo('/')
   }
 }
 </script>

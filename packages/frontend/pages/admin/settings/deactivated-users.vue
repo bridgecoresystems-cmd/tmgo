@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { h } from 'vue'
-import { NTag, NButton, useMessage } from 'naive-ui'
+import { NTag, NButton, NPopconfirm, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
@@ -61,6 +61,8 @@ function getVerificationTag(status: string | null) {
   return h(NTag, { type: types[s] || 'default', size: 'small' }, { default: () => labels[s] || s })
 }
 
+const deletingId = ref<string | null>(null)
+
 const columns: DataTableColumns = [
   {
     title: 'Имя',
@@ -78,12 +80,33 @@ const columns: DataTableColumns = [
     title: 'Верификация',
     key: 'verification_status',
     width: 140,
-    render: (row) => row.role === 'driver' ? getVerificationTag(row.verification_status) : '—',
+    render: (row: any) => row.role === 'driver' ? getVerificationTag(row.verification_status ?? null) : '—',
   },
   {
     title: 'Дата регистрации',
     key: 'createdAt',
     render: (row) => new Date(row.createdAt as string).toLocaleDateString('ru-RU'),
+  },
+  {
+    title: 'Действия',
+    key: 'actions',
+    width: 200,
+    render: (row: any) =>
+      h(NPopconfirm, {
+        onPositiveClick: () => handleDeletePermanent(String(row.id)),
+        positiveText: 'Удалить',
+        negativeText: 'Отмена',
+      }, {
+        default: () => 'Удалить навсегда? Все данные будут безвозвратно потеряны.',
+        trigger: () =>
+          h(NButton, {
+            size: 'small',
+            type: 'error',
+            quaternary: true,
+            loading: deletingId.value === row.id,
+            onClick: (e: Event) => e.stopPropagation(),
+          }, { default: () => 'Удалить навсегда' }),
+      }),
   },
 ]
 
@@ -98,6 +121,19 @@ const filteredUsers = computed(() => {
       (u.driverName && String(u.driverName).toLowerCase().includes(q))
   )
 })
+
+async function handleDeletePermanent(id: string) {
+  deletingId.value = id
+  try {
+    await $fetch(`${apiBase}/admin/users/${id}`, { method: 'DELETE', credentials: 'include' })
+    message.success('Пользователь удалён навсегда')
+    users.value = users.value.filter((u) => u.id !== id)
+  } catch (e: any) {
+    message.error(e?.data?.message || e?.message || 'Ошибка удаления')
+  } finally {
+    deletingId.value = null
+  }
+}
 
 async function loadUsers() {
   loadError.value = null

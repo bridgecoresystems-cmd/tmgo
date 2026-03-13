@@ -33,6 +33,19 @@
           >
             Восстановить
           </n-button>
+          <n-popconfirm
+            v-if="!user?.isActive"
+            positive-text="Удалить"
+            negative-text="Отмена"
+            @positive-click="handleDeletePermanent"
+          >
+            <template #trigger>
+              <n-button type="error" :loading="deleting" quaternary>
+                Удалить навсегда
+              </n-button>
+            </template>
+            Удалить пользователя навсегда? Все данные будут безвозвратно потеряны.
+          </n-popconfirm>
         </n-space>
       </div>
 
@@ -75,6 +88,7 @@ const loading = ref(true)
 const loadError = ref<string | null>(null)
 const verifying = ref(false)
 const activating = ref(false)
+const deleting = ref(false)
 const user = ref<any>(null)
 const profile = ref<any>(null)
 const formRef = ref<{ loadProfile: () => Promise<void>; handleSave: () => Promise<void> } | null>(null)
@@ -132,6 +146,20 @@ async function handleActivate() {
     message.error(e?.data?.message || e?.message || 'Ошибка')
   } finally {
     activating.value = false
+  }
+}
+
+async function handleDeletePermanent() {
+  if (!user.value?.id) return
+  deleting.value = true
+  try {
+    await $fetch(`${apiBase}/admin/users/${user.value.id}`, { method: 'DELETE', credentials: 'include' })
+    message.success('Пользователь удалён навсегда')
+    navigateTo('/admin/settings/deactivated-users')
+  } catch (e: any) {
+    message.error(e?.data?.message || e?.message || 'Ошибка удаления')
+  } finally {
+    deleting.value = false
   }
 }
 

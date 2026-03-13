@@ -137,12 +137,16 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     return { success: true, message: 'Пользователь деактивирован' };
   })
   .delete('/:id', async ({ params, error }) => {
-    const [deleted] = await db
-      .delete(users)
-      .where(eq(users.id, params.id))
-      .returning();
-    if (!deleted) return error(404, 'User not found');
-    return { success: true };
+    const [target] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!target) return error(404, 'User not found');
+    if (target.role === 'admin') {
+      const admins = await db.select().from(users).where(eq(users.role, 'admin'));
+      if (admins.length <= 1) {
+        return error(400, 'Нельзя удалить последнего администратора');
+      }
+    }
+    await db.delete(users).where(eq(users.id, params.id));
+    return { success: true, message: 'Пользователь удалён навсегда' };
   })
   .get('/:id/driver-profile', async ({ params, error }) => {
     const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);

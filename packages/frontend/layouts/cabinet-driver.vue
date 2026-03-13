@@ -128,7 +128,7 @@ const menuOptions: MenuOption[] = [
 ]
 
 const userMenuOptions = [
-  { label: 'На главную сайта', key: 'home' },
+  { label: 'Главная', key: 'home' },
   { label: 'Выйти', key: 'logout' },
 ]
 

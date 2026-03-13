@@ -179,9 +179,16 @@
               >
                 <n-button>Загрузить PDF или JPG</n-button>
               </n-upload>
-              <n-text v-if="form.passport_scan_url" depth="3" style="font-size: 12px; margin-top: 4px; display: block;">
-                Файл загружен. Сохраните форму, чтобы закрепить.
-              </n-text>
+              <div v-if="form.passport_scan_url" class="scan-preview-row">
+                <div class="scan-preview" @click="openScanModal(form.passport_scan_url, 'Скан паспорта')">
+                  <img v-if="isImageUrl(form.passport_scan_url)" :src="scanFullUrl(form.passport_scan_url)" alt="Паспорт" class="scan-thumb" />
+                  <div v-else class="scan-thumb scan-thumb-pdf">
+                    <span>PDF</span>
+                  </div>
+                  <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                </div>
+                <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму, чтобы закрепить.</n-text>
+              </div>
             </n-form-item>
             <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
           </n-form>
@@ -225,9 +232,16 @@
               >
                 <n-button>Загрузить PDF или JPG</n-button>
               </n-upload>
-              <n-text v-if="form.license_scan_url" depth="3" style="font-size: 12px; margin-top: 4px; display: block;">
-                Файл загружен. Сохраните форму.
-              </n-text>
+              <div v-if="form.license_scan_url" class="scan-preview-row">
+                <div class="scan-preview" @click="openScanModal(form.license_scan_url, 'Скан водительских прав')">
+                  <img v-if="isImageUrl(form.license_scan_url)" :src="scanFullUrl(form.license_scan_url)" alt="Права" class="scan-thumb" />
+                  <div v-else class="scan-thumb scan-thumb-pdf">
+                    <span>PDF</span>
+                  </div>
+                  <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                </div>
+                <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму.</n-text>
+              </div>
             </n-form-item>
             <n-form-item label="Наличие международных прав">
               <n-select
@@ -305,9 +319,16 @@
               >
                 <n-button>Загрузить PDF или JPG</n-button>
               </n-upload>
-              <n-text v-if="form.medical_certificate_scan_url" depth="3" style="font-size: 12px; margin-top: 4px; display: block;">
-                Файл загружен. Сохраните форму.
-              </n-text>
+              <div v-if="form.medical_certificate_scan_url" class="scan-preview-row">
+                <div class="scan-preview" @click="openScanModal(form.medical_certificate_scan_url, 'Скан мед. справки')">
+                  <img v-if="isImageUrl(form.medical_certificate_scan_url)" :src="scanFullUrl(form.medical_certificate_scan_url)" alt="Мед. справка" class="scan-thumb" />
+                  <div v-else class="scan-thumb scan-thumb-pdf">
+                    <span>PDF</span>
+                  </div>
+                  <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                </div>
+                <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму.</n-text>
+              </div>
             </n-form-item>
             <n-form-item label="Сертификат прохождения техминимума">
               <n-input v-model:value="form.technical_minimum_certificate" placeholder="Nº TM-2025-0098" />
@@ -348,6 +369,35 @@
 
       </n-tabs>
     </n-card>
+
+    <Teleport to="body">
+      <Transition name="scan-modal-fade">
+        <div v-if="scanModalVisible" class="scan-modal-overlay">
+          <div
+            ref="scanModalEl"
+            class="scan-modal-draggable"
+            :style="{ left: modalPos.x + 'px', top: modalPos.y + 'px' }"
+            @mousedown="onModalContentMousedown"
+          >
+            <div
+              class="scan-modal-header"
+              @mousedown.stop="startDrag"
+            >
+              <span class="scan-modal-title">{{ scanModalTitle }}</span>
+              <n-button quaternary circle size="small" @click="closeScanModal">
+                <template #icon>
+                  <span style="font-size: 18px; line-height: 1;">×</span>
+                </template>
+              </n-button>
+            </div>
+            <div v-if="scanModalUrl" class="scan-modal-body">
+              <img v-if="isImageUrl(scanModalUrl)" :src="scanFullUrl(scanModalUrl)" alt="" class="scan-modal-img" />
+              <iframe v-else :src="scanFullUrl(scanModalUrl)" class="scan-modal-iframe" title="Документ" />
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -377,6 +427,70 @@ const citizenshipOptions = computed(() =>
 
 const message = useMessage()
 const saving = ref(false)
+const scanModalVisible = ref(false)
+const scanModalUrl = ref<string | null>(null)
+const scanModalTitle = ref('')
+const scanModalEl = ref<HTMLElement | null>(null)
+
+const modalPos = ref({ x: 0, y: 0 })
+let dragStart = { x: 0, y: 0, posX: 0, posY: 0 }
+
+function centerModal() {
+  if (typeof window === 'undefined') return
+  const w = 900
+  const h = Math.min(window.innerHeight * 0.9, 700)
+  modalPos.value = {
+    x: Math.max(0, (window.innerWidth - w) / 2),
+    y: Math.max(0, (window.innerHeight - h) / 2),
+  }
+}
+
+function startDrag(e: MouseEvent) {
+  dragStart = { x: e.clientX, y: e.clientY, posX: modalPos.value.x, posY: modalPos.value.y }
+  document.addEventListener('mousemove', onDragMove)
+  document.addEventListener('mouseup', stopDrag)
+}
+
+function onDragMove(e: MouseEvent) {
+  const dx = e.clientX - dragStart.x
+  const dy = e.clientY - dragStart.y
+  modalPos.value = {
+    x: Math.max(0, dragStart.posX + dx),
+    y: Math.max(0, dragStart.posY + dy),
+  }
+}
+
+function stopDrag() {
+  document.removeEventListener('mousemove', onDragMove)
+  document.removeEventListener('mouseup', stopDrag)
+}
+
+function onModalContentMousedown(e: MouseEvent) {
+  e.stopPropagation()
+}
+
+function closeScanModal() {
+  scanModalVisible.value = false
+  scanModalUrl.value = null
+}
+
+function isImageUrl(url: string) {
+  if (!url) return false
+  const lower = url.toLowerCase()
+  return lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.webp') || lower.endsWith('.gif')
+}
+
+function scanFullUrl(path: string) {
+  if (!path) return ''
+  return path.startsWith('http') ? path : `${props.apiBase}${path}`
+}
+
+function openScanModal(url: string, title: string) {
+  scanModalUrl.value = url
+  scanModalTitle.value = title
+  centerModal()
+  scanModalVisible.value = true
+}
 const loadError = ref<string | null>(null)
 const activeTab = ref(props.activeTab)
 watch(() => props.activeTab, (v) => {
@@ -747,5 +861,104 @@ defineExpose({
   .passport-row {
     grid-template-columns: 1fr;
   }
+}
+
+.scan-preview-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.scan-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--n-border-color);
+  transition: background 0.2s, border-color 0.2s;
+}
+.scan-preview:hover {
+  background: var(--n-color-hover);
+  border-color: var(--n-color-primary);
+}
+.scan-thumb {
+  width: 80px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.scan-thumb-pdf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  color: #666;
+  font-size: 12px;
+}
+.scan-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 9999;
+  pointer-events: none;
+}
+.scan-modal-draggable {
+  position: fixed;
+  width: 90vw;
+  max-width: 900px;
+  max-height: 90vh;
+  background: var(--n-color-modal, #fff);
+  border-radius: 8px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10000;
+  pointer-events: auto;
+}
+.scan-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--n-border-color, #e5e7eb);
+  cursor: move;
+  user-select: none;
+  flex-shrink: 0;
+}
+.scan-modal-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+.scan-modal-body {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 400px;
+  padding: 16px;
+}
+.scan-modal-img {
+  max-width: 100%;
+  max-height: calc(90vh - 80px);
+  object-fit: contain;
+}
+.scan-modal-iframe {
+  width: 100%;
+  min-height: 60vh;
+  border: none;
+}
+.scan-modal-fade-enter-active,
+.scan-modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.scan-modal-fade-enter-from,
+.scan-modal-fade-leave-to {
+  opacity: 0;
 }
 </style>
