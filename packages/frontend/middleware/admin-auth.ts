@@ -1,15 +1,19 @@
 export default defineNuxtRouteMiddleware(async () => {
-  const { session } = useAuth()
+  const { session, loading } = useAuth()
 
-  // Ждём пока сессия загрузится
-  if (session.value === undefined) {
+  // Ждём завершения загрузки сессии (иначе при F5 редирект на landing)
+  if (loading.value) {
     await new Promise<void>((resolve) => {
-      const stop = watch(session, (val) => {
-        if (val !== undefined) {
+      const stop = watch(loading, (val) => {
+        if (!val) {
           stop()
           resolve()
         }
       })
+      if (!loading.value) {
+        stop()
+        resolve()
+      }
     })
   }
 

@@ -28,14 +28,17 @@
           <n-text strong style="font-size: 16px;">Личный кабинет (Перевозчик)</n-text>
         </div>
         <div class="header-right">
-          <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
-            <n-space align="center" style="cursor: pointer">
-              <n-avatar round size="small" :style="{ backgroundColor: '#ff6b4a' }">
-                {{ session?.user?.name?.charAt(0) || 'U' }}
-              </n-avatar>
-              <n-text v-if="!collapsed">{{ session?.user?.name }}</n-text>
-            </n-space>
-          </n-dropdown>
+          <n-space align="center" style="gap: 12px">
+            <VerificationBadge v-if="verificationStatus" :status="verificationStatus" />
+            <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
+              <n-space align="center" style="cursor: pointer">
+                <n-avatar round size="small" :style="{ backgroundColor: '#ff6b4a' }">
+                  {{ session?.user?.name?.charAt(0) || 'U' }}
+                </n-avatar>
+                <n-text v-if="!collapsed">{{ session?.user?.name }}</n-text>
+              </n-space>
+            </n-dropdown>
+          </n-space>
         </div>
       </n-layout-header>
 
@@ -61,6 +64,7 @@ import type { MenuOption } from 'naive-ui'
 
 const { session, signOut } = useAuth()
 const { chatOpen, chatOrderId, chatTitle } = useOrderChat()
+const { status: verificationStatus } = useDriverVerificationStatus()
 const route = useRoute()
 const collapsed = ref(false)
 

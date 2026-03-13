@@ -26,12 +26,15 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     return {
       id: carrierProfile.id,
       // 1. Основная информация
-      full_name: carrierProfile.fullName,
+      surname: carrierProfile.surname,
+      given_name: carrierProfile.givenName,
+      patronymic: carrierProfile.patronymic,
       date_of_birth: d(carrierProfile.dateOfBirth),
       citizenship: carrierProfile.citizenship,
       gender: carrierProfile.gender,
       phone: carrierProfile.phone,
       email: user.email,
+      additional_emails: carrierProfile.additionalEmails ?? '',
       status: carrierProfile.status,
       employment_category: carrierProfile.employmentCategory,
       // Остальные поля
@@ -74,13 +77,19 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       bank_account: carrierProfile.bankAccount,
       bank_bik: carrierProfile.bankBik,
       is_verified: carrierProfile.isVerified,
+      verification_status: carrierProfile.verificationStatus ?? 'not_verified',
       rating: carrierProfile.rating,
       updated_at: carrierProfile.updatedAt ? carrierProfile.updatedAt.toISOString().slice(0, 10) : null,
     };
   })
+  .get('/verification-status', async ({ carrierProfile }) => {
+    return { verification_status: carrierProfile.verificationStatus ?? 'not_verified' };
+  })
   .patch('/', async ({ carrierProfile, body }) => {
     const updateData: Record<string, unknown> = {};
-    if (body.full_name !== undefined) updateData.fullName = body.full_name;
+    if (body.surname !== undefined) updateData.surname = body.surname;
+    if (body.given_name !== undefined) updateData.givenName = body.given_name;
+    if (body.patronymic !== undefined) updateData.patronymic = body.patronymic;
     if (body.date_of_birth !== undefined) updateData.dateOfBirth = body.date_of_birth ? new Date(body.date_of_birth) : null;
     if (body.citizenship !== undefined) updateData.citizenship = body.citizenship;
     if (body.gender !== undefined) updateData.gender = body.gender;
@@ -100,6 +109,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     if (body.hire_source !== undefined) updateData.hireSource = body.hire_source;
     if (body.attached_documents !== undefined) updateData.attachedDocuments = body.attached_documents;
     if (body.phone !== undefined) updateData.phone = body.phone;
+    if (body.additional_emails !== undefined) updateData.additionalEmails = body.additional_emails;
     if (body.inn !== undefined) updateData.inn = body.inn;
     if (body.address !== undefined) updateData.address = body.address;
     if (body.passport_series !== undefined) updateData.passportSeries = body.passport_series;
@@ -122,6 +132,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     if (body.bank_account !== undefined) updateData.bankAccount = body.bank_account;
     if (body.bank_bik !== undefined) updateData.bankBik = body.bank_bik;
     updateData.updatedAt = new Date();
+    updateData.verificationStatus = 'waiting_verification';
 
     const [updated] = await db
       .update(carrierProfiles)
@@ -132,7 +143,9 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     const d = (x: Date | null) => (x ? x.toISOString().slice(0, 10) : null);
     return {
       id: updated!.id,
-      full_name: updated!.fullName,
+      surname: updated!.surname,
+      given_name: updated!.givenName,
+      patronymic: updated!.patronymic,
       date_of_birth: d(updated!.dateOfBirth),
       citizenship: updated!.citizenship,
       gender: updated!.gender,
@@ -152,6 +165,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       hire_source: updated!.hireSource,
       attached_documents: updated!.attachedDocuments,
       phone: updated!.phone,
+      additional_emails: updated!.additionalEmails ?? '',
       inn: updated!.inn,
       address: updated!.address,
       passport_series: updated!.passportSeries,
@@ -176,7 +190,9 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     };
   }, {
     body: t.Object({
-      full_name: t.Optional(t.Nullable(t.String())),
+      surname: t.Optional(t.Nullable(t.String())),
+      given_name: t.Optional(t.Nullable(t.String())),
+      patronymic: t.Optional(t.Nullable(t.String())),
       date_of_birth: t.Optional(t.Nullable(t.String())),
       citizenship: t.Optional(t.Nullable(t.String())),
       gender: t.Optional(t.Nullable(t.String())),
@@ -196,6 +212,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       hire_source: t.Optional(t.Nullable(t.String())),
       attached_documents: t.Optional(t.Nullable(t.String())),
       phone: t.Optional(t.Nullable(t.String())),
+      additional_emails: t.Optional(t.Nullable(t.String())),
       inn: t.Optional(t.Nullable(t.String())),
       address: t.Optional(t.Nullable(t.String())),
       passport_series: t.Optional(t.Nullable(t.String())),

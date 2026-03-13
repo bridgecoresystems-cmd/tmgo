@@ -90,7 +90,9 @@ export const carrierProfiles = pgTable('carrier_profiles', {
     .unique()
     .references(() => users.id, { onDelete: 'cascade' }),
   // 1. Основная информация
-  fullName: text('full_name'),
+  surname: text('surname'),
+  givenName: text('given_name'),
+  patronymic: text('patronymic'),
   dateOfBirth: timestamp('date_of_birth', { withTimezone: true, mode: 'date' }),
   citizenship: varchar('citizenship', { length: 100 }),
   gender: varchar('gender', { length: 20 }), // male, female
@@ -111,7 +113,8 @@ export const carrierProfiles = pgTable('carrier_profiles', {
   lastMedicalExaminationDate: timestamp('last_medical_examination_date', { withTimezone: true, mode: 'date' }),
   hireSource: varchar('hire_source', { length: 50 }), // recommendation, advertisement, agency
   attachedDocuments: text('attached_documents'), // JSON or comma-separated
-  phone: varchar('phone', { length: 50 }),
+  phone: text('phone'),
+  additionalEmails: text('additional_emails'),
   inn: varchar('inn', { length: 50 }),
   address: text('address'),
   // 2. Паспортные данные
@@ -136,6 +139,12 @@ export const carrierProfiles = pgTable('carrier_profiles', {
   bankAccount: varchar('bank_account', { length: 100 }),
   bankBik: varchar('bank_bik', { length: 20 }),
   isVerified: boolean('is_verified').default(false).notNull(),
+  verificationStatus: varchar('verification_status', { length: 30 })
+    .$type<'not_verified' | 'waiting_verification' | 'verified'>()
+    .default('not_verified')
+    .notNull(),
+  // TODO: использовать для меток «отредактировано» — поля, изменённые админом
+  adminEditedFields: jsonb('admin_edited_fields').$type<string[]>().default([]),
   rating: decimal('rating', { precision: 3, scale: 2 }).default('0.00'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

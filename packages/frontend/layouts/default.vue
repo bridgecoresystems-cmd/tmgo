@@ -11,7 +11,7 @@
         </n-space>
         <n-space v-else>
           <n-dropdown :options="userOptions" @select="handleUserSelect">
-            <n-button quaternary>{{ session.user.name || session.user.email }}</n-button>
+            <n-button quaternary class="user-btn">{{ session.user.name || session.user.email }}</n-button>
           </n-dropdown>
         </n-space>
       </div>
@@ -29,7 +29,7 @@
 const { session, signOut } = useAuth()
 
 const userOptions = [
-  { label: 'Профиль', key: 'profile' },
+  { label: 'Кабинет', key: 'profile' },
   { label: 'Выйти', key: 'logout' }
 ]
 
@@ -86,6 +86,11 @@ const handleUserSelect = async (key: string) => {
   align-items: center;
   justify-content: center;
   background: #f9f9f9;
+}
+
+.user-btn {
+  border: 1px solid #f97316;
+  border-radius: 6px;
 }
 
 @media (max-width: 768px) {
