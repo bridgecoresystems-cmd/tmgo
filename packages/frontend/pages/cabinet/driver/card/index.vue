@@ -23,6 +23,7 @@ const route = useRoute()
 const router = useRouter()
 const { apiBase } = useApiBase()
 const { fetchStatus: refreshVerification } = useDriverVerificationStatus()
+const { fetchAlerts } = useDriverAlerts()
 const formRef = ref<{ loadProfile: () => Promise<void>; handleSave: () => Promise<void> } | null>(null)
 
 const loadUrl = computed(() => `${apiBase}/cabinet/driver/profile`)
@@ -44,6 +45,7 @@ function onTabChange(name: string) {
 
 function onFormSaved() {
   refreshVerification()
+  fetchAlerts()
 }
 
 onMounted(() => {

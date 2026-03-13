@@ -48,7 +48,14 @@
             
             <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
               <div class="user-profile-trigger">
+                <img
+                  v-if="avatarSrc"
+                  :src="avatarSrc"
+                  alt=""
+                  class="header-avatar-img"
+                />
                 <n-avatar
+                  v-else
                   round
                   size="medium"
                   :style="{ backgroundColor: '#ff6b4a' }"
@@ -88,10 +95,24 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from 'vue'
+import { h, ref, computed, type Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
+import { NIcon } from 'naive-ui'
+import {
+  StatsChartOutline,
+  CubeOutline,
+  PeopleOutline,
+  MailOutline,
+  CarOutline,
+  SettingsOutline,
+  ListOutline,
+  LocationOutline,
+  PersonRemoveOutline,
+  PersonOutline,
+} from '@vicons/ionicons5'
 
 const { session, signOut } = useAuth()
+const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
 const router = useRouter()
 const route = useRoute()
 const collapsed = ref(false)
@@ -114,27 +135,27 @@ const pageTitle = computed(() => {
   return titles[route.path] || 'Панель управления'
 })
 
-function renderIcon(icon: string) {
-  return () => h('span', { style: 'font-size: 18px' }, icon)
+function renderIcon(Icon: Component) {
+  return () => h(NIcon, null, { default: () => h(Icon) })
 }
 
 const menuOptions: MenuOption[] = [
-  { label: 'Дашборд', key: '/admin', icon: renderIcon('📊') },
-  { label: 'Заказы', key: '/admin/orders', icon: renderIcon('📦') },
-  { label: 'Пользователи', key: '/admin/users', icon: renderIcon('👥') },
-  { label: 'Рассылки', key: '/admin/mailing', icon: renderIcon('📧') },
-  { label: 'Транспорт', key: '/admin/vehicles', icon: renderIcon('🚛') },
+  { label: 'Дашборд', key: '/admin', icon: renderIcon(StatsChartOutline) },
+  { label: 'Заказы', key: '/admin/orders', icon: renderIcon(CubeOutline) },
+  { label: 'Пользователи', key: '/admin/users', icon: renderIcon(PeopleOutline) },
+  { label: 'Рассылки', key: '/admin/mailing', icon: renderIcon(MailOutline) },
+  { label: 'Транспорт', key: '/admin/vehicles', icon: renderIcon(CarOutline) },
   {
     label: 'Настройки',
     key: 'settings',
-    icon: renderIcon('⚙️'),
+    icon: renderIcon(SettingsOutline),
     children: [
-      { label: 'Обзор', key: '/admin/settings', icon: renderIcon('📋') },
-      { label: 'Города', key: '/admin/cities', icon: renderIcon('🏙️') },
-      { label: 'Удалённые пользователи', key: '/admin/settings/deactivated-users', icon: renderIcon('👤') },
+      { label: 'Обзор', key: '/admin/settings', icon: renderIcon(ListOutline) },
+      { label: 'Города', key: '/admin/cities', icon: renderIcon(LocationOutline) },
+      { label: 'Удалённые пользователи', key: '/admin/settings/deactivated-users', icon: renderIcon(PersonRemoveOutline) },
     ],
   },
-  { label: 'Профиль', key: '/admin/profile', icon: renderIcon('👤') },
+  { label: 'Профиль', key: '/admin/profile', icon: renderIcon(PersonOutline) },
 ]
 
 const userMenuOptions = [
@@ -277,5 +298,12 @@ async function handleUserSelect(key: string) {
 .admin-menu :deep(.n-menu-item-content) {
   border-radius: 8px;
   margin: 4px 8px;
+}
+
+.header-avatar-img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 </style>

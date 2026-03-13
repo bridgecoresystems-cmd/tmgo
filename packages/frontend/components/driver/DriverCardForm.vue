@@ -135,9 +135,14 @@
 
         <n-tab-pane name="passport" tab="2. Паспортные данные">
           <n-form :model="form" label-placement="top" class="form-uniform" style="max-width: 600px; padding-top: 16px;">
-            <n-form-item label="Серия и номер паспорта">
-              <n-input v-model:value="form.passport_series" placeholder="AB №1234567" />
-            </n-form-item>
+            <div class="passport-row">
+              <n-form-item label="Серия паспорта" class="passport-series">
+                <n-input v-model:value="form.passport_series" placeholder="AB" maxlength="6" />
+              </n-form-item>
+              <n-form-item label="Номер паспорта" class="passport-number">
+                <n-input v-model:value="form.passport_number" placeholder="1234567" />
+              </n-form-item>
+            </div>
             <n-form-item label="Дата выдачи">
               <n-date-picker
                 :value="form.passport_issue_date ? new Date(form.passport_issue_date).getTime() : null"
@@ -574,8 +579,17 @@ function applyProfileData(data: Record<string, any>) {
   form.other_permits = data.other_permits ?? ''
   form.inn = data.inn ?? ''
   form.address = data.address ?? ''
-  form.passport_series = data.passport_series ?? ''
-  form.passport_number = data.passport_number ?? ''
+  let ps = data.passport_series ?? ''
+  let pn = data.passport_number ?? ''
+  if (!pn && ps.includes(' ')) {
+    const [a, b] = ps.split(/\s+/, 2)
+    if (a && b) {
+      ps = a.trim()
+      pn = b.replace(/\D/g, '')
+    }
+  }
+  form.passport_series = ps
+  form.passport_number = pn
   form.passport_issue_date = data.passport_issue_date ?? null
   form.passport_expiry_date = data.passport_expiry_date ?? null
   form.passport_issued_by = data.passport_issued_by ?? ''
@@ -718,5 +732,20 @@ defineExpose({
 .multi-field-row .n-select {
   min-width: 0;
   flex: 1;
+}
+
+.passport-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+}
+.passport-row .passport-series,
+.passport-row .passport-number {
+  margin-bottom: 0;
+}
+@media (max-width: 480px) {
+  .passport-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

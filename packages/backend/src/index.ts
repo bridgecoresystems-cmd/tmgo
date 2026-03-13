@@ -20,6 +20,7 @@ import { cabinetDriverServicesRoutes } from './routes/cabinet/driver-services';
 import { cabinetDriverProfileRoutes } from './routes/cabinet/driver-profile';
 import { cabinetClientServicesRoutes } from './routes/cabinet/client-services';
 import { cabinetChatRoutes } from './routes/cabinet/chat';
+import { cabinetProfileRoutes } from './routes/cabinet/profile';
 
 const app = new Elysia()
   .use(cors({
@@ -85,6 +86,7 @@ const app = new Elysia()
   .use(cabinetDriverOrdersRoutes)
   .use(cabinetDriverServicesRoutes)
   .use(cabinetChatRoutes)
+  .use(cabinetProfileRoutes)
   .listen({ port: 8000, hostname: '0.0.0.0' });
 
 console.log(`🚀 Backend is running at http://0.0.0.0:8000 (LAN: http://<your-IP>:8000)`);

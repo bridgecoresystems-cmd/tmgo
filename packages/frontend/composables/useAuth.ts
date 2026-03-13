@@ -2,6 +2,8 @@ interface AuthUser {
   id: string
   name: string
   email: string
+  image?: string
+  phone?: string
   role: 'client' | 'driver' | 'dispatcher' | 'admin'
   emailVerified: boolean
   createdAt: string
@@ -25,8 +27,10 @@ export const useAuth = () => {
       const data = await $fetch<{ user: AuthUser | null }>(`${API}/api/auth/get-session`, {
         credentials: 'include',
       })
+      if (import.meta.dev) console.log('[useAuth] get-session response:', data?.user ? { ...data.user, image: data.user.image } : null)
       state.user = data?.user ?? null
-    } catch {
+    } catch (e) {
+      if (import.meta.dev) console.log('[useAuth] get-session error:', e)
       state.user = null
     } finally {
       state.loading = false

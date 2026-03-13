@@ -8,3 +8,4 @@ bun.lockb
 .claude/
 
 packages/backend/public/
+packages/backend/storage/

@@ -32,9 +32,20 @@
             <VerificationBadge v-if="verificationStatus" :status="verificationStatus" />
             <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
               <n-space align="center" style="cursor: pointer">
-                <n-avatar round size="small" :style="{ backgroundColor: '#ff6b4a' }">
-                  {{ session?.user?.name?.charAt(0) || 'U' }}
-                </n-avatar>
+                <img
+                v-if="avatarSrc"
+                :src="avatarSrc"
+                alt=""
+                class="header-avatar-img"
+              />
+              <n-avatar
+                v-else
+                round
+                size="small"
+                :style="{ backgroundColor: '#ff6b4a' }"
+              >
+                {{ session?.user?.name?.charAt(0) || 'U' }}
+              </n-avatar>
                 <n-text v-if="!collapsed">{{ session?.user?.name }}</n-text>
               </n-space>
             </n-dropdown>
@@ -59,30 +70,61 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from 'vue'
+import { h, ref, computed, type Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
+import { NIcon } from 'naive-ui'
+import { NBadge } from 'naive-ui'
+import {
+  HomeOutline,
+  IdCardOutline,
+  CarOutline,
+  CubeOutline,
+  ClipboardOutline,
+  MapOutline,
+  MailOutline,
+  PersonOutline,
+  AlertCircleOutline,
+} from '@vicons/ionicons5'
 
 const { session, signOut } = useAuth()
+const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
 const { chatOpen, chatOrderId, chatTitle } = useOrderChat()
 const { status: verificationStatus } = useDriverVerificationStatus()
+const { count: alertsCount, fetchAlerts } = useDriverAlerts()
 const route = useRoute()
 const collapsed = ref(false)
 
 const activeKey = computed(() => route.path)
 
-function renderIcon(icon: string) {
-  return () => h('span', { style: 'font-size: 18px' }, icon)
+onMounted(() => {
+  fetchAlerts()
+})
+
+function renderIcon(Icon: Component) {
+  return () => h(NIcon, null, { default: () => h(Icon) })
+}
+
+function renderAlertsLabel() {
+  const label = h('span', 'Оповещения')
+  if (alertsCount.value > 0) {
+    return h('div', { class: 'menu-item-with-badge' }, [
+      label,
+      h(NBadge, { value: alertsCount.value, max: 99, type: 'error', offset: [4, 0] }),
+    ])
+  }
+  return label
 }
 
 const menuOptions: MenuOption[] = [
-  { label: 'Главная', key: '/cabinet/driver', icon: renderIcon('🏠') },
-  { label: 'Карточка водителя', key: '/cabinet/driver/card', icon: renderIcon('🪪') },
-  { label: 'Мой транспорт', key: '/cabinet/driver/vehicles', icon: renderIcon('🚛') },
-  { label: 'Мои заказы', key: '/cabinet/driver/orders', icon: renderIcon('📦') },
-  { label: 'Доступные заказы', key: '/cabinet/driver/orders/available', icon: renderIcon('📋') },
-  { label: 'Мои услуги', key: '/cabinet/driver/services', icon: renderIcon('🛣️') },
-  { label: 'Рассылки', key: '/cabinet/driver/mailing', icon: renderIcon('📧') },
-  { label: 'Профиль', key: '/cabinet/driver/profile', icon: renderIcon('👤') },
+  { label: 'Главная', key: '/cabinet/driver', icon: renderIcon(HomeOutline) },
+  { label: 'Карточка водителя', key: '/cabinet/driver/card', icon: renderIcon(IdCardOutline) },
+  { label: () => renderAlertsLabel(), key: '/cabinet/driver/alerts', icon: renderIcon(AlertCircleOutline) },
+  { label: 'Мой транспорт', key: '/cabinet/driver/vehicles', icon: renderIcon(CarOutline) },
+  { label: 'Мои заказы', key: '/cabinet/driver/orders', icon: renderIcon(CubeOutline) },
+  { label: 'Доступные заказы', key: '/cabinet/driver/orders/available', icon: renderIcon(ClipboardOutline) },
+  { label: 'Мои услуги', key: '/cabinet/driver/services', icon: renderIcon(MapOutline) },
+  { label: 'Рассылки', key: '/cabinet/driver/mailing', icon: renderIcon(MailOutline) },
+  { label: 'Профиль', key: '/cabinet/driver/profile', icon: renderIcon(PersonOutline) },
 ]
 
 const userMenuOptions = [
@@ -135,5 +177,23 @@ async function handleUserSelect(key: string) {
 .content-container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.menu-item-with-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+.menu-item-with-badge .n-badge {
+  flex-shrink: 0;
+}
+
+.header-avatar-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 </style>

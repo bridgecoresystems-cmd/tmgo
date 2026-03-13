@@ -78,6 +78,13 @@
       "when": 1773266500000,
       "tag": "0011_user_is_active",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1773266600000,
+      "tag": "0012_user_phone",
+      "breakpoints": true
     }
   ]
 }

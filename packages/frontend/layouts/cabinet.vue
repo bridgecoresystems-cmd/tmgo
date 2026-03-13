@@ -53,8 +53,16 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from 'vue'
+import { h, ref, computed, type Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
+import { NIcon } from 'naive-ui'
+import {
+  HomeOutline,
+  CubeOutline,
+  CarOutline,
+  ChatbubblesOutline,
+  PersonOutline,
+} from '@vicons/ionicons5'
 
 const { session, signOut } = useAuth()
 const router = useRouter()
@@ -64,20 +72,20 @@ const collapsed = ref(false)
 const activeKey = computed(() => route.path)
 const roleLabel = computed(() => session.value?.user?.role === 'driver' ? '(Перевозчик)' : '(Заказчик)')
 
-function renderIcon(icon: string) {
-  return () => h('span', { style: 'font-size: 18px' }, icon)
+function renderIcon(Icon: Component) {
+  return () => h(NIcon, null, { default: () => h(Icon) })
 }
 
 const menuOptions = computed<MenuOption[]>(() => {
   const base = [
-    { label: 'Главная', key: '/cabinet', icon: renderIcon('🏠') },
-    { label: 'Мои заказы', key: '/cabinet/orders', icon: renderIcon('📦') },
-    { label: 'Сообщения', key: '/cabinet/chat', icon: renderIcon('💬') },
-    { label: 'Профиль', key: '/cabinet/profile', icon: renderIcon('👤') },
+    { label: 'Главная', key: '/cabinet', icon: renderIcon(HomeOutline) },
+    { label: 'Мои заказы', key: '/cabinet/orders', icon: renderIcon(CubeOutline) },
+    { label: 'Сообщения', key: '/cabinet/chat', icon: renderIcon(ChatbubblesOutline) },
+    { label: 'Профиль', key: '/cabinet/profile', icon: renderIcon(PersonOutline) },
   ]
   
   if (session.value?.user?.role === 'driver') {
-    base.splice(1, 0, { label: 'Мой транспорт', key: '/cabinet/vehicles', icon: renderIcon('🚛') })
+    base.splice(1, 0, { label: 'Мой транспорт', key: '/cabinet/vehicles', icon: renderIcon(CarOutline) })
   }
   
   return base
