@@ -72,6 +72,7 @@ function renderIcon(icon: string) {
 
 const menuOptions: MenuOption[] = [
   { label: 'Главная', key: '/cabinet/driver', icon: renderIcon('🏠') },
+  { label: 'Карточка водителя', key: '/cabinet/driver/card', icon: renderIcon('🪪') },
   { label: 'Мой транспорт', key: '/cabinet/driver/vehicles', icon: renderIcon('🚛') },
   { label: 'Мои заказы', key: '/cabinet/driver/orders', icon: renderIcon('📦') },
   { label: 'Доступные заказы', key: '/cabinet/driver/orders/available', icon: renderIcon('📋') },

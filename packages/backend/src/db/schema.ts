@@ -89,8 +89,52 @@ export const carrierProfiles = pgTable('carrier_profiles', {
     .notNull()
     .unique()
     .references(() => users.id, { onDelete: 'cascade' }),
+  // 1. Основная информация
+  fullName: text('full_name'),
+  dateOfBirth: timestamp('date_of_birth', { withTimezone: true, mode: 'date' }),
+  citizenship: varchar('citizenship', { length: 100 }),
+  gender: varchar('gender', { length: 20 }), // male, female
+  status: varchar('status', { length: 30 }), // active, inactive, on_leave, fired
+  employmentCategory: varchar('employment_category', { length: 50 }), // full_time, freelance, leased
+  // Остальные поля
   companyName: text('company_name'),
   licenseNumber: varchar('license_number', { length: 100 }),
+  licenseExpiry: timestamp('license_expiry', { withTimezone: true, mode: 'date' }),
+  // 3. Водительское удостоверение
+  licenseCategories: varchar('license_categories', { length: 50 }), // B, C, D, E
+  licenseIssueDate: timestamp('license_issue_date', { withTimezone: true, mode: 'date' }),
+  licenseIssuedBy: text('license_issued_by'),
+  licenseScanUrl: text('license_scan_url'),
+  hasInternationalLicense: boolean('has_international_license'),
+  internationalLicenseNumber: varchar('international_license_number', { length: 50 }),
+  internationalLicenseValidity: varchar('international_license_validity', { length: 30 }), // 2022-2027
+  lastMedicalExaminationDate: timestamp('last_medical_examination_date', { withTimezone: true, mode: 'date' }),
+  hireSource: varchar('hire_source', { length: 50 }), // recommendation, advertisement, agency
+  attachedDocuments: text('attached_documents'), // JSON or comma-separated
+  phone: varchar('phone', { length: 50 }),
+  inn: varchar('inn', { length: 50 }),
+  address: text('address'),
+  // 2. Паспортные данные
+  passportSeries: varchar('passport_series', { length: 20 }),
+  passportNumber: varchar('passport_number', { length: 50 }),
+  passportIssueDate: timestamp('passport_issue_date', { withTimezone: true, mode: 'date' }),
+  passportExpiryDate: timestamp('passport_expiry_date', { withTimezone: true, mode: 'date' }),
+  passportIssuedBy: text('passport_issued_by'),
+  placeOfBirth: varchar('place_of_birth', { length: 255 }),
+  residentialAddress: text('residential_address'),
+  passportScanUrl: text('passport_scan_url'),
+  // 4. Разрешительные документы
+  permissionEntryZone: text('permission_entry_zone'), // Разрешение на въезд в зону/страну
+  permissionIssueDate: timestamp('permission_issue_date', { withTimezone: true, mode: 'date' }),
+  permissionValidityDate: timestamp('permission_validity_date', { withTimezone: true, mode: 'date' }),
+  medicalCertificate: text('medical_certificate'), // Nº MC-2025-0123, действует до...
+  medicalCertificateScanUrl: text('medical_certificate_scan_url'),
+  technicalMinimumCertificate: varchar('technical_minimum_certificate', { length: 100 }), // Nº TM-2025-0098
+  tachographCardNumber: varchar('tachograph_card_number', { length: 50 }), // Nº TK-567890
+  otherPermits: text('other_permits'), // Страховка, пропуск, допуск ADR и т.д.
+  bankName: text('bank_name'),
+  bankAccount: varchar('bank_account', { length: 100 }),
+  bankBik: varchar('bank_bik', { length: 20 }),
   isVerified: boolean('is_verified').default(false).notNull(),
   rating: decimal('rating', { precision: 3, scale: 2 }).default('0.00'),
   createdAt: timestamp('created_at').defaultNow().notNull(),

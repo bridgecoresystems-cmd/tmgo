@@ -8,6 +8,41 @@
       "when": 1773265849846,
       "tag": "0000_secret_psylocke",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773265950000,
+      "tag": "0002_driver_card",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773266000000,
+      "tag": "0003_driver_main_info",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773266050000,
+      "tag": "0004_passport_data",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773266100000,
+      "tag": "0005_driver_license",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773266150000,
+      "tag": "0006_permitting_docs",
+      "breakpoints": true
     }
   ]
 }
