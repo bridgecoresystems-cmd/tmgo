@@ -9,6 +9,8 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <n-h3 style="margin: 0;">Пользователи</n-h3>
       <n-space>
+        <n-button type="primary" @click="showAddModal = true">Добавить пользователя</n-button>
+        <n-button quaternary @click="navigateTo('/admin/settings/deactivated-users')">Удалённые</n-button>
         <n-select
           v-model:value="verificationFilter"
           :options="verificationFilterOptions"
@@ -28,21 +30,63 @@
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => navigateTo(`/admin/users/${row.id}`) })"
       striped
     />
+
+    <n-modal v-model:show="showAddModal" preset="card" title="Добавить пользователя" style="max-width: 420px" @after-leave="resetAddForm">
+      <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="top">
+        <n-form-item label="Email" path="email" required>
+          <n-input v-model:value="addForm.email" placeholder="admin@tmgo.com" type="email" />
+        </n-form-item>
+        <n-form-item label="Имя" path="name">
+          <n-input v-model:value="addForm.name" placeholder="Иван Иванов" />
+        </n-form-item>
+        <n-form-item label="Пароль" path="password" required>
+          <n-input v-model:value="addForm.password" type="password" show-password-on="click" placeholder="Минимум 6 символов" />
+        </n-form-item>
+        <n-form-item label="Роль" path="role" required>
+          <n-select v-model:value="addForm.role" :options="addRoleOptions" placeholder="Выберите роль" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showAddModal = false">Отмена</n-button>
+          <n-button type="primary" :loading="adding" @click="handleAddUser">Создать</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { h } from 'vue'
-import { NTag, useMessage } from 'naive-ui'
+import { NTag, NButton, NPopconfirm, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
 const { apiBase } = useApiBase()
+const { session } = useAuth()
 const message = useMessage()
 const search = ref('')
 const verificationFilter = ref<string | null>(null)
 const loading = ref(true)
+const showAddModal = ref(false)
+const adding = ref(false)
+const addFormRef = ref<any>(null)
+const addForm = reactive({
+  email: '',
+  name: '',
+  password: '',
+  role: 'admin' as 'admin' | 'dispatcher',
+})
+const addRoleOptions = [
+  { label: 'Администратор', value: 'admin' },
+  { label: 'Диспетчер', value: 'dispatcher' },
+]
+const addRules = {
+  email: { required: true, message: 'Введите email', trigger: 'blur' },
+  password: { required: true, message: 'Введите пароль', trigger: 'blur' },
+  role: { required: true, message: 'Выберите роль', trigger: 'change' },
+}
 const loadError = ref<string | null>(null)
 const users = ref<any[]>([])
 
@@ -58,6 +102,11 @@ const verificationFilterOptions = [
   { label: 'Ожидает проверки', value: 'waiting_verification' },
   { label: 'Верифицирован', value: 'verified' },
 ]
+
+const activeAdminCount = ref(0)
+function isLastAdmin(row: { role?: string }) {
+  return row.role === 'admin' && activeAdminCount.value <= 1
+}
 
 function getVerificationTag(status: string | null) {
   const s = status ?? 'not_verified'
@@ -94,9 +143,27 @@ const columns: DataTableColumns = [
     render: (row) => row.role === 'driver' ? getVerificationTag(row.verification_status) : '—',
   },
   {
-    title: 'Дата регистрации',
-    key: 'createdAt',
-    render: (row) => new Date(row.createdAt as string).toLocaleDateString('ru-RU'),
+    title: '',
+    key: 'actions',
+    width: 48,
+    render: (row) => {
+      const canDelete = row.id !== session?.user?.id && !isLastAdmin(row);
+      if (!canDelete) return '—';
+      return h(NPopconfirm, {
+        onPositiveClick: () => handleDeactivate(row),
+      }, {
+        trigger: () => h(NButton, {
+          quaternary: true,
+          type: 'error',
+          size: 'small',
+          circle: true,
+          onClick: (e: Event) => e.stopPropagation(),
+        }, { default: () => '×' }),
+        default: () => 'Деактивировать пользователя? Он исчезнет из списка, но данные сохранятся.',
+        positiveText: 'Да',
+        negativeText: 'Отмена',
+      });
+    },
   },
 ]
 
@@ -126,6 +193,7 @@ async function loadUsers() {
     const url = `${apiBase || ''}/admin/users`
     const data = await $fetch<any[]>(url, { credentials: 'include' })
     users.value = Array.isArray(data) ? data : []
+    activeAdminCount.value = users.value.filter((u) => u.role === 'admin').length
   } catch (e: any) {
     const msg = e?.data?.message || e?.message || 'Ошибка загрузки'
     const isNetwork = String(e?.message || '').toLowerCase().includes('fetch') || String(e?.message || '').includes('network')
@@ -135,6 +203,58 @@ async function loadUsers() {
     if (import.meta.dev) console.error('Admin users fetch failed:', e)
   } finally {
     loading.value = false
+  }
+}
+
+function resetAddForm() {
+  addForm.email = ''
+  addForm.name = ''
+  addForm.password = ''
+  addForm.role = 'admin'
+}
+
+async function handleAddUser() {
+  try {
+    await addFormRef.value?.validate()
+  } catch {
+    return
+  }
+  if (addForm.password.length < 6) {
+    message.error('Пароль должен быть не менее 6 символов')
+    return
+  }
+  adding.value = true
+  try {
+    await $fetch(`${apiBase}/admin/users`, {
+      method: 'POST',
+      credentials: 'include',
+      body: {
+        email: addForm.email.trim(),
+        name: addForm.name.trim() || undefined,
+        password: addForm.password,
+        role: addForm.role,
+      },
+    })
+    message.success('Пользователь создан')
+    showAddModal.value = false
+    loadUsers()
+  } catch (e: any) {
+    message.error(e?.data?.message || e?.message || 'Ошибка создания')
+  } finally {
+    adding.value = false
+  }
+}
+
+async function handleDeactivate(row: { id: string; name?: string; email?: string }) {
+  try {
+    await $fetch(`${apiBase}/admin/users/${row.id}/deactivate`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    message.success('Пользователь деактивирован')
+    loadUsers()
+  } catch (e: any) {
+    message.error(e?.data?.message || e?.message || 'Ошибка')
   }
 }
 

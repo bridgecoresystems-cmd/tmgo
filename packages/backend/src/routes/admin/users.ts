@@ -3,8 +3,8 @@ import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
 import { db } from '../../db';
-import { users, carrierProfiles } from '../../db/schema';
-import { eq } from 'drizzle-orm';
+import { users, accounts, carrierProfiles, sessions } from '../../db/schema';
+import { eq, and } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 
 export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
@@ -16,13 +16,48 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     }
     return { adminUser: user };
   })
-  .get('/', async () => {
+  .post('/', async ({ body, error }) => {
+    const existing = await db.select().from(users).where(eq(users.email, body.email)).limit(1);
+    if (existing.length > 0) {
+      return error(400, 'Пользователь с таким email уже существует');
+    }
+    const hashedPassword = await Bun.password.hash(body.password, { algorithm: 'bcrypt', cost: 10 });
+    const userId = crypto.randomUUID();
+    await db.insert(users).values({
+      id: userId,
+      name: body.name || body.email.split('@')[0],
+      email: body.email,
+      emailVerified: true,
+      role: body.role,
+    });
+    await db.insert(accounts).values({
+      id: crypto.randomUUID(),
+      accountId: body.email,
+      providerId: 'credential',
+      userId,
+      password: hashedPassword,
+    });
+    const [created] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    return created!;
+  }, {
+    body: t.Object({
+      email: t.String(),
+      password: t.String(),
+      name: t.Optional(t.String()),
+      role: t.Union([t.Literal('admin'), t.Literal('dispatcher')]),
+    }),
+  })
+  .get('/', async ({ query }) => {
+    const q = query as { include_inactive?: string; inactive_only?: string };
+    const includeInactive = q.include_inactive === '1';
+    const inactiveOnly = q.inactive_only === '1';
     const list = await db
       .select({
         id: users.id,
         name: users.name,
         email: users.email,
         role: users.role,
+        isActive: users.isActive,
         createdAt: users.createdAt,
         surname: carrierProfiles.surname,
         givenName: carrierProfiles.givenName,
@@ -31,6 +66,9 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       })
       .from(users)
       .leftJoin(carrierProfiles, eq(users.id, carrierProfiles.userId))
+      .where(
+        inactiveOnly ? eq(users.isActive, false) : includeInactive ? eq(users.id, users.id) : eq(users.isActive, true)
+      )
       .orderBy(users.createdAt);
     return list.map((row) => {
       const parts = [row.surname, row.givenName, row.patronymic].filter(Boolean);
@@ -41,6 +79,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
         email: row.email,
         role: row.role,
         createdAt: row.createdAt,
+        is_active: row.isActive,
         driverName,
         verification_status: row.verificationStatus ?? null,
       };
@@ -69,6 +108,33 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       ])),
       name: t.Optional(t.String()),
     }),
+  })
+  .post('/:id/activate', async ({ params, error }) => {
+    const [updated] = await db
+      .update(users)
+      .set({ isActive: true, updatedAt: new Date() })
+      .where(eq(users.id, params.id))
+      .returning();
+    if (!updated) return error(404, 'User not found');
+    return { success: true, message: 'Пользователь восстановлен' };
+  })
+  .post('/:id/deactivate', async ({ params, error }) => {
+    const [target] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!target) return error(404, 'User not found');
+    if (target.role === 'admin') {
+      const activeAdmins = await db.select().from(users).where(and(eq(users.role, 'admin'), eq(users.isActive, true)));
+      if (activeAdmins.length <= 1) {
+        return error(400, 'Нельзя деактивировать последнего администратора');
+      }
+    }
+    const [updated] = await db
+      .update(users)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(users.id, params.id))
+      .returning();
+    if (!updated) return error(404, 'User not found');
+    await db.delete(sessions).where(eq(sessions.userId, params.id));
+    return { success: true, message: 'Пользователь деактивирован' };
   })
   .delete('/:id', async ({ params, error }) => {
     const [deleted] = await db

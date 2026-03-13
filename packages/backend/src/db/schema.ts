@@ -23,6 +23,7 @@ export const users = pgTable('user', {
     .$type<'client' | 'driver' | 'dispatcher' | 'admin'>()
     .notNull()
     .default('client'),
+  isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

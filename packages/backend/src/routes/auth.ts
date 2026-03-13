@@ -65,6 +65,10 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
       set.status = 401;
       return { error: { message: 'Неверный email или пароль' } };
     }
+    if (!user.isActive) {
+      set.status = 401;
+      return { error: { message: 'Аккаунт деактивирован' } };
+    }
 
     const [acct] = await db.select().from(accounts)
       .where(and(eq(accounts.userId, user.id), eq(accounts.providerId, 'credential')))

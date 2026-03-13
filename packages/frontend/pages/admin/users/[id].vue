@@ -12,7 +12,8 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
         <n-h3 style="margin: 0;">{{ user?.name || user?.email || 'Пользователь' }}</n-h3>
         <n-space>
-          <n-tag v-if="user?.role" :type="roleTagType">{{ user.role }}</n-tag>
+          <n-tag v-if="!user?.isActive" type="error">Деактивирован</n-tag>
+          <n-tag v-else-if="user?.role" :type="roleTagType">{{ user.role }}</n-tag>
           <n-tag v-if="profile?.verification_status === 'verified'" type="success">Верифицирован</n-tag>
           <n-tag v-else-if="profile?.verification_status === 'waiting_verification'" type="warning">Ожидает проверки</n-tag>
           <n-tag v-else-if="profile?.verification_status === 'not_verified'" type="default">Не верифицирован</n-tag>
@@ -23,6 +24,14 @@
             @click="handleVerify"
           >
             Верифицировать
+          </n-button>
+          <n-button
+            v-if="!user?.isActive"
+            type="success"
+            :loading="activating"
+            @click="handleActivate"
+          >
+            Восстановить
           </n-button>
         </n-space>
       </div>
@@ -65,6 +74,7 @@ const message = useMessage()
 const loading = ref(true)
 const loadError = ref<string | null>(null)
 const verifying = ref(false)
+const activating = ref(false)
 const user = ref<any>(null)
 const profile = ref<any>(null)
 const formRef = ref<{ loadProfile: () => Promise<void>; handleSave: () => Promise<void> } | null>(null)
@@ -106,6 +116,22 @@ function onFormSaved() {
         profile.value = p
       })
       .catch(() => {})
+  }
+}
+
+async function handleActivate() {
+  activating.value = true
+  try {
+    await $fetch(`${apiBase}/admin/users/${route.params.id}/activate`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    user.value = { ...user.value, isActive: true }
+    message.success('Пользователь восстановлен')
+  } catch (e: any) {
+    message.error(e?.data?.message || e?.message || 'Ошибка')
+  } finally {
+    activating.value = false
   }
 }
 

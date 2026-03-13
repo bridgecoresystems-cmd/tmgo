@@ -105,6 +105,8 @@ const pageTitle = computed(() => {
     '/admin/mailing': 'Рассылки',
     '/admin/cities': 'Города',
     '/admin/cities/add': 'Добавить город',
+    '/admin/settings': 'Настройки',
+    '/admin/settings/deactivated-users': 'Удалённые пользователи',
     '/admin/orders': 'Все заказы',
     '/admin/vehicles': 'Транспорт',
     '/admin/profile': 'Профиль',
@@ -127,7 +129,9 @@ const menuOptions: MenuOption[] = [
     key: 'settings',
     icon: renderIcon('⚙️'),
     children: [
+      { label: 'Обзор', key: '/admin/settings', icon: renderIcon('📋') },
       { label: 'Города', key: '/admin/cities', icon: renderIcon('🏙️') },
+      { label: 'Удалённые пользователи', key: '/admin/settings/deactivated-users', icon: renderIcon('👤') },
     ],
   },
   { label: 'Профиль', key: '/admin/profile', icon: renderIcon('👤') },

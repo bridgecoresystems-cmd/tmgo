@@ -71,6 +71,13 @@
       "when": 1773266400000,
       "tag": "0010_verification_status",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1773266500000,
+      "tag": "0011_user_is_active",
+      "breakpoints": true
     }
   ]
 }
