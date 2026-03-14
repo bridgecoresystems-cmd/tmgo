@@ -142,11 +142,13 @@ export const carrierProfiles = pgTable('carrier_profiles', {
   bankBik: varchar('bank_bik', { length: 20 }),
   isVerified: boolean('is_verified').default(false).notNull(),
   verificationStatus: varchar('verification_status', { length: 30 })
-    .$type<'not_verified' | 'waiting_verification' | 'verified'>()
+    .$type<'not_verified' | 'waiting_verification' | 'verified' | 'request'>()
     .default('not_verified')
     .notNull(),
   // TODO: использовать для меток «отредактировано» — поля, изменённые админом
   adminEditedFields: jsonb('admin_edited_fields').$type<string[]>().default([]),
+  /** Поля, которые водитель может редактировать после одобрения запроса (при waiting_verification/verified) */
+  unlockedFields: jsonb('unlocked_fields').$type<string[]>().default([]),
   rating: decimal('rating', { precision: 3, scale: 2 }).default('0.00'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -272,6 +274,26 @@ export const mailingRecipients = pgTable('mailing_recipient', {
   isRead: boolean('is_read').default(false).notNull(),
   readAt: timestamp('read_at', { withTimezone: true, mode: 'date' }),
   receivedAt: timestamp('received_at').defaultNow().notNull(),
+});
+
+// --- Запросы водителя на изменение полей (при waiting_verification/verified) ---
+
+export const profileEditRequests = pgTable('profile_edit_requests', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  carrierId: uuid('carrier_id')
+    .notNull()
+    .references(() => carrierProfiles.id, { onDelete: 'cascade' }),
+  fieldKey: varchar('field_key', { length: 80 }).notNull(),
+  status: varchar('status', { length: 20 })
+    .$type<'pending' | 'approved' | 'rejected'>()
+    .default('pending')
+    .notNull(),
+  driverComment: text('driver_comment'),
+  /** Значение поля на момент запроса (что меняют/удаляют) или "(добавление)" */
+  fieldValue: text('field_value'),
+  requestedAt: timestamp('requested_at').defaultNow().notNull(),
+  resolvedAt: timestamp('resolved_at', { withTimezone: true, mode: 'date' }),
+  resolvedById: text('resolved_by_id').references(() => users.id),
 });
 
 // --- Чат по заказу ---

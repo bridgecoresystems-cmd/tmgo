@@ -85,6 +85,20 @@
       "when": 1773266600000,
       "tag": "0012_user_phone",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1773266700000,
+      "tag": "0013_profile_edit_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1773266800000,
+      "tag": "0014_profile_edit_requests_field_value",
+      "breakpoints": true
     }
   ]
 }

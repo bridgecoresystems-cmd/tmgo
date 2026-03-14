@@ -8,6 +8,7 @@
       save-method="PATCH"
       :api-base="apiBase"
       :active-tab="activeTab"
+      :is-driver-context="true"
       @update:active-tab="onTabChange"
       @saved="onFormSaved"
     />
@@ -29,7 +30,7 @@ const formRef = ref<{ loadProfile: () => Promise<void>; handleSave: () => Promis
 const loadUrl = computed(() => `${apiBase}/cabinet/driver/profile`)
 const saveUrl = computed(() => `${apiBase}/cabinet/driver/profile`)
 
-const tabNames = ['main', 'passport', 'license', 'permits', 'docs'] as const
+const tabNames = ['main', 'passport', 'license', 'permits'] as const
 const activeTab = ref<string>(
   (route.query.tab as string) && tabNames.includes(route.query.tab as any) ? (route.query.tab as string) : 'main'
 )

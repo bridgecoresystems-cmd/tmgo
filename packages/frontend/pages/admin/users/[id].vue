@@ -24,6 +24,7 @@
           <n-tag v-else-if="user?.role" :type="roleTagType">{{ user.role }}</n-tag>
           <n-tag v-if="profile?.verification_status === 'verified'" type="success">Верифицирован</n-tag>
           <n-tag v-else-if="profile?.verification_status === 'waiting_verification'" type="warning">Ожидает проверки</n-tag>
+          <n-tag v-else-if="profile?.verification_status === 'request'" type="info">Запрос</n-tag>
           <n-tag v-else-if="profile?.verification_status === 'not_verified'" type="default">Не верифицирован</n-tag>
           <n-button
             v-if="user?.role === 'driver' && profile && profile?.verification_status !== 'verified'"

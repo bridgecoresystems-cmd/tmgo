@@ -102,6 +102,7 @@ const roleColors: Record<string, any> = {
 const verificationFilterOptions = [
   { label: 'Не верифицирован', value: 'not_verified' },
   { label: 'Ожидает проверки', value: 'waiting_verification' },
+  { label: 'Запрос', value: 'request' },
   { label: 'Верифицирован', value: 'verified' },
 ]
 
@@ -115,11 +116,13 @@ function getVerificationTag(status: string | null) {
   const labels: Record<string, string> = {
     not_verified: 'Не верифицирован',
     waiting_verification: 'Ожидает',
+    request: 'Запрос',
     verified: 'Верифицирован',
   }
   const types: Record<string, string> = {
     not_verified: 'default',
     waiting_verification: 'warning',
+    request: 'info',
     verified: 'success',
   }
   return h(NTag, { type: types[s] || 'default', size: 'small' }, { default: () => labels[s] || s })

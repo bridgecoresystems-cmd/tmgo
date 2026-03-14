@@ -3,8 +3,8 @@ import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
 import { db } from '../../db';
-import { users, accounts, carrierProfiles, sessions } from '../../db/schema';
-import { eq, and } from 'drizzle-orm';
+import { users, accounts, carrierProfiles, sessions, profileEditRequests } from '../../db/schema';
+import { eq, and, desc } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 
 export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
@@ -204,6 +204,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       bank_bik: profile.bankBik,
       is_verified: profile.isVerified,
       verification_status: profile.verificationStatus ?? 'not_verified',
+      unlocked_fields: (profile.unlockedFields as string[]) ?? [],
       rating: profile.rating,
       updated_at: profile.updatedAt ? profile.updatedAt.toISOString().slice(0, 10) : null,
     };
@@ -248,8 +249,6 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       }
     }
     updateData.updatedAt = new Date();
-    updateData.verificationStatus = 'waiting_verification';
-    // TODO: вернуть admin_edited_fields — добавлять в массив только поля, реально изменённые админом
 
     const [updated] = await db
       .update(carrierProfiles)
@@ -316,6 +315,113 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       bank_account: t.Optional(t.Nullable(t.String())),
       bank_bik: t.Optional(t.Nullable(t.String())),
     }),
+  })
+  .get('/:id/edit-requests', async ({ params, error }) => {
+    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!user) return error(404, 'User not found');
+    if (user.role !== 'driver') return error(400, 'User is not a driver');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const list = await db
+      .select({ id: profileEditRequests.id, fieldKey: profileEditRequests.fieldKey, status: profileEditRequests.status, driverComment: profileEditRequests.driverComment, fieldValue: profileEditRequests.fieldValue, requestedAt: profileEditRequests.requestedAt, resolvedAt: profileEditRequests.resolvedAt })
+      .from(profileEditRequests)
+      .where(eq(profileEditRequests.carrierId, profile.id))
+      .orderBy(desc(profileEditRequests.requestedAt));
+    const fieldValue = (fieldKey: string): string => {
+      const m = fieldKey.match(/^(.+)_(\d+)$/);
+      const addMatch = fieldKey.match(/^(.+)_add$/);
+      if (m) {
+        const [, base, idx] = m;
+        const i = parseInt(idx, 10);
+        if (base === 'phone') {
+          const arr = (profile.phone ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+          return arr[i] ?? '—';
+        }
+        if (base === 'citizenship') {
+          const arr = (profile.citizenship ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+          return arr[i] ?? '—';
+        }
+        if (base === 'additional_emails') {
+          const arr = (profile.additionalEmails ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+          return arr[i] ?? '—';
+        }
+      }
+      if (addMatch) return '(добавление)';
+      if (fieldKey === 'passport_series_number') {
+        const s = profile.passportSeries ?? '';
+        const n = profile.passportNumber ?? '';
+        return [s, n].filter(Boolean).join(' ') || '—';
+      }
+      const d = (x: Date | null) => (x ? x.toISOString().slice(0, 10) : null);
+      const map: Record<string, string | null | undefined> = {
+        surname: profile.surname, given_name: profile.givenName, patronymic: profile.patronymic,
+        date_of_birth: d(profile.dateOfBirth), citizenship: profile.citizenship, gender: profile.gender,
+        status: profile.status, employment_category: profile.employmentCategory, phone: profile.phone,
+        additional_emails: profile.additionalEmails, passport_series: profile.passportSeries,
+        passport_number: profile.passportNumber, company_name: profile.companyName, license_number: profile.licenseNumber,
+        license_expiry: d(profile.licenseExpiry), license_categories: profile.licenseCategories,
+        passport_issue_date: d(profile.passportIssueDate), passport_expiry_date: d(profile.passportExpiryDate),
+        passport_issued_by: profile.passportIssuedBy, place_of_birth: profile.placeOfBirth,
+        residential_address: profile.residentialAddress, passport_scan_url: profile.passportScanUrl ? '(файл загружен)' : null,
+      };
+      const v = map[fieldKey];
+      return v ?? '—';
+    };
+    return list.map((r) => ({
+      id: r.id,
+      field_key: r.fieldKey,
+      status: r.status,
+      driver_comment: r.driverComment,
+      requested_at: r.requestedAt,
+      resolved_at: r.resolvedAt,
+      field_value: r.fieldValue ?? fieldValue(r.fieldKey),
+    }));
+  })
+  .post('/:id/edit-requests/:requestId/approve', async ({ params, error, adminUser }) => {
+    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!user) return error(404, 'User not found');
+    if (user.role !== 'driver') return error(400, 'User is not a driver');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const [req] = await db
+      .select()
+      .from(profileEditRequests)
+      .where(and(
+        eq(profileEditRequests.id, params.requestId),
+        eq(profileEditRequests.carrierId, profile.id),
+        eq(profileEditRequests.status, 'pending')
+      ))
+      .limit(1);
+    if (!req) return error(404, 'Запрос не найден или уже обработан');
+    const COMBINED_FIELDS: Record<string, string[]> = { passport_series_number: ['passport_series', 'passport_number'] };
+    const unlocked = ((profile.unlockedFields as string[]) ?? []).filter(Boolean);
+    const keysToAdd = COMBINED_FIELDS[req.fieldKey] ?? [req.fieldKey];
+    for (const k of keysToAdd) {
+      if (!unlocked.includes(k)) unlocked.push(k);
+    }
+    await db
+      .update(profileEditRequests)
+      .set({ status: 'approved', resolvedAt: new Date(), resolvedById: adminUser?.id ?? null })
+      .where(eq(profileEditRequests.id, params.requestId));
+
+    const stillPending = await db
+      .select()
+      .from(profileEditRequests)
+      .where(and(
+        eq(profileEditRequests.carrierId, profile.id),
+        eq(profileEditRequests.status, 'pending')
+      ));
+    const newStatus = stillPending.length > 0 ? 'request' : 'waiting_verification';
+
+    await db
+      .update(carrierProfiles)
+      .set({
+        unlockedFields: unlocked,
+        verificationStatus: newStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(carrierProfiles.id, profile.id));
+    return { success: true, field_key: req.fieldKey, unlocked_fields: unlocked };
   })
   .post('/:id/verify', async ({ params, error }) => {
     const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);

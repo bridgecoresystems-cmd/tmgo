@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-type VerificationStatus = 'not_verified' | 'waiting_verification' | 'verified'
+type VerificationStatus = 'not_verified' | 'waiting_verification' | 'verified' | 'request'
 
 const props = withDefaults(
   defineProps<{
@@ -30,6 +30,8 @@ const config = computed(() => {
       return { line1: 'VERF', line2: '', tooltip: 'Верифицирован' }
     case 'waiting_verification':
       return { line1: 'WAIT', line2: 'VERF', tooltip: 'Ожидает проверки' }
+    case 'request':
+      return { line1: 'ЗАПР', line2: 'ОС', tooltip: 'Запрос на изменение' }
     default:
       return { line1: 'NOT', line2: 'VERF', tooltip: 'Не верифицирован' }
   }
@@ -86,6 +88,13 @@ const tooltip = computed(() => config.value.tooltip)
   background: linear-gradient(135deg, #d4a574 0%, #b8860b 50%, #8b6914 100%);
   color: #fff;
   box-shadow: 0 1px 4px rgba(139, 105, 20, 0.4);
+}
+
+/* request — синий */
+.verification-badge--request {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.4);
 }
 
 /* verified — золото */

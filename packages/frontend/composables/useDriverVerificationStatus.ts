@@ -1,4 +1,4 @@
-export type VerificationStatus = 'not_verified' | 'waiting_verification' | 'verified'
+export type VerificationStatus = 'not_verified' | 'waiting_verification' | 'verified' | 'request'
 
 export function useDriverVerificationStatus() {
   const { apiBase } = useApiBase()
