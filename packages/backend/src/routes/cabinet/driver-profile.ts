@@ -14,7 +14,7 @@ const EDITABLE_FIELD_KEYS = [
   'international_license_number', 'international_license_validity', 'last_medical_examination_date',
   'hire_source', 'attached_documents', 'inn', 'address', 'passport_series', 'passport_number',
   'passport_series_number', 'passport_issue_date', 'passport_expiry_date', 'passport_issued_by', 'place_of_birth', 'residential_address',
-  'passport_scan_url', 'permission_entry_zone', 'permission_issue_date', 'permission_validity_date',
+  'passport_scan_url', 'passport_add', 'permission_entry_zone', 'permission_issue_date', 'permission_validity_date',
   'medical_certificate', 'medical_certificate_scan_url', 'technical_minimum_certificate', 'tachograph_card_number',
   'other_permits', 'bank_name', 'bank_account', 'bank_bik',
 ] as const;
@@ -27,6 +27,7 @@ const MULTI_FIELD_BASES = ['phone', 'citizenship', 'additional_emails'] as const
 
 function isValidFieldKey(key: string): boolean {
   if (EDITABLE_FIELD_KEYS.includes(key as any)) return true;
+  if (key === 'passport_add') return true;
   for (const base of MULTI_FIELD_BASES) {
     if (key === `${base}_add`) return true;
     const m = key.match(new RegExp(`^${base}_(\\d+)$`));
@@ -100,6 +101,19 @@ function buildProfileUpdate(body: Record<string, unknown>) {
   if (body.place_of_birth !== undefined) updateData.placeOfBirth = body.place_of_birth;
   if (body.residential_address !== undefined) updateData.residentialAddress = body.residential_address;
   if (body.passport_scan_url !== undefined) updateData.passportScanUrl = body.passport_scan_url;
+  if (body.extra_passports !== undefined) {
+    const arr = Array.isArray(body.extra_passports) ? body.extra_passports : [];
+    updateData.extraPassports = arr.map((p: any) => ({
+      passport_series: p.passport_series ?? null,
+      passport_number: p.passport_number ?? null,
+      passport_issue_date: p.passport_issue_date ?? null,
+      passport_expiry_date: p.passport_expiry_date ?? null,
+      passport_issued_by: p.passport_issued_by ?? null,
+      place_of_birth: p.place_of_birth ?? null,
+      residential_address: p.residential_address ?? null,
+      passport_scan_url: p.passport_scan_url ?? null,
+    }));
+  }
   if (body.permission_entry_zone !== undefined) updateData.permissionEntryZone = body.permission_entry_zone;
   if (body.permission_issue_date !== undefined) updateData.permissionIssueDate = body.permission_issue_date ? new Date(body.permission_issue_date as string) : null;
   if (body.permission_validity_date !== undefined) updateData.permissionValidityDate = body.permission_validity_date ? new Date(body.permission_validity_date as string) : null;
@@ -170,6 +184,8 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       place_of_birth: carrierProfile.placeOfBirth,
       residential_address: carrierProfile.residentialAddress,
       passport_scan_url: carrierProfile.passportScanUrl,
+      passport_is_active: carrierProfile.passportIsActive,
+      extra_passports: (carrierProfile.extraPassports as any[]) ?? [],
       // 4. Разрешительные документы
       permission_entry_zone: carrierProfile.permissionEntryZone,
       permission_issue_date: d(carrierProfile.permissionIssueDate),
@@ -222,6 +238,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
         }
       }
       if (addMatch) return '(добавление)';
+      if (fieldKey === 'passport_add') return '(добавление второго паспорта)';
       const d = (x: Date | null) => (x ? x.toISOString().slice(0, 10) : null);
       const map: Record<string, string | null | undefined> = {
         surname: carrierProfile.surname, given_name: carrierProfile.givenName, patronymic: carrierProfile.patronymic,
@@ -288,6 +305,8 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
           }
         } else if (allowedKeys.has(fieldKey)) {
           filtered[dbKey] = v;
+        } else if (dbKey === 'extraPassports' && allowedKeys.has('passport_add')) {
+          filtered.extraPassports = v;
         } else {
           const combined = Object.entries(COMBINED_FIELDS).find(([, keys]) => keys.includes(fieldKey));
           if (combined && allowedKeys.has(combined[0])) filtered[dbKey] = v;
@@ -344,6 +363,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       place_of_birth: updated!.placeOfBirth,
       residential_address: updated!.residentialAddress,
       passport_scan_url: updated!.passportScanUrl,
+      passport_is_active: updated!.passportIsActive,
       permission_entry_zone: updated!.permissionEntryZone,
       permission_issue_date: d(updated!.permissionIssueDate),
       permission_validity_date: d(updated!.permissionValidityDate),
@@ -355,6 +375,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       bank_name: updated!.bankName,
       bank_account: updated!.bankAccount,
       bank_bik: updated!.bankBik,
+      extra_passports: (updated!.extraPassports as any[]) ?? [],
     };
   }, {
     body: t.Object({
@@ -391,6 +412,16 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       place_of_birth: t.Optional(t.Nullable(t.String())),
       residential_address: t.Optional(t.Nullable(t.String())),
       passport_scan_url: t.Optional(t.Nullable(t.String())),
+      extra_passports: t.Optional(t.Array(t.Object({
+        passport_series: t.Optional(t.Nullable(t.String())),
+        passport_number: t.Optional(t.Nullable(t.String())),
+        passport_issue_date: t.Optional(t.Nullable(t.String())),
+        passport_expiry_date: t.Optional(t.Nullable(t.String())),
+        passport_issued_by: t.Optional(t.Nullable(t.String())),
+        place_of_birth: t.Optional(t.Nullable(t.String())),
+        residential_address: t.Optional(t.Nullable(t.String())),
+        passport_scan_url: t.Optional(t.Nullable(t.String())),
+      }))),
       permission_entry_zone: t.Optional(t.Nullable(t.String())),
       permission_issue_date: t.Optional(t.Nullable(t.String())),
       permission_validity_date: t.Optional(t.Nullable(t.String())),
@@ -454,6 +485,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       place_of_birth: updated!.placeOfBirth,
       residential_address: updated!.residentialAddress,
       passport_scan_url: updated!.passportScanUrl,
+      passport_is_active: updated!.passportIsActive,
       permission_entry_zone: updated!.permissionEntryZone,
       permission_issue_date: d(updated!.permissionIssueDate),
       permission_validity_date: d(updated!.permissionValidityDate),
@@ -465,6 +497,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       bank_name: updated!.bankName,
       bank_account: updated!.bankAccount,
       bank_bik: updated!.bankBik,
+      extra_passports: (updated!.extraPassports as any[]) ?? [],
     };
   }, {
     body: t.Object({
@@ -643,6 +676,42 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
   }, {
     body: t.Object({
       file: t.File(),
+    }),
+  })
+  .post('/upload-extra-passport', async ({ carrierProfile, body, set }) => {
+    const status = carrierProfile.verificationStatus ?? 'not_verified';
+    const unlocked = (carrierProfile.unlockedFields as string[]) ?? [];
+    if (['waiting_verification', 'verified', 'request'].includes(status) && !unlocked.includes('passport_add')) {
+      set.status = 403;
+      return { error: 'Нет прав. Отправьте запрос на добавление паспорта.' };
+    }
+    const file = body.file;
+    const index = typeof body.index === 'number' ? body.index : (parseInt(String(body.index || 0), 10) || 0);
+    if (!file || !file.size) {
+      set.status = 400;
+      return { error: 'No file' };
+    }
+    const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
+    if (!['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(ext)) {
+      set.status = 400;
+      return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      set.status = 400;
+      return { error: 'Файл слишком большой (макс. 10 МБ)' };
+    }
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', carrierProfile.id);
+    await mkdir(uploadDir, { recursive: true });
+    const filename = `passport_extra_${index}_${randomUUID()}.${ext}`;
+    const filepath = join(uploadDir, filename);
+    const buf = await file.arrayBuffer();
+    await writeFile(filepath, Buffer.from(buf));
+    const url = `/cabinet/driver/documents/${carrierProfile.id}/${filename}`;
+    return { url };
+  }, {
+    body: t.Object({
+      file: t.File(),
+      index: t.Optional(t.Union([t.Number(), t.String()])),
     }),
   })
   .post('/upload-license', async ({ carrierProfile, body, set }) => {

@@ -40,14 +40,17 @@ export function useDriverAlerts() {
       const add = (
         type: DriverAlert['type'],
         title: string,
-        dateStr: string | null | undefined
+        dateStr: string | null | undefined,
+        idSuffix?: string,
+        isActive: boolean = true
       ) => {
+        if (!isActive) return
         const d = parseDate(dateStr)
         if (!d) return
         const days = daysBetween(now, d)
         if (days <= ALERT_DAYS_THRESHOLD) {
           items.push({
-            id: `${type}-${dateStr}`,
+            id: idSuffix ? `${type}-${idSuffix}` : `${type}-${dateStr}`,
             type,
             title,
             expiryDate: d.toISOString().slice(0, 10),
@@ -57,7 +60,12 @@ export function useDriverAlerts() {
         }
       }
 
-      add('passport', 'Паспорт', data.passport_expiry_date)
+      add('passport', 'Паспорт (1)', data.passport_expiry_date, undefined, data.passport_is_active)
+      // Второй и последующие паспорта — проверяем срок каждого
+      const extra = Array.isArray(data.extra_passports) ? data.extra_passports : []
+      extra.forEach((p: { passport_expiry_date?: string | null; is_active?: boolean }, i: number) => {
+        add('passport', `Паспорт (${i + 2})`, p.passport_expiry_date, `extra-${i}`, p.is_active)
+      })
       add('license', 'Водительское удостоверение', data.license_expiry)
       add('permission', 'Разрешение на въезд', data.permission_validity_date)
 

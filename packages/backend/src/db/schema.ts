@@ -128,6 +128,19 @@ export const carrierProfiles = pgTable('carrier_profiles', {
   placeOfBirth: varchar('place_of_birth', { length: 255 }),
   residentialAddress: text('residential_address'),
   passportScanUrl: text('passport_scan_url'),
+  passportIsActive: boolean('passport_is_active').default(true).notNull(),
+  /** Дополнительные паспорта (после одобрения passport_add). Массив объектов. */
+  extraPassports: jsonb('extra_passports').$type<Array<{
+    passport_series?: string;
+    passport_number?: string;
+    passport_issue_date?: string;
+    passport_expiry_date?: string;
+    passport_issued_by?: string;
+    place_of_birth?: string;
+    residential_address?: string;
+    passport_scan_url?: string;
+    is_active?: boolean;
+  }>>().default([]),
   // 4. Разрешительные документы
   permissionEntryZone: text('permission_entry_zone'), // Разрешение на въезд в зону/страну
   permissionIssueDate: timestamp('permission_issue_date', { withTimezone: true, mode: 'date' }),

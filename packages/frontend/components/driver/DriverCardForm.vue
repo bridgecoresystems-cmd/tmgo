@@ -199,100 +199,256 @@
         </n-tab-pane>
 
         <n-tab-pane name="passport" tab="2. Паспортные данные">
-          <n-form :model="form" label-placement="top" class="form-uniform" style="max-width: 600px; padding-top: 16px;">
-            <div class="passport-row">
-              <n-form-item label="Серия паспорта" class="passport-series">
-                <n-input v-model:value="form.passport_series" placeholder="AB" maxlength="6" :disabled="!isFieldEditable('passport_series')" />
-              </n-form-item>
-              <n-form-item label="Номер паспорта" class="passport-number">
-                <div class="field-with-request">
-                  <n-input v-model:value="form.passport_number" placeholder="1234567" :disabled="!isFieldEditable('passport_number')" />
-                  <n-button v-if="showRequestBtnForPassportSeriesNumber()" quaternary size="small" type="info" :loading="requestingFieldKey === 'passport_series_number'" @click="requestChange('passport_series_number')">Запрос</n-button>
-                  <n-button v-else-if="showApproveBtnForPassportSeriesNumber()" size="small" type="success" :loading="approvingFieldKey === 'passport_series_number'" @click="approveRequestByField('passport_series_number')">Разрешить</n-button>
+          <n-form :model="form" label-placement="left" label-width="180" class="form-uniform form-passport-inline" style="max-width: 700px; padding-top: 16px;">
+            <!-- Паспорт 1: сворачиваемый, когда есть паспорт 2 -->
+            <n-collapse v-if="hasPassport2" class="passport-collapse">
+              <n-collapse-item :title="`Паспорт (1) ${form.passport_series || ''} ${form.passport_number || ''}`.trim() || 'Паспорт (1)'" name="p1" default-expanded>
+                <div class="passport-block-inner">
+                  <n-form-item label="Серия / Номер паспорта">
+                    <div class="passport-series-number-row">
+                      <div class="passport-series-wrap">
+                        <n-input v-model:value="form.passport_series" placeholder="AB" maxlength="6" :disabled="isDriverContext" />
+                      </div>
+                      <span class="passport-sep">/</span>
+                      <div class="passport-number-wrap">
+                        <n-input v-model:value="form.passport_number" placeholder="1234567" :disabled="isDriverContext" />
+                      </div>
+                    </div>
+                  </n-form-item>
+                  <n-form-item v-if="!isDriverContext" label="Статус паспорта">
+                    <n-switch v-model:value="form.passport_is_active">
+                      <template #checked>Активен</template>
+                      <template #unchecked>Неактивен</template>
+                    </n-switch>
+                  </n-form-item>
+                  <n-form-item label="Дата выдачи">
+                    <n-date-picker
+                      v-if="!isDriverContext"
+                      :value="form.passport_issue_date ? new Date(form.passport_issue_date).getTime() : null"
+                      type="date"
+                      clearable
+                      style="width: 100%"
+                      @update:value="(v: number | null) => { form.passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                    />
+                    <n-input v-else :value="form.passport_issue_date" disabled />
+                  </n-form-item>
+                  <n-form-item label="Дата окончания">
+                    <n-date-picker
+                      v-if="!isDriverContext"
+                      :value="form.passport_expiry_date ? new Date(form.passport_expiry_date).getTime() : null"
+                      type="date"
+                      clearable
+                      style="width: 100%"
+                      @update:value="(v: number | null) => { form.passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                    />
+                    <n-input v-else :value="form.passport_expiry_date" disabled />
+                  </n-form-item>
+                  <n-form-item label="Кем выдан">
+                    <n-input v-model:value="form.passport_issued_by" placeholder="МВД Туркменистана" :disabled="isDriverContext" />
+                  </n-form-item>
+                  <n-form-item label="Место рождения">
+                    <n-input v-model:value="form.place_of_birth" placeholder="Ашхабад" :disabled="isDriverContext" />
+                  </n-form-item>
+                  <n-form-item label="Адрес проживания">
+                    <n-input v-model:value="form.residential_address" type="textarea" placeholder="Ашхабад, ул. Гарашсызлык, д. 45" :rows="2" :disabled="isDriverContext" />
+                  </n-form-item>
+                  <n-form-item label="Скан паспорта (PDF/JPG)">
+                    <div class="passport-scan-block">
+                      <div class="passport-scan-upload">
+                        <n-upload
+                          v-if="!isDriverContext"
+                          :default-file-list="passportFileList"
+                          :max="1"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          :custom-request="handlePassportUpload"
+                        >
+                          <n-button>Загрузить PDF или JPG</n-button>
+                        </n-upload>
+                      </div>
+                      <div v-if="form.passport_scan_url" class="scan-preview-row">
+                        <div class="scan-preview" @click="openScanModal(form.passport_scan_url, 'Скан паспорта (1)')">
+                          <img v-if="isImageUrl(form.passport_scan_url)" :src="scanFullUrl(form.passport_scan_url)" alt="Паспорт" class="scan-thumb" />
+                          <div v-else class="scan-thumb scan-thumb-pdf"><span>PDF</span></div>
+                          <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                        </div>
+                        <n-text depth="3" style="font-size: 12px;">{{ isDriverContext ? 'Файл загружен.' : 'Файл загружен. Сохраните форму.' }}</n-text>
+                      </div>
+                    </div>
+                  </n-form-item>
                 </div>
-              </n-form-item>
-            </div>
-            <n-form-item label="Дата выдачи">
-              <div class="field-with-request">
-                <n-date-picker
-                  :value="form.passport_issue_date ? new Date(form.passport_issue_date).getTime() : null"
-                  type="date"
-                  clearable
-                  style="width: 100%"
-                  :disabled="!isFieldEditable('passport_issue_date')"
-                  @update:value="(v: number | null) => { form.passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
-                />
-                <n-button v-if="showRequestBtn('passport_issue_date')" quaternary size="small" type="info" :loading="requestingFieldKey === 'passport_issue_date'" @click="requestChange('passport_issue_date')">Запрос</n-button>
-                <n-button v-else-if="showApproveBtn('passport_issue_date')" size="small" type="success" :loading="approvingFieldKey === 'passport_issue_date'" @click="approveRequestByField('passport_issue_date')">Разрешить</n-button>
+              </n-collapse-item>
+            </n-collapse>
+            <template v-else>
+            <n-form-item label="Серия / Номер паспорта">
+              <div class="passport-series-number-row">
+                <div class="passport-series-wrap">
+                  <n-input v-model:value="form.passport_series" placeholder="AB" maxlength="6" :disabled="!isFieldEditable('passport_series')" />
+                </div>
+                <span class="passport-sep">/</span>
+                <div class="passport-number-wrap">
+                  <n-input v-model:value="form.passport_number" placeholder="1234567" :disabled="!isFieldEditable('passport_number')" />
+                </div>
               </div>
+            </n-form-item>
+            <n-form-item v-if="!isDriverContext" label="Статус паспорта">
+              <n-switch v-model:value="form.passport_is_active">
+                <template #checked>Активен</template>
+                <template #unchecked>Неактивен</template>
+              </n-switch>
+            </n-form-item>
+            <n-form-item label="Дата выдачи">
+              <n-date-picker
+                :value="form.passport_issue_date ? new Date(form.passport_issue_date).getTime() : null"
+                type="date"
+                clearable
+                style="width: 100%"
+                :disabled="!isFieldEditable('passport_issue_date')"
+                @update:value="(v: number | null) => { form.passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+              />
             </n-form-item>
             <n-form-item label="Дата окончания">
-              <div class="field-with-request">
+              <n-date-picker
+                :value="form.passport_expiry_date ? new Date(form.passport_expiry_date).getTime() : null"
+                type="date"
+                clearable
+                style="width: 100%"
+                :disabled="!isFieldEditable('passport_expiry_date')"
+                @update:value="(v: number | null) => { form.passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+              />
+            </n-form-item>
+            <n-form-item label="Кем выдан">
+              <n-input v-model:value="form.passport_issued_by" placeholder="МВД Туркменистана" :disabled="!isFieldEditable('passport_issued_by')" />
+            </n-form-item>
+            <n-form-item label="Место рождения">
+              <n-input v-model:value="form.place_of_birth" placeholder="Ашхабад" :disabled="!isFieldEditable('place_of_birth')" />
+            </n-form-item>
+            <n-form-item label="Адрес проживания">
+              <n-input v-model:value="form.residential_address" type="textarea" placeholder="Ашхабад, ул. Гарашсызлык, д. 45" :rows="2" :disabled="!isFieldEditable('residential_address')" />
+            </n-form-item>
+            <n-form-item label="Скан паспорта (PDF/JPG)">
+              <div class="passport-scan-block">
+                <div class="passport-scan-upload">
+                  <n-upload
+                    :default-file-list="passportFileList"
+                    :max="1"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    :custom-request="handlePassportUpload"
+                    :disabled="!isFieldEditable('passport_scan_url')"
+                  >
+                    <n-button :disabled="!isFieldEditable('passport_scan_url')">Загрузить PDF или JPG</n-button>
+                  </n-upload>
+                </div>
+                <div v-if="form.passport_scan_url" class="scan-preview-row">
+                  <div class="scan-preview" @click="openScanModal(form.passport_scan_url, 'Скан паспорта')">
+                    <img v-if="isImageUrl(form.passport_scan_url)" :src="scanFullUrl(form.passport_scan_url)" alt="Паспорт" class="scan-thumb" />
+                    <div v-else class="scan-thumb scan-thumb-pdf">
+                      <span>PDF</span>
+                    </div>
+                    <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                  </div>
+                  <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму, чтобы закрепить.</n-text>
+                </div>
+              </div>
+            </n-form-item>
+            </template>
+
+            <!-- Паспорт 2 (после одобрения passport_add) -->
+            <template v-if="hasPassport2">
+              <n-divider style="margin: 24px 0 16px;">Паспорт (2)</n-divider>
+              <n-form-item label="Серия / Номер паспорта">
+                <div class="passport-series-number-row">
+                  <div class="passport-series-wrap">
+                    <n-input v-model:value="form.extra_passports[0].passport_series" placeholder="AB" maxlength="6" :disabled="isPassport2Locked" />
+                  </div>
+                  <span class="passport-sep">/</span>
+                  <div class="passport-number-wrap">
+                    <n-input v-model:value="form.extra_passports[0].passport_number" placeholder="1234567" :disabled="isPassport2Locked" />
+                  </div>
+                </div>
+              </n-form-item>
+              <n-form-item v-if="!isDriverContext" label="Статус паспорта">
+                <n-switch v-model:value="form.extra_passports[0].is_active">
+                  <template #checked>Активен</template>
+                  <template #unchecked>Неактивен</template>
+                </n-switch>
+              </n-form-item>
+              <n-form-item label="Дата выдачи">
                 <n-date-picker
-                  :value="form.passport_expiry_date ? new Date(form.passport_expiry_date).getTime() : null"
+                  :value="form.extra_passports[0].passport_issue_date ? new Date(form.extra_passports[0].passport_issue_date).getTime() : null"
                   type="date"
                   clearable
                   style="width: 100%"
-                  :disabled="!isFieldEditable('passport_expiry_date')"
-                  @update:value="(v: number | null) => { form.passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                  :disabled="isPassport2Locked"
+                  @update:value="(v: number | null) => { form.extra_passports[0].passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
                 />
-                <n-button v-if="showRequestBtn('passport_expiry_date')" quaternary size="small" type="info" :loading="requestingFieldKey === 'passport_expiry_date'" @click="requestChange('passport_expiry_date')">Запрос</n-button>
-                <n-button v-else-if="showApproveBtn('passport_expiry_date')" size="small" type="success" :loading="approvingFieldKey === 'passport_expiry_date'" @click="approveRequestByField('passport_expiry_date')">Разрешить</n-button>
-              </div>
-            </n-form-item>
-            <n-form-item label="Кем выдан">
-              <div class="field-with-request">
-                <n-input v-model:value="form.passport_issued_by" placeholder="МВД Туркменистана" :disabled="!isFieldEditable('passport_issued_by')" />
-                <n-button v-if="showRequestBtn('passport_issued_by')" quaternary size="small" type="info" :loading="requestingFieldKey === 'passport_issued_by'" @click="requestChange('passport_issued_by')">Запрос</n-button>
-                <n-button v-else-if="showApproveBtn('passport_issued_by')" size="small" type="success" :loading="approvingFieldKey === 'passport_issued_by'" @click="approveRequestByField('passport_issued_by')">Разрешить</n-button>
-              </div>
-            </n-form-item>
-            <n-form-item label="Место рождения">
-              <div class="field-with-request">
-                <n-input v-model:value="form.place_of_birth" placeholder="Ашхабад" :disabled="!isFieldEditable('place_of_birth')" />
-                <n-button v-if="showRequestBtn('place_of_birth')" quaternary size="small" type="info" :loading="requestingFieldKey === 'place_of_birth'" @click="requestChange('place_of_birth')">Запрос</n-button>
-                <n-button v-else-if="showApproveBtn('place_of_birth')" size="small" type="success" :loading="approvingFieldKey === 'place_of_birth'" @click="approveRequestByField('place_of_birth')">Разрешить</n-button>
-              </div>
-            </n-form-item>
-            <n-form-item label="Адрес проживания">
-              <div class="field-with-request">
-                <n-input v-model:value="form.residential_address" type="textarea" placeholder="Ашхабад, ул. Гарашсызлык, д. 45" :rows="2" :disabled="!isFieldEditable('residential_address')" />
-                <n-button v-if="showRequestBtn('residential_address')" quaternary size="small" type="info" :loading="requestingFieldKey === 'residential_address'" @click="requestChange('residential_address')">Запрос</n-button>
-                <n-button v-else-if="showApproveBtn('residential_address')" size="small" type="success" :loading="approvingFieldKey === 'residential_address'" @click="approveRequestByField('residential_address')">Разрешить</n-button>
-              </div>
-            </n-form-item>
-            <n-form-item label="Скан паспорта (PDF/JPG)">
-              <div class="field-with-request">
-              <n-upload
-                :default-file-list="passportFileList"
-                :max="1"
-                accept=".pdf,.jpg,.jpeg,.png"
-                :custom-request="handlePassportUpload"
-                :disabled="!isFieldEditable('passport_scan_url')"
-              >
-                <n-button :disabled="!isFieldEditable('passport_scan_url')">Загрузить PDF или JPG</n-button>
-              </n-upload>
-              <n-button v-if="showRequestBtn('passport_scan_url')" quaternary size="small" type="info" :loading="requestingFieldKey === 'passport_scan_url'" @click="requestChange('passport_scan_url')">Запрос</n-button>
-              <n-button v-else-if="showApproveBtn('passport_scan_url')" size="small" type="success" :loading="approvingFieldKey === 'passport_scan_url'" @click="approveRequestByField('passport_scan_url')">Разрешить</n-button>
-              </div>
-              <div v-if="form.passport_scan_url" class="scan-preview-row">
-                <div class="scan-preview" @click="openScanModal(form.passport_scan_url, 'Скан паспорта')">
-                  <img v-if="isImageUrl(form.passport_scan_url)" :src="scanFullUrl(form.passport_scan_url)" alt="Паспорт" class="scan-thumb" />
-                  <div v-else class="scan-thumb scan-thumb-pdf">
-                    <span>PDF</span>
+              </n-form-item>
+              <n-form-item label="Дата окончания">
+                <n-date-picker
+                  :value="form.extra_passports[0].passport_expiry_date ? new Date(form.extra_passports[0].passport_expiry_date).getTime() : null"
+                  type="date"
+                  clearable
+                  style="width: 100%"
+                  :disabled="isPassport2Locked"
+                  @update:value="(v: number | null) => { form.extra_passports[0].passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                />
+              </n-form-item>
+              <n-form-item label="Кем выдан">
+                <n-input v-model:value="form.extra_passports[0].passport_issued_by" placeholder="МВД Туркменистана" :disabled="isPassport2Locked" />
+              </n-form-item>
+              <n-form-item label="Место рождения">
+                <n-input v-model:value="form.extra_passports[0].place_of_birth" placeholder="Ашхабад" :disabled="isPassport2Locked" />
+              </n-form-item>
+              <n-form-item label="Адрес проживания">
+                <n-input v-model:value="form.extra_passports[0].residential_address" type="textarea" placeholder="Ашхабад, ул. Гарашсызлык, д. 45" :rows="2" :disabled="isPassport2Locked" />
+              </n-form-item>
+              <n-form-item label="Скан паспорта (PDF/JPG)">
+                <div class="passport-scan-block">
+                  <div class="passport-scan-upload">
+                    <n-upload
+                      :default-file-list="extraPassportFileList"
+                      :max="1"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      :custom-request="handleExtraPassportUpload"
+                      :disabled="isPassport2Locked"
+                    >
+                      <n-button :disabled="isPassport2Locked">Загрузить PDF или JPG</n-button>
+                    </n-upload>
                   </div>
-                  <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                  <div v-if="form.extra_passports[0]?.passport_scan_url" class="scan-preview-row">
+                    <div class="scan-preview" @click.stop="openScanModalPassport2">
+                      <img v-if="isImageUrl(form.extra_passports[0].passport_scan_url!)" :src="scanFullUrl(form.extra_passports[0].passport_scan_url!)" alt="Паспорт 2" class="scan-thumb" />
+                      <div v-else class="scan-thumb scan-thumb-pdf">
+                        <span>PDF</span>
+                      </div>
+                      <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                    </div>
+                    <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму, чтобы закрепить.</n-text>
+                  </div>
                 </div>
-                <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму, чтобы закрепить.</n-text>
-              </div>
-            </n-form-item>
-            <n-space v-if="isDriverContext">
-              <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
-              <n-button type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
-                Отправить на верификацию
-              </n-button>
-            </n-space>
-            <n-button v-else type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+              </n-form-item>
+            </template>
+
+            <div class="passport-actions">
+              <template v-if="isDriverContext">
+                <n-space>
+                  <n-button v-if="isPassportAddEditable && !hasPassport2" quaternary type="primary" size="small" @click="onAddPassport">
+                    + Добавить паспорт
+                  </n-button>
+                  <n-button v-if="showRequestBtnForPassportAdd" quaternary size="small" type="info" :loading="requestingFieldKey === 'passport_add'" @click="requestChange('passport_add')">
+                    Запрос
+                  </n-button>
+                  <n-button v-else-if="showApproveBtnForPassportAdd" size="small" type="success" :loading="approvingFieldKey === 'passport_add'" @click="approveRequestByField('passport_add')">
+                    Разрешить
+                  </n-button>
+                </n-space>
+              </template>
+              <n-space>
+                <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+                <n-button v-if="isDriverContext" type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
+                  Отправить на верификацию
+                </n-button>
+              </n-space>
+            </div>
           </n-form>
         </n-tab-pane>
 
@@ -572,7 +728,8 @@ const FIELD_LABELS: Record<string, string> = {
   phone: 'Телефон', additional_emails: 'Доп. email', company_name: 'Компания', license_number: 'Номер прав',
   passport_series: 'Серия паспорта', passport_number: 'Номер паспорта', passport_series_number: 'Серия и номер паспорта',
   passport_issue_date: 'Дата выдачи паспорта', passport_expiry_date: 'Срок паспорта', passport_issued_by: 'Кем выдан паспорт',
-  place_of_birth: 'Место рождения', residential_address: 'Адрес проживания', passport_scan_url: 'Скан паспорта',
+  place_of_birth: 'Место рождения', residential_address: 'Адрес проживания',   passport_scan_url: 'Скан паспорта',
+  passport_add: 'Добавить паспорт',
 }
 
 function fieldLabel(key: string) {
@@ -606,6 +763,11 @@ const isLocked = computed(() =>
   props.isDriverContext && ['waiting_verification', 'verified', 'request'].includes(verificationStatus.value)
 )
 
+/** Поля второго паспорта недоступны водителю после «Отправить на верификацию». Админ всегда может редактировать. */
+const isPassport2Locked = computed(() =>
+  props.isDriverContext && isLocked.value
+)
+
 const COMBINED_FIELDS: Record<string, string[]> = { passport_series_number: ['passport_series', 'passport_number'] }
 
 function isFieldEditable(fieldKey: string, index?: number) {
@@ -637,14 +799,6 @@ function showRequestBtn(fieldKey: string, index?: number) {
   }
   const key = index === -1 ? `${fieldKey}_add` : index !== undefined ? `${fieldKey}_${index}` : fieldKey
   return !unlockedFields.value.includes(key) && !unlockedFields.value.includes(fieldKey)
-}
-
-function showRequestBtnForPassportSeriesNumber() {
-  return showRequestBtn('passport_series_number')
-}
-
-function showApproveBtnForPassportSeriesNumber() {
-  return showApproveBtn('passport_series_number')
 }
 
 function showRequestBtnForAdd(fieldKey: string) {
@@ -764,6 +918,25 @@ async function handleSubmitForVerification() {
     submittingForVerification.value = false
   }
 }
+
+const hasPassport2 = computed(() => form.extra_passports.length > 0)
+const isPassportAddEditable = () => isAddEditable('passport')
+const showRequestBtnForPassportAdd = () => showRequestBtn('passport_add')
+const showApproveBtnForPassportAdd = () => showApproveBtn('passport_add')
+
+function onAddPassport() {
+  if (!isPassportAddEditable()) return
+  form.extra_passports.push({
+    passport_series: '',
+    passport_number: '',
+    passport_issue_date: null,
+    passport_expiry_date: null,
+    passport_issued_by: '',
+    place_of_birth: '',
+    residential_address: '',
+    passport_scan_url: '',
+  })
+}
 const scanModalVisible = ref(false)
 const scanModalUrl = ref<string | null>(null)
 const scanModalTitle = ref('')
@@ -828,6 +1001,15 @@ function openScanModal(url: string, title: string) {
   centerModal()
   scanModalVisible.value = true
 }
+
+function openScanModalPassport2() {
+  const url = form.extra_passports[0]?.passport_scan_url
+  if (url) {
+    openScanModal(url, 'Скан паспорта (2)')
+  } else {
+    message.warning('Скан второго паспорта не найден')
+  }
+}
 const loadError = ref<string | null>(null)
 const activeTab = ref(props.activeTab)
 watch(() => props.activeTab, (v) => {
@@ -883,6 +1065,39 @@ async function handlePassportUpload({ file, onFinish, onError }: { file: { file:
       body: fd,
     })
     form.passport_scan_url = res.url
+    message.success('Файл загружен. Нажмите «Сохранить».')
+    onFinish()
+  } catch (e: any) {
+    message.error(e?.data?.error || 'Ошибка загрузки')
+    onError(e)
+  }
+}
+
+const extraPassportFileList = computed(() => {
+  const url = form.extra_passports[0]?.passport_scan_url
+  if (!url) return []
+  const fullUrl = url.startsWith('http') ? url : `${props.apiBase}${url}`
+  return [{ id: 'extra-1', name: 'Скан паспорта (2)', status: 'done' as const, url: fullUrl }]
+})
+
+async function handleExtraPassportUpload({ file, onFinish, onError }: { file: { file: File }; onFinish: () => void; onError: (e: Error) => void }) {
+  try {
+    const fd = new FormData()
+    fd.append('file', file.file, file.file.name)
+    fd.append('index', '0')
+    const res = await $fetch<{ url: string }>(`${uploadBaseUrl.value}/upload-extra-passport`, {
+      method: 'POST',
+      credentials: 'include',
+      body: fd,
+    })
+    if (form.extra_passports.length === 0) {
+      form.extra_passports.push({
+        passport_series: '', passport_number: '', passport_issue_date: null, passport_expiry_date: null,
+        passport_issued_by: '', place_of_birth: '', residential_address: '', passport_scan_url: res.url,
+      })
+    } else {
+      form.extra_passports[0] = { ...form.extra_passports[0], passport_scan_url: res.url }
+    }
     message.success('Файл загружен. Нажмите «Сохранить».')
     onFinish()
   } catch (e: any) {
@@ -984,6 +1199,18 @@ const form = reactive({
   place_of_birth: '' as string,
   residential_address: '' as string,
   passport_scan_url: '' as string,
+  passport_is_active: true as boolean,
+  extra_passports: [] as Array<{
+    passport_series?: string;
+    passport_number?: string;
+    passport_issue_date?: string | null;
+    passport_expiry_date?: string | null;
+    passport_issued_by?: string;
+    place_of_birth?: string;
+    residential_address?: string;
+    passport_scan_url?: string;
+    is_active?: boolean;
+  }>,
   bank_name: '' as string,
   bank_account: '' as string,
   bank_bik: '' as string,
@@ -1050,6 +1277,18 @@ function applyProfileData(data: Record<string, any>) {
   form.place_of_birth = data.place_of_birth ?? ''
   form.residential_address = data.residential_address ?? ''
   form.passport_scan_url = data.passport_scan_url ?? ''
+  form.passport_is_active = data.passport_is_active ?? true
+  form.extra_passports = Array.isArray(data.extra_passports) ? data.extra_passports.map((p: any) => ({
+    passport_series: p.passport_series ?? '',
+    passport_number: p.passport_number ?? '',
+    passport_issue_date: p.passport_issue_date ?? null,
+    passport_expiry_date: p.passport_expiry_date ?? null,
+    passport_issued_by: p.passport_issued_by ?? '',
+    place_of_birth: p.place_of_birth ?? '',
+    residential_address: p.residential_address ?? '',
+    passport_scan_url: p.passport_scan_url ?? '',
+    is_active: p.is_active ?? true,
+  })) : []
   form.bank_name = data.bank_name ?? ''
   form.bank_account = data.bank_account ?? ''
   form.bank_bik = data.bank_bik ?? ''
@@ -1071,8 +1310,8 @@ watch(
   { immediate: true }
 )
 
-async function loadProfile() {
-  if (props.initialProfile && Object.keys(props.initialProfile).length) {
+async function loadProfile(forceFetch = false) {
+  if (!forceFetch && props.initialProfile && Object.keys(props.initialProfile).length) {
     applyProfileData(props.initialProfile)
     await loadEditRequests()
     return
@@ -1130,6 +1369,18 @@ function buildSaveBody() {
     place_of_birth: form.place_of_birth || null,
     residential_address: form.residential_address || null,
     passport_scan_url: form.passport_scan_url || null,
+    passport_is_active: form.passport_is_active,
+    extra_passports: form.extra_passports.map((p) => ({
+      passport_series: p.passport_series || null,
+      passport_number: p.passport_number || null,
+      passport_issue_date: p.passport_issue_date || null,
+      passport_expiry_date: p.passport_expiry_date || null,
+      passport_issued_by: p.passport_issued_by || null,
+      place_of_birth: p.place_of_birth || null,
+      residential_address: p.residential_address || null,
+      passport_scan_url: p.passport_scan_url || null,
+      is_active: p.is_active ?? true,
+    })),
     bank_name: form.bank_name || null,
     bank_account: form.bank_account || null,
     bank_bik: form.bank_bik || null,
@@ -1145,6 +1396,8 @@ async function handleSave() {
       body: buildSaveBody(),
     })
     message.success('Карточка сохранена')
+    // После сохранения перезагружаем данные, чтобы обновить все реактивные ссылки и списки файлов
+    await loadProfile(true)
     emit('saved')
   } catch (e: any) {
     message.error(e?.data?.error || 'Ошибка сохранения')
@@ -1233,18 +1486,84 @@ defineExpose({
   min-width: 0;
 }
 
-.passport-row {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
+.form-passport-inline .n-form-item .n-form-item-label {
+  padding-right: 16px;
+}
+.form-passport-inline .n-form-item .n-form-item-blank {
+  flex: 1;
+  min-width: 0;
+}
+.passport-series-number-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+.passport-series-wrap {
+  width: 72px;
+  flex-shrink: 0;
+}
+.passport-series-wrap .n-input {
+  width: 100%;
+}
+.passport-sep {
+  color: var(--n-text-color-3);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.passport-number-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.passport-number-wrap .n-input {
+  width: 100%;
+}
+.passport-scan-block {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
   gap: 16px;
+  flex-wrap: wrap;
 }
-.passport-row .passport-series,
-.passport-row .passport-number {
-  margin-bottom: 0;
+.passport-scan-upload {
+  flex-shrink: 0;
 }
-@media (max-width: 480px) {
-  .passport-row {
-    grid-template-columns: 1fr;
+.passport-scan-block .scan-preview-row {
+  margin-top: 0;
+}
+.passport-collapse {
+  margin-bottom: 16px;
+}
+.passport-collapse .n-collapse-item__header {
+  font-weight: 600;
+}
+.passport-block-inner {
+  padding: 8px 0;
+}
+.passport-block-inner .n-form-item {
+  margin-bottom: 12px;
+}
+.passport-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--n-border-color);
+}
+@media (max-width: 600px) {
+  .form-passport-inline {
+    --n-form-item-label-width: 140px;
+  }
+  .form-passport-inline .n-form-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .form-passport-inline .n-form-item .n-form-item-label {
+    padding-right: 0;
   }
 }
 

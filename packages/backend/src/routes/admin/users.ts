@@ -191,6 +191,8 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       place_of_birth: profile.placeOfBirth,
       residential_address: profile.residentialAddress,
       passport_scan_url: profile.passportScanUrl,
+      passport_is_active: profile.passportIsActive,
+      extra_passports: (profile.extraPassports as any[]) ?? [],
       permission_entry_zone: profile.permissionEntryZone,
       permission_issue_date: d(profile.permissionIssueDate),
       permission_validity_date: d(profile.permissionValidityDate),
@@ -229,7 +231,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       inn: 'inn', address: 'address', passport_series: 'passportSeries', passport_number: 'passportNumber',
       passport_issue_date: 'passportIssueDate', passport_expiry_date: 'passportExpiryDate',
       passport_issued_by: 'passportIssuedBy', place_of_birth: 'placeOfBirth', residential_address: 'residentialAddress',
-      passport_scan_url: 'passportScanUrl', permission_entry_zone: 'permissionEntryZone',
+      passport_scan_url: 'passportScanUrl', passport_is_active: 'passportIsActive', permission_entry_zone: 'permissionEntryZone',
       permission_issue_date: 'permissionIssueDate', permission_validity_date: 'permissionValidityDate',
       medical_certificate: 'medicalCertificate', medical_certificate_scan_url: 'medicalCertificateScanUrl',
       technical_minimum_certificate: 'technicalMinimumCertificate', tachograph_card_number: 'tachographCardNumber',
@@ -247,6 +249,20 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       } else {
         (updateData as any)[dbKey] = val;
       }
+    }
+    if (bodyAny.extra_passports !== undefined) {
+      const arr = Array.isArray(bodyAny.extra_passports) ? bodyAny.extra_passports : [];
+      updateData.extraPassports = arr.map((p: any) => ({
+        passport_series: p.passport_series ?? null,
+        passport_number: p.passport_number ?? null,
+        passport_issue_date: p.passport_issue_date ?? null,
+        passport_expiry_date: p.passport_expiry_date ?? null,
+        passport_issued_by: p.passport_issued_by ?? null,
+        place_of_birth: p.place_of_birth ?? null,
+        residential_address: p.residential_address ?? null,
+        passport_scan_url: p.passport_scan_url ?? null,
+        is_active: p.is_active ?? true,
+      }));
     }
     updateData.updatedAt = new Date();
 
@@ -303,6 +319,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       place_of_birth: t.Optional(t.Nullable(t.String())),
       residential_address: t.Optional(t.Nullable(t.String())),
       passport_scan_url: t.Optional(t.Nullable(t.String())),
+      passport_is_active: t.Optional(t.Nullable(t.Boolean())),
       permission_entry_zone: t.Optional(t.Nullable(t.String())),
       permission_issue_date: t.Optional(t.Nullable(t.String())),
       permission_validity_date: t.Optional(t.Nullable(t.String())),
@@ -314,6 +331,17 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       bank_name: t.Optional(t.Nullable(t.String())),
       bank_account: t.Optional(t.Nullable(t.String())),
       bank_bik: t.Optional(t.Nullable(t.String())),
+      extra_passports: t.Optional(t.Array(t.Object({
+        passport_series: t.Optional(t.Nullable(t.String())),
+        passport_number: t.Optional(t.Nullable(t.String())),
+        passport_issue_date: t.Optional(t.Nullable(t.String())),
+        passport_expiry_date: t.Optional(t.Nullable(t.String())),
+        passport_issued_by: t.Optional(t.Nullable(t.String())),
+        place_of_birth: t.Optional(t.Nullable(t.String())),
+        residential_address: t.Optional(t.Nullable(t.String())),
+        passport_scan_url: t.Optional(t.Nullable(t.String())),
+        is_active: t.Optional(t.Nullable(t.Boolean())),
+      }))),
     }),
   })
   .get('/:id/edit-requests', async ({ params, error }) => {
@@ -467,6 +495,38 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
   }, {
     body: t.Object({
       file: t.File(),
+    }),
+  })
+  .post('/:id/driver-profile/upload-extra-passport', async ({ params, body, set, error }) => {
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const file = body.file;
+    const index = typeof body.index === 'number' ? body.index : (parseInt(String(body.index || 0), 10) || 0);
+    if (!file || !file.size) {
+      set.status = 400;
+      return { error: 'No file' };
+    }
+    const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
+    if (!['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(ext)) {
+      set.status = 400;
+      return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      set.status = 400;
+      return { error: 'Файл слишком большой (макс. 10 МБ)' };
+    }
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', profile.id);
+    await mkdir(uploadDir, { recursive: true });
+    const filename = `passport_extra_${index}_${randomUUID()}.${ext}`;
+    const filepath = join(uploadDir, filename);
+    const buf = await file.arrayBuffer();
+    await writeFile(filepath, Buffer.from(buf));
+    const url = `/cabinet/driver/documents/${profile.id}/${filename}`;
+    return { url };
+  }, {
+    body: t.Object({
+      file: t.File(),
+      index: t.Optional(t.Union([t.Number(), t.String()])),
     }),
   })
   .post('/:id/driver-profile/upload-license', async ({ params, body, set, error }) => {
