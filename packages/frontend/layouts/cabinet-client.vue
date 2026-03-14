@@ -23,6 +23,7 @@
     </n-layout-sider>
 
     <n-layout>
+      <ImpersonateBanner />
       <n-layout-header bordered class="cabinet-header">
         <div class="header-left">
           <n-text strong style="font-size: 16px;">Личный кабинет (Заказчик)</n-text>

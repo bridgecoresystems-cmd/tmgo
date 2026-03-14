@@ -5,6 +5,7 @@ import { Elysia, t } from 'elysia';
 import { db } from '../db';
 import { users, sessions, accounts } from '../db/schema';
 import { eq, and, gt } from 'drizzle-orm';
+import { getImpersonateToken, getUserFromRequest } from '../lib/auth';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -51,26 +52,17 @@ async function createSession(userId: string, request: Request) {
 export const authRoutes = new Elysia({ prefix: '/api/auth' })
 
   // GET /api/auth/get-session
+  // При impersonate возвращает целевого пользователя и isImpersonating: true
   .get('/get-session', async ({ request, set }) => {
-    const token = getToken(request);
-    if (!token) return { session: null, user: null };
+    const user = await getUserFromRequest(request);
+    if (!user) return { session: null, user: null, isImpersonating: false };
 
-    const now = new Date();
-    const [session] = await db
-      .select()
-      .from(sessions)
-      .where(and(eq(sessions.token, token), gt(sessions.expiresAt, now)))
-      .limit(1);
-
-    if (!session) {
-      set.headers['Set-Cookie'] = COOKIE_CLEAR;
-      return { session: null, user: null };
-    }
-
-    const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
-    if (!user) return { session: null, user: null };
-
-    return { session: { id: session.id, expiresAt: session.expiresAt }, user };
+    const isImpersonating = !!getImpersonateToken(request);
+    return {
+      session: { id: 'session', expiresAt: new Date(Date.now() + 86400000) },
+      user,
+      isImpersonating,
+    };
   })
 
   // POST /api/auth/sign-in/email

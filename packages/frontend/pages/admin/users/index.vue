@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { h } from 'vue'
-import { NTag, NButton, NPopconfirm, useMessage } from 'naive-ui'
+import { NTag, NButton, NPopconfirm, NTooltip, useMessage, useDialog } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
@@ -66,6 +66,8 @@ definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 const { apiBase } = useApiBase()
 const { session } = useAuth()
 const message = useMessage()
+const { impersonate } = useImpersonate()
+const dialog = useDialog()
 const search = ref('')
 const verificationFilter = ref<string | null>(null)
 const loading = ref(true)
@@ -145,24 +147,43 @@ const columns: DataTableColumns = [
   {
     title: '',
     key: 'actions',
-    width: 48,
+    width: 96,
     render: (row) => {
       const canDelete = row.id !== session?.user?.id && !isLastAdmin(row);
-      if (!canDelete) return '—';
-      return h(NPopconfirm, {
-        onPositiveClick: () => handleDeactivate(row),
-      }, {
-        trigger: () => h(NButton, {
-          quaternary: true,
-          type: 'error',
-          size: 'small',
-          circle: true,
-          onClick: (e: Event) => e.stopPropagation(),
-        }, { default: () => '×' }),
-        default: () => 'Деактивировать пользователя? Он исчезнет из списка, но данные сохранятся.',
-        positiveText: 'Да',
-        negativeText: 'Отмена',
-      });
+      const canImpersonate = row.role !== 'admin' && row.id !== session?.user?.id;
+      return h('div', { style: 'display: flex; align-items: center; gap: 4px;' }, [
+        canImpersonate
+          ? h(NTooltip, null, {
+              trigger: () => h(NButton, {
+                quaternary: true,
+                type: 'info',
+                size: 'small',
+                circle: true,
+                onClick: (e: Event) => {
+                  e.stopPropagation();
+                  handleImpersonate(row);
+                },
+              }, { default: () => '👤' }),
+              default: () => 'Войти под пользователем',
+            })
+          : null,
+        canDelete
+          ? h(NPopconfirm, {
+              onPositiveClick: () => handleDeactivate(row),
+            }, {
+              trigger: () => h(NButton, {
+                quaternary: true,
+                type: 'error',
+                size: 'small',
+                circle: true,
+                onClick: (e: Event) => e.stopPropagation(),
+              }, { default: () => '×' }),
+              default: () => 'Деактивировать пользователя? Он исчезнет из списка, но данные сохранятся.',
+              positiveText: 'Да',
+              negativeText: 'Отмена',
+            })
+          : null,
+      ].filter(Boolean));
     },
   },
 ]
@@ -256,6 +277,24 @@ async function handleDeactivate(row: { id: string; name?: string; email?: string
   } catch (e: any) {
     message.error(e?.data?.message || e?.message || 'Ошибка')
   }
+}
+
+function handleImpersonate(row: { id: string; name?: string; email?: string; role?: string; driverName?: string }) {
+  const name = row.driverName || row.name || row.email || '—'
+  dialog.warning({
+    title: 'Войти под пользователем',
+    content: `Вы войдёте под учётной записью ${name} (${row.role}). Чтобы вернуться — нажмите баннер в кабинете.`,
+    positiveText: 'Войти',
+    negativeText: 'Отмена',
+    onPositiveClick: async () => {
+      try {
+        await impersonate(row.id)
+        message.success(`Вход под ${name}`)
+      } catch (e: any) {
+        message.error(e?.message || e?.data?.error || 'Ошибка при входе под пользователем')
+      }
+    },
+  })
 }
 
 onMounted(loadUsers)

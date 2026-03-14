@@ -12,6 +12,14 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
         <n-h3 style="margin: 0;">{{ user?.name || user?.email || 'Пользователь' }}</n-h3>
         <n-space>
+          <n-button
+            v-if="user?.role !== 'admin' && user?.isActive"
+            type="info"
+            quaternary
+            @click="handleImpersonate"
+          >
+            👤 Войти под пользователем
+          </n-button>
           <n-tag v-if="!user?.isActive" type="error">Деактивирован</n-tag>
           <n-tag v-else-if="user?.role" :type="roleTagType">{{ user.role }}</n-tag>
           <n-tag v-if="profile?.verification_status === 'verified'" type="success">Верифицирован</n-tag>
@@ -77,13 +85,15 @@
 </template>
 
 <script setup lang="ts">
-import { useMessage } from 'naive-ui'
+import { useMessage, useDialog } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
 const route = useRoute()
 const { apiBase } = useApiBase()
 const message = useMessage()
+const { impersonate } = useImpersonate()
+const dialog = useDialog()
 const loading = ref(true)
 const loadError = ref<string | null>(null)
 const verifying = ref(false)
@@ -161,6 +171,25 @@ async function handleDeletePermanent() {
   } finally {
     deleting.value = false
   }
+}
+
+function handleImpersonate() {
+  if (!user.value?.id) return
+  const name = user.value?.name || user.value?.email || '—'
+  dialog.warning({
+    title: 'Войти под пользователем',
+    content: `Вы войдёте под учётной записью ${name} (${user.value?.role}). Чтобы вернуться — нажмите баннер в кабинете.`,
+    positiveText: 'Войти',
+    negativeText: 'Отмена',
+    onPositiveClick: async () => {
+      try {
+        await impersonate(user.value!.id)
+        message.success(`Вход под ${name}`)
+      } catch (e: any) {
+        message.error(e?.message || e?.data?.error || 'Ошибка при входе под пользователем')
+      }
+    },
+  })
 }
 
 async function handleVerify() {

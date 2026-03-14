@@ -10,6 +10,7 @@ import { db } from './db';
 import { carrierProfiles } from './db/schema';
 import { eq } from 'drizzle-orm';
 import { adminUsersRoutes } from './routes/admin/users';
+import { adminImpersonateRoutes } from './routes/admin/impersonate';
 import { adminMailingRoutes } from './routes/admin/mailing';
 import { adminCitiesRoutes, publicCitiesRoutes } from './routes/admin/cities';
 import { cabinetMailingRoutes } from './routes/cabinet/mailing';
@@ -76,6 +77,7 @@ const app = new Elysia()
   .use(authRoutes)
   .use(publicCitiesRoutes)
   .use(adminUsersRoutes)
+  .use(adminImpersonateRoutes)
   .use(adminMailingRoutes)
   .use(adminCitiesRoutes)
   .use(cabinetMailingRoutes)

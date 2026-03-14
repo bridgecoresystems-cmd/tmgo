@@ -12,10 +12,11 @@ interface AuthUser {
 interface SessionState {
   user: AuthUser | null
   loading: boolean
+  isImpersonating: boolean
 }
 
 // Глобальный реактивный стейт сессии
-const state = reactive<SessionState>({ user: null, loading: true })
+const state = reactive<SessionState>({ user: null, loading: true, isImpersonating: false })
 let initialized = false
 
 export const useAuth = () => {
@@ -24,11 +25,12 @@ export const useAuth = () => {
 
   async function fetchSession() {
     try {
-      const data = await $fetch<{ user: AuthUser | null }>(`${API}/api/auth/get-session`, {
+      const data = await $fetch<{ user: AuthUser | null; isImpersonating?: boolean }>(`${API}/api/auth/get-session`, {
         credentials: 'include',
       })
       if (import.meta.dev) console.log('[useAuth] get-session response:', data?.user ? { ...data.user, image: data.user.image } : null)
       state.user = data?.user ?? null
+      state.isImpersonating = data?.isImpersonating ?? false
     } catch (e) {
       if (import.meta.dev) console.log('[useAuth] get-session error:', e)
       state.user = null
@@ -68,5 +70,13 @@ export const useAuth = () => {
     state.user = null
   }
 
-  return { session, loading: computed(() => state.loading), signIn, signUp, signOut, fetchSession }
+  return {
+    session,
+    loading: computed(() => state.loading),
+    isImpersonating: computed(() => state.isImpersonating),
+    signIn,
+    signUp,
+    signOut,
+    fetchSession,
+  }
 }
