@@ -29,7 +29,7 @@
     </n-layout-sider>
 
     <!-- Main Content Area -->
-    <n-layout>
+    <n-layout content-style="display: flex; flex-direction: column; min-height: 100vh;">
       <n-layout-header bordered class="admin-header">
         <div class="header-left">
           <n-breadcrumb>
@@ -72,7 +72,7 @@
         </div>
       </n-layout-header>
 
-      <n-layout-content class="admin-content-bg">
+      <n-layout-content class="admin-content-bg" style="flex: 1;">
         <div class="page-container">
           <div class="page-header">
             <n-h1 class="page-title">{{ pageTitle }}</n-h1>

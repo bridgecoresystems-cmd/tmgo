@@ -62,7 +62,7 @@
           
           <p class="form-switch">
             Уже зарегистрированы? 
-            <span @click="isSignupMode = false" class="switch-link">Войти</span>
+            <span @click="navigateTo('/auth?mode=login')" class="switch-link">Войти</span>
           </p>
         </form>
       </div>
@@ -102,7 +102,7 @@
           
           <p class="form-switch">
             Нет аккаунта? 
-            <span @click="isSignupMode = true" class="switch-link">Регистрация</span>
+            <span @click="navigateTo('/auth?mode=signup')" class="switch-link">Регистрация</span>
           </p>
         </form>
       </div>
@@ -113,11 +113,16 @@
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+definePageMeta({ layout: 'default' })
+
 const { signIn, signUp } = useAuth()
-const router = useRouter()
+const route = useRoute()
 const message = useMessage()
 
-const isSignupMode = ref(false)
+const isSignupMode = ref(route.query.mode === 'signup')
+watch(() => route.query.mode, (mode) => {
+  isSignupMode.value = mode === 'signup'
+}, { immediate: true })
 const loading = ref(false)
 
 const loginForm = reactive({
@@ -192,25 +197,24 @@ const handleRegister = async () => {
 
 <style scoped>
 .auth-container {
-  min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  background: linear-gradient(135deg, #ff6b4a 0%, #ff8e71 100%);
-  padding: 20px;
+  padding: 20px 20px;
+  /* Без серого фона — белая зона от layout */
 }
 
 .auth-main {
   width: 100%;
   max-width: 450px;
-  background: white;
-  border-radius: 30px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  background: #f5f6f8; /* Серый блок для формы */  
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   position: relative;
-  min-height: 700px;
+  min-height: 520px;
   display: flex;
   flex-direction: column;
+  border: 25px solid #ff6b4a;
 }
 
 #chk {
@@ -223,10 +227,10 @@ const handleRegister = async () => {
   width: 100%;
   height: 100%;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
-  padding: 30px 35px;
+  padding: 25px 35px; /* Уменьшил паддинги */
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Центрируем содержимое по вертикали */
+  justify-content: center; /* Контент к верху */
   box-sizing: border-box;
 }
 
@@ -255,16 +259,16 @@ const handleRegister = async () => {
 }
 
 .form-title {
-  font-size: 24px; /* Немного уменьшил */
+  font-size: 22px; /* Уменьшил заголовок */
   font-weight: 800;
   color: #ff6b4a;
-  margin-bottom: 20px; /* Уменьшил отступ */
+  margin-bottom: 15px; /* Уменьшил отступ */
   text-align: center;
   display: block;
 }
 
 .form-group {
-  margin-bottom: 12px;
+  margin-bottom: 10px; /* Уменьшил отступ между полями */
   width: 100%;
   box-sizing: border-box;
 }
@@ -301,7 +305,7 @@ input:focus, .custom-select:focus {
 
 .btn-submit {
   width: 100%;
-  padding: 12px; /* Уменьшил паддинг */
+  padding: 12px;
   background: #ff6b4a;
   color: white;
   border: none;
@@ -310,7 +314,7 @@ input:focus, .custom-select:focus {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
-  margin-top: 15px; /* Уменьшил отступ */
+  margin-top: 15px;
 }
 
 .btn-submit:hover:not(:disabled) {

@@ -23,17 +23,48 @@
           <n-tag v-if="!user?.isActive" type="error">Деактивирован</n-tag>
           <n-tag v-else-if="user?.role" :type="roleTagType">{{ user.role }}</n-tag>
           <n-tag v-if="profile?.verification_status === 'verified'" type="success">Верифицирован</n-tag>
-          <n-tag v-else-if="profile?.verification_status === 'waiting_verification'" type="warning">Ожидает проверки</n-tag>
+          <n-tag v-else-if="profile?.verification_status === 'submitted' || profile?.verification_status === 'waiting_verification'" type="warning">Ожидает проверки</n-tag>
           <n-tag v-else-if="profile?.verification_status === 'request'" type="info">Запрос</n-tag>
-          <n-tag v-else-if="profile?.verification_status === 'not_verified'" type="default">Не верифицирован</n-tag>
-          <n-button
-            v-if="user?.role === 'driver' && profile && profile?.verification_status !== 'verified'"
-            type="primary"
-            :loading="verifying"
-            @click="handleVerify"
-          >
-            Верифицировать
-          </n-button>
+          <n-tag v-else-if="profile?.verification_status === 'rejected'" type="error">Отклонён</n-tag>
+          <n-tag v-else-if="profile?.verification_status === 'suspended'" type="error">Приостановлен</n-tag>
+          <n-tag v-else-if="profile?.verification_status === 'not_verified' || profile?.verification_status === 'not_submitted'" type="default">Не верифицирован</n-tag>
+          <n-space v-if="user?.role === 'driver' && profile" :size="8">
+            <n-button
+              v-if="canVerify"
+              type="primary"
+              :loading="verifying"
+              @click="handleVerify"
+            >
+              Верифицировать
+            </n-button>
+            <n-button
+              v-if="canReject"
+              type="error"
+              quaternary
+              :loading="rejecting"
+              @click="handleReject"
+            >
+              Отклонить
+            </n-button>
+            <n-button
+              v-if="canSuspend"
+              type="warning"
+              quaternary
+              :loading="suspending"
+              @click="handleSuspend"
+            >
+              Приостановить
+            </n-button>
+            <n-button
+              v-if="canRestore"
+              type="success"
+              quaternary
+              :loading="restoring"
+              @click="handleRestore"
+            >
+              Восстановить
+            </n-button>
+          </n-space>
           <n-button
             v-if="!user?.isActive"
             type="success"
@@ -82,6 +113,30 @@
         </n-text>
       </n-card>
     </template>
+
+    <n-modal v-model:show="rejectModal" preset="card" title="Отклонить верификацию" style="max-width: 450px">
+      <n-form-item label="Причина отклонения (обязательно)">
+        <n-input v-model:value="actionComment" type="textarea" placeholder="Укажите причину..." :rows="3" />
+      </n-form-item>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="rejectModal = false">Отмена</n-button>
+          <n-button type="error" :loading="rejecting" @click="submitReject">Отклонить</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <n-modal v-model:show="suspendModal" preset="card" title="Приостановить водителя" style="max-width: 450px">
+      <n-form-item label="Причина приостановки (обязательно)">
+        <n-input v-model:value="actionComment" type="textarea" placeholder="Укажите причину..." :rows="3" />
+      </n-form-item>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="suspendModal = false">Отмена</n-button>
+          <n-button type="warning" :loading="suspending" @click="submitSuspend">Приостановить</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -98,6 +153,9 @@ const dialog = useDialog()
 const loading = ref(true)
 const loadError = ref<string | null>(null)
 const verifying = ref(false)
+const rejecting = ref(false)
+const suspending = ref(false)
+const restoring = ref(false)
 const activating = ref(false)
 const deleting = ref(false)
 const user = ref<any>(null)
@@ -106,6 +164,14 @@ const formRef = ref<{ loadProfile: () => Promise<void>; handleSave: () => Promis
 
 const loadUrl = computed(() => `${apiBase}/admin/users/${route.params.id}/driver-profile`)
 const saveUrl = computed(() => `${apiBase}/admin/users/${route.params.id}/driver-profile`)
+
+const canVerify = computed(() => {
+  const s = profile.value?.verification_status
+  return s === 'submitted' || s === 'waiting_verification'
+})
+const canReject = computed(() => canVerify.value)
+const canSuspend = computed(() => profile.value?.verification_status === 'verified')
+const canRestore = computed(() => profile.value?.verification_status === 'suspended')
 
 const roleTagType = computed(() => {
   const r = user.value?.role
@@ -196,16 +262,92 @@ function handleImpersonate() {
 async function handleVerify() {
   verifying.value = true
   try {
-    await $fetch(`${apiBase}/admin/users/${route.params.id}/verify`, {
+    await $fetch(`${apiBase}/admin/drivers/${route.params.id}/verify`, {
       method: 'POST',
       credentials: 'include',
+      body: {},
     })
     profile.value = { ...profile.value, is_verified: true, verification_status: 'verified' }
     message.success('Водитель верифицирован')
   } catch (e: any) {
-    message.error(e?.data?.message || e?.message || 'Ошибка верификации')
+    message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка верификации')
   } finally {
     verifying.value = false
+  }
+}
+
+const rejectModal = ref(false)
+const suspendModal = ref(false)
+const actionComment = ref('')
+
+function handleReject() {
+  actionComment.value = ''
+  rejectModal.value = true
+}
+
+async function submitReject() {
+  if (!actionComment.value?.trim()) {
+    message.error('Укажите причину отклонения')
+    return
+  }
+  rejecting.value = true
+  try {
+    await $fetch(`${apiBase}/admin/drivers/${route.params.id}/reject`, {
+      method: 'POST',
+      credentials: 'include',
+      body: { comment: actionComment.value.trim() },
+    })
+    profile.value = { ...profile.value, verification_status: 'rejected' }
+    message.success('Верификация отклонена')
+    rejectModal.value = false
+  } catch (e: any) {
+    message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка')
+  } finally {
+    rejecting.value = false
+  }
+}
+
+function handleSuspend() {
+  actionComment.value = ''
+  suspendModal.value = true
+}
+
+async function submitSuspend() {
+  if (!actionComment.value?.trim()) {
+    message.error('Укажите причину приостановки')
+    return
+  }
+  suspending.value = true
+  try {
+    await $fetch(`${apiBase}/admin/drivers/${route.params.id}/suspend`, {
+      method: 'POST',
+      credentials: 'include',
+      body: { comment: actionComment.value.trim() },
+    })
+    profile.value = { ...profile.value, verification_status: 'suspended' }
+    message.success('Водитель приостановлен')
+    suspendModal.value = false
+  } catch (e: any) {
+    message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка')
+  } finally {
+    suspending.value = false
+  }
+}
+
+async function handleRestore() {
+  restoring.value = true
+  try {
+    await $fetch(`${apiBase}/admin/drivers/${route.params.id}/restore`, {
+      method: 'POST',
+      credentials: 'include',
+      body: {},
+    })
+    profile.value = { ...profile.value, verification_status: 'verified' }
+    message.success('Водитель восстановлен')
+  } catch (e: any) {
+    message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка')
+  } finally {
+    restoring.value = false
   }
 }
 

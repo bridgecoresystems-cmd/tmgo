@@ -10,7 +10,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "seed:admin": "bun run scripts/seed-admin.ts"
+    "seed:admin": "bun run scripts/seed-admin.ts",
+    "migrate:profiles": "bun run scripts/migrate-profiles.ts",
+    "check:expiry": "bun run scripts/document-expiry-check.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",

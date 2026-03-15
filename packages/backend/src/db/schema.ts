@@ -1,5 +1,6 @@
 import {
   pgTable,
+  pgEnum,
   text,
   timestamp,
   uuid,
@@ -11,7 +12,7 @@ import {
   jsonb,
 } from 'drizzle-orm/pg-core';
 
-// --- Better Auth required tables (plural exports, singular SQL names — как в language-school) ---
+// --- Better Auth required tables ---
 
 export const users = pgTable('user', {
   id: text('id').primaryKey(),
@@ -83,7 +84,65 @@ export const cities = pgTable('cities', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-// --- Профили перевозчиков ---
+// ─── ENUMS (новые) ───
+
+export const verificationStatusEnum = pgEnum('verification_status', [
+  'not_submitted',   // Ещё не заполнял карточку
+  'draft',           // Заполняет, ещё не отправил
+  'submitted',       // Отправил на верификацию, ждёт
+  'verified',        // Верифицирован, может работать
+  'rejected',        // Отклонён с комментарием
+  'suspended',       // Временно приостановлен
+]);
+
+export const docTypeEnum = pgEnum('doc_type', [
+  'passport',
+  'drivers_license',
+  'international_drivers_license',
+  'visa',
+  'medical_certificate',
+  'insurance',
+  'tachograph_card',
+  'technical_minimum_cert',
+  'entry_permit',
+  'adr_certificate',
+  'other',
+]);
+
+export const docStatusEnum = pgEnum('doc_status', [
+  'pending_verification',
+  'active',
+  'expired',
+  'revoked',
+  'superseded',
+  'rejected',
+]);
+
+export const citizenshipStatusEnum = pgEnum('citizenship_status', [
+  'active',
+  'revoked',
+]);
+
+export const contactTypeEnum = pgEnum('contact_type', [
+  'phone',
+  'email',
+]);
+
+export const vehicleOwnershipEnum = pgEnum('vehicle_ownership', [
+  'own',
+  'company',
+  'leased',
+]);
+
+export const changeRequestStatusEnum = pgEnum('change_request_status', [
+  'pending',
+  'approved',
+  'rejected',
+  'applied',
+  'cancelled',
+]);
+
+// --- Профили перевозчиков (рефакторинг) ---
 
 export const carrierProfiles = pgTable('carrier_profiles', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -91,35 +150,59 @@ export const carrierProfiles = pgTable('carrier_profiles', {
     .notNull()
     .unique()
     .references(() => users.id, { onDelete: 'cascade' }),
-  // 1. Основная информация
+
+  // ─── IDENTITY FIELDS ───
   surname: text('surname'),
   givenName: text('given_name'),
   patronymic: text('patronymic'),
   dateOfBirth: timestamp('date_of_birth', { withTimezone: true, mode: 'date' }),
-  citizenship: varchar('citizenship', { length: 100 }),
   gender: varchar('gender', { length: 20 }), // male, female
-  status: varchar('status', { length: 30 }), // active, inactive, on_leave, fired
-  employmentCategory: varchar('employment_category', { length: 50 }), // full_time, freelance, leased
-  // Остальные поля
+
+  // ─── OPERATIONAL (admin/dispatcher only) ───
+  accountStatus: text('account_status').default('active'),
+  // 'active' | 'inactive' | 'on_leave' | 'fired'
+  employmentCategory: varchar('employment_category', { length: 50 }),
+  // 'full_time' | 'freelance' | 'leased'
+  isOnline: boolean('is_online').default(false),
+  isOnlineAvailability: boolean('is_online_availability').default(false),
+
+  // ─── COMPANY INFO (admin only) ───
   companyName: text('company_name'),
+  inn: varchar('inn', { length: 50 }),
+  companyAddress: text('company_address'),
+  warehouseBranch: text('warehouse_branch'),
+  responsibleLogistician: text('responsible_logistician'),
+
+  // ─── MISC ───
+  hireSource: varchar('hire_source', { length: 50 }),
+  recruitmentNotes: text('recruitment_notes'),
+  rating: decimal('rating', { precision: 3, scale: 2 }).default('0.00'),
+
+  // ─── VERIFICATION (новый статус) ───
+  verificationStatus: verificationStatusEnum('verification_status').default('not_submitted'),
+  verificationComment: text('verification_comment'),
+  verifiedAt: timestamp('verified_at'),
+  verifiedBy: text('verified_by'),      // FK → admin user id
+  submittedAt: timestamp('submitted_at'),
+
+  // ─── LEGACY FIELDS (оставляем до завершения миграции) ───
+  // После запуска migrate-profiles.ts и проверки — удалить
+  citizenship: varchar('citizenship', { length: 100 }),
+  status: varchar('status', { length: 30 }),
+  phone: text('phone'),
+  additionalEmails: text('additional_emails'),
+  address: text('address'),
   licenseNumber: varchar('license_number', { length: 100 }),
   licenseExpiry: timestamp('license_expiry', { withTimezone: true, mode: 'date' }),
-  // 3. Водительское удостоверение
-  licenseCategories: varchar('license_categories', { length: 50 }), // B, C, D, E
+  licenseCategories: varchar('license_categories', { length: 50 }),
   licenseIssueDate: timestamp('license_issue_date', { withTimezone: true, mode: 'date' }),
   licenseIssuedBy: text('license_issued_by'),
   licenseScanUrl: text('license_scan_url'),
   hasInternationalLicense: boolean('has_international_license'),
   internationalLicenseNumber: varchar('international_license_number', { length: 50 }),
-  internationalLicenseValidity: varchar('international_license_validity', { length: 30 }), // 2022-2027
+  internationalLicenseValidity: varchar('international_license_validity', { length: 30 }),
   lastMedicalExaminationDate: timestamp('last_medical_examination_date', { withTimezone: true, mode: 'date' }),
-  hireSource: varchar('hire_source', { length: 50 }), // recommendation, advertisement, agency
-  attachedDocuments: text('attached_documents'), // JSON or comma-separated
-  phone: text('phone'),
-  additionalEmails: text('additional_emails'),
-  inn: varchar('inn', { length: 50 }),
-  address: text('address'),
-  // 2. Паспортные данные
+  attachedDocuments: text('attached_documents'),
   passportSeries: varchar('passport_series', { length: 20 }),
   passportNumber: varchar('passport_number', { length: 50 }),
   passportIssueDate: timestamp('passport_issue_date', { withTimezone: true, mode: 'date' }),
@@ -129,7 +212,6 @@ export const carrierProfiles = pgTable('carrier_profiles', {
   residentialAddress: text('residential_address'),
   passportScanUrl: text('passport_scan_url'),
   passportIsActive: boolean('passport_is_active').default(true).notNull(),
-  /** Дополнительные паспорта (после одобрения passport_add). Массив объектов. */
   extraPassports: jsonb('extra_passports').$type<Array<{
     passport_series?: string;
     passport_number?: string;
@@ -141,33 +223,180 @@ export const carrierProfiles = pgTable('carrier_profiles', {
     passport_scan_url?: string;
     is_active?: boolean;
   }>>().default([]),
-  // 4. Разрешительные документы
-  permissionEntryZone: text('permission_entry_zone'), // Разрешение на въезд в зону/страну
+  permissionEntryZone: text('permission_entry_zone'),
   permissionIssueDate: timestamp('permission_issue_date', { withTimezone: true, mode: 'date' }),
   permissionValidityDate: timestamp('permission_validity_date', { withTimezone: true, mode: 'date' }),
-  medicalCertificate: text('medical_certificate'), // Nº MC-2025-0123, действует до...
+  medicalCertificate: text('medical_certificate'),
   medicalCertificateScanUrl: text('medical_certificate_scan_url'),
-  technicalMinimumCertificate: varchar('technical_minimum_certificate', { length: 100 }), // Nº TM-2025-0098
-  tachographCardNumber: varchar('tachograph_card_number', { length: 50 }), // Nº TK-567890
-  otherPermits: text('other_permits'), // Страховка, пропуск, допуск ADR и т.д.
+  technicalMinimumCertificate: varchar('technical_minimum_certificate', { length: 100 }),
+  tachographCardNumber: varchar('tachograph_card_number', { length: 50 }),
+  otherPermits: text('other_permits'),
   bankName: text('bank_name'),
   bankAccount: varchar('bank_account', { length: 100 }),
   bankBik: varchar('bank_bik', { length: 20 }),
+
+  // ─── LEGACY VERIFICATION FIELDS ───
   isVerified: boolean('is_verified').default(false).notNull(),
-  verificationStatus: varchar('verification_status', { length: 30 })
-    .$type<'not_verified' | 'waiting_verification' | 'verified' | 'request'>()
-    .default('not_verified')
-    .notNull(),
-  // TODO: использовать для меток «отредактировано» — поля, изменённые админом
   adminEditedFields: jsonb('admin_edited_fields').$type<string[]>().default([]),
-  /** Поля, которые водитель может редактировать после одобрения запроса (при waiting_verification/verified) */
   unlockedFields: jsonb('unlocked_fields').$type<string[]>().default([]),
-  rating: decimal('rating', { precision: 3, scale: 2 }).default('0.00'),
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// --- Транспортные средства ---
+// --- Документы водителя (НОВАЯ — центральная таблица) ---
+
+export const driverDocuments = pgTable('driver_documents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  carrierId: uuid('carrier_id')
+    .notNull()
+    .references(() => carrierProfiles.id, { onDelete: 'cascade' }),
+
+  docType: docTypeEnum('doc_type').notNull(),
+  country: text('country'),
+  series: text('series'),
+  number: text('number'),
+  issuedBy: text('issued_by'),
+  issuedAt: timestamp('issued_at'),
+  expiresAt: timestamp('expires_at'),
+
+  // Для паспортов
+  placeOfBirth: text('place_of_birth'),
+  residentialAddress: text('residential_address'),
+
+  // Для ВУ
+  licenseCategories: text('license_categories'), // 'B,C,D,E'
+
+  // Для разрешений
+  permissionZone: text('permission_zone'),
+
+  // Для всех
+  notes: text('notes'),
+  scanUrl: text('scan_url'),
+
+  // ─── ЖИЗНЕННЫЙ ЦИКЛ ───
+  status: docStatusEnum('status').default('pending_verification'),
+  validFrom: timestamp('valid_from').defaultNow(),
+  validUntil: timestamp('valid_until'),
+  supersededById: uuid('superseded_by_id'), // Ссылка на новую версию
+  rejectionReason: text('rejection_reason'),
+
+  // ─── ВЕРИФИКАЦИЯ ДОКУМЕНТА ───
+  verifiedAt: timestamp('verified_at'),
+  verifiedBy: text('verified_by'), // FK → admin user id
+
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// --- Гражданства водителя (НОВАЯ) ---
+
+export const driverCitizenships = pgTable('driver_citizenships', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  carrierId: uuid('carrier_id')
+    .notNull()
+    .references(() => carrierProfiles.id, { onDelete: 'cascade' }),
+
+  country: text('country').notNull(),
+  acquiredAt: timestamp('acquired_at'),
+  revokedAt: timestamp('revoked_at'),
+  scanUrl: text('scan_url'),
+  status: citizenshipStatusEnum('status').default('active'),
+  verifiedAt: timestamp('verified_at'),
+  verifiedBy: text('verified_by'),
+
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// --- Дополнительные контакты водителя (НОВАЯ) ---
+
+export const driverContacts = pgTable('driver_contacts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  carrierId: uuid('carrier_id')
+    .notNull()
+    .references(() => carrierProfiles.id, { onDelete: 'cascade' }),
+
+  contactType: contactTypeEnum('contact_type').notNull(),
+  value: text('value').notNull(),
+  label: text('label'), // 'Рабочий', 'WhatsApp', 'Экстренный'
+  isActive: boolean('is_active').default(true),
+
+  createdAt: timestamp('created_at').defaultNow(),
+  deletedAt: timestamp('deleted_at'), // Soft delete
+});
+
+// --- ТС водителя с жизненным циклом (НОВАЯ — для snapshot в рейсах) ---
+
+export const driverVehicles = pgTable('driver_vehicles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  carrierId: uuid('carrier_id')
+    .notNull()
+    .references(() => carrierProfiles.id, { onDelete: 'cascade' }),
+
+  plateNumber: text('plate_number').notNull(),
+  vehicleType: text('vehicle_type'), // Тент, реф, изотерм...
+  brand: text('brand'),
+  model: text('model'),
+  year: text('year'),
+  ownership: vehicleOwnershipEnum('ownership'),
+
+  // ─── ЖИЗНЕННЫЙ ЦИКЛ ───
+  assignedFrom: timestamp('assigned_from').defaultNow(),
+  assignedUntil: timestamp('assigned_until'),
+  isActive: boolean('is_active').default(true),
+
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// --- История верификаций профиля (НОВАЯ — лог) ---
+
+export const profileVerificationHistory = pgTable('profile_verification_history', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  carrierId: uuid('carrier_id')
+    .notNull()
+    .references(() => carrierProfiles.id, { onDelete: 'cascade' }),
+
+  action: text('action').notNull(),
+  // 'submitted' | 'verified' | 'rejected' | 'suspended' | 'resubmitted' | 'restored'
+
+  previousStatus: text('previous_status'),
+  newStatus: text('new_status'),
+  comment: text('comment'),
+  performedBy: text('performed_by'),       // user id
+  performedByRole: text('performed_by_role'), // 'driver' | 'admin' | 'system'
+
+  profileSnapshot: jsonb('profile_snapshot'), // Snapshot данных на момент
+
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// --- Запросы на изменение полей (НОВАЯ — заменяет profile_edit_requests) ---
+
+export const profileChangeRequests = pgTable('profile_change_requests', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  carrierId: uuid('carrier_id')
+    .notNull()
+    .references(() => carrierProfiles.id, { onDelete: 'cascade' }),
+
+  fieldKey: text('field_key').notNull(),
+  // 'surname' | 'passport:add' | 'passport:renew' | 'citizenship:add' | etc.
+
+  currentValue: text('current_value'),
+  requestedValue: text('requested_value'),
+  reason: text('reason'),
+
+  status: changeRequestStatusEnum('status').default('pending'),
+  adminComment: text('admin_comment'),
+  resolvedBy: text('resolved_by'),
+  resolvedAt: timestamp('resolved_at'),
+
+  unlockedUntil: timestamp('unlocked_until'), // Поле разблокировано до (7 дней)
+
+  requestedAt: timestamp('requested_at').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// --- Транспортные средства (для заказов/услуг, старая таблица) ---
 
 export const vehicles = pgTable('vehicles', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -211,11 +440,16 @@ export const orders = pgTable('orders', {
   price: decimal('price', { precision: 12, scale: 2 }).notNull(),
   currency: varchar('currency', { length: 3 }).default('USD').notNull(),
   paymentMethod: text('payment_method'),
+  // Snapshot на момент начала рейса
+  snapshotPassportId: uuid('snapshot_passport_id'),   // FK → driver_documents
+  snapshotLicenseId: uuid('snapshot_license_id'),     // FK → driver_documents
+  snapshotVehicleId: uuid('snapshot_vehicle_id'),     // FK → driver_vehicles
+  snapshotCreatedAt: timestamp('snapshot_created_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// --- Отклики перевозчиков на заказ (водитель нажал «Взять» — создаётся отклик, клиент принимает/отклоняет) ---
+// --- Отклики перевозчиков на заказ ---
 
 export const orderResponses = pgTable('order_responses', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -235,7 +469,7 @@ export const orderResponses = pgTable('order_responses', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// --- Услуги перевозчика (driver предлагает маршрут) ---
+// --- Услуги перевозчика ---
 
 export const driverServices = pgTable('driver_services', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -259,13 +493,13 @@ export const driverServices = pgTable('driver_services', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// --- Рассылки (Admin → все пользователи) ---
+// --- Рассылки ---
 
 export const mailingMessages = pgTable('mailing_message', {
   id: serial('id').primaryKey(),
   title: text('title').notNull(),
   content: text('content').notNull(),
-  recipientType: text('recipient_type').notNull().default('all'), // all, client, driver
+  recipientType: text('recipient_type').notNull().default('all'),
   createdById: text('created_by_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -289,7 +523,7 @@ export const mailingRecipients = pgTable('mailing_recipient', {
   receivedAt: timestamp('received_at').defaultNow().notNull(),
 });
 
-// --- Запросы водителя на изменение полей (при waiting_verification/verified) ---
+// --- LEGACY: Запросы водителя на изменение полей (старая таблица, оставляем для совместимости) ---
 
 export const profileEditRequests = pgTable('profile_edit_requests', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -302,7 +536,6 @@ export const profileEditRequests = pgTable('profile_edit_requests', {
     .default('pending')
     .notNull(),
   driverComment: text('driver_comment'),
-  /** Значение поля на момент запроса (что меняют/удаляют) или "(добавление)" */
   fieldValue: text('field_value'),
   requestedAt: timestamp('requested_at').defaultNow().notNull(),
   resolvedAt: timestamp('resolved_at', { withTimezone: true, mode: 'date' }),

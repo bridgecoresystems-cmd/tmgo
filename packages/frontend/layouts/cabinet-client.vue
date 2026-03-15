@@ -22,7 +22,7 @@
       />
     </n-layout-sider>
 
-    <n-layout>
+    <n-layout content-style="display: flex; flex-direction: column; min-height: 100vh;">
       <ImpersonateBanner />
       <n-layout-header bordered class="cabinet-header">
         <div class="header-left">
@@ -51,11 +51,15 @@
         </div>
       </n-layout-header>
 
-      <n-layout-content class="cabinet-content">
+      <n-layout-content class="cabinet-content" style="flex: 1;">
         <div class="content-container">
           <slot />
         </div>
       </n-layout-content>
+
+      <n-layout-footer bordered class="cabinet-footer">
+        &copy; 2026 BridgeCore Systems | TMGO Logistics Platform
+      </n-layout-footer>
     </n-layout>
   </n-layout>
 
@@ -156,5 +160,15 @@ async function handleUserSelect(key: string) {
   height: 28px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.cabinet-footer {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #999;
+  font-size: 12px;
 }
 </style>

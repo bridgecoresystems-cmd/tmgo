@@ -1,13 +1,13 @@
 <template>
-  <n-layout position="absolute">
+  <n-layout position="absolute" content-style="display: flex; flex-direction: column; min-height: 100vh;">
     <n-layout-header bordered class="header">
       <div class="header-content">
         <div class="logo-container" @click="navigateTo('/')">
           <img src="/images/logo.png" alt="tmGo Logo" class="logo-img" />
         </div>
         <n-space v-if="!session?.user">
-          <n-button quaternary @click="navigateTo('/auth')">Войти</n-button>
-          <n-button type="primary" @click="navigateTo('/auth')">Регистрация</n-button>
+          <n-button quaternary @click="navigateTo('/auth?mode=login')">Войти</n-button>
+          <n-button type="primary" @click="navigateTo('/auth?mode=signup')">Регистрация</n-button>
         </n-space>
         <n-space v-else>
           <n-dropdown :options="userOptions" @select="handleUserSelect">
@@ -16,7 +16,7 @@
         </n-space>
       </div>
     </n-layout-header>
-    <n-layout-content class="main-content">
+    <n-layout-content class="main-content" style="flex: 1;">
       <slot />
     </n-layout-content>
     <n-layout-footer bordered class="footer">

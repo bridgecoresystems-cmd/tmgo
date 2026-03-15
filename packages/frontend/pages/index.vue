@@ -114,6 +114,17 @@
 </template>
 
 <script setup lang="ts">
+const { session, loading } = useAuth()
+
+// Автоматический редирект в кабинет для авторизованных (после загрузки сессии)
+watch([session, loading], () => {
+  if (loading.value) return
+  const role = session.value?.user?.role
+  if (role === 'driver') navigateTo('/cabinet/driver')
+  else if (role === 'client') navigateTo('/cabinet/client')
+  else if (role === 'admin') navigateTo('/admin')
+}, { immediate: true })
+
 const advantages = [
   { title: 'Возмещение НДС', description: 'Если вы работаете по системе общего налогообложения, то можете возмещать НДС.' },
   { title: 'Настройка лимитов', description: 'По адресам и геозонам, времени и дням недели.' },

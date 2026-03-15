@@ -866,18 +866,28 @@ function closeAddRequestModal() {
   addRequestValue.value = ''
 }
 
+const FIELD_KEY_MAP: Record<string, string> = {
+  passport_add: 'passport:add',
+  citizenship_add: 'citizenship:add',
+  additional_emails_add: 'identity_correction',
+  phone_add: 'identity_correction',
+}
+
 async function requestChange(fieldKey: string, requestedValue?: string) {
   requestingFieldKey.value = fieldKey
   try {
-    const base = props.loadUrl.replace(/\/$/, '')
-    const body: { field_key: string; requested_value?: string } = { field_key: fieldKey }
+    const mappedKey = FIELD_KEY_MAP[fieldKey] || fieldKey
+    const base = props.apiBase
+    const body: { field_key: string; reason: string; requested_value?: string } = {
+      field_key: mappedKey,
+      reason: requestedValue?.trim() || 'Запрос на изменение',
+    }
     if (requestedValue?.trim()) body.requested_value = requestedValue.trim()
-    const res = await $fetch<{ verification_status?: string }>(`${base}/change-request`, {
+    await $fetch(`${base}/cabinet/driver/change-requests`, {
       method: 'POST',
       credentials: 'include',
       body,
     })
-    if (res?.verification_status) verificationStatus.value = res.verification_status
     message.success('Запрос отправлен. Ожидайте одобрения администратора.')
     await loadEditRequests()
     emit('saved')

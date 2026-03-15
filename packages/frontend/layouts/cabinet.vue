@@ -25,7 +25,7 @@
     </n-layout-sider>
 
     <!-- Main -->
-    <n-layout>
+    <n-layout content-style="display: flex; flex-direction: column; min-height: 100vh;">
       <n-layout-header bordered class="cabinet-header">
         <div class="header-left">
           <n-text strong style="font-size: 16px;">Личный кабинет {{ roleLabel }}</n-text>
@@ -43,11 +43,15 @@
         </div>
       </n-layout-header>
 
-      <n-layout-content class="cabinet-content">
+      <n-layout-content class="cabinet-content" style="flex: 1;">
         <div class="content-container">
           <slot />
         </div>
       </n-layout-content>
+
+      <n-layout-footer bordered class="cabinet-footer">
+        &copy; 2026 BridgeCore Systems | TMGO Logistics Platform
+      </n-layout-footer>
     </n-layout>
   </n-layout>
 </template>
@@ -143,5 +147,15 @@ async function handleUserSelect(key: string) {
 .content-container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.cabinet-footer {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #999;
+  font-size: 12px;
 }
 </style>

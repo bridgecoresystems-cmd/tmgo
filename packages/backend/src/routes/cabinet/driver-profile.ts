@@ -3,8 +3,9 @@ import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
 import { db } from '../../db';
-import { carrierProfiles, profileEditRequests } from '../../db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { carrierProfiles, profileEditRequests, driverDocuments, driverCitizenships, profileVerificationHistory } from '../../db/schema';
+import { eq, and, desc, inArray } from 'drizzle-orm';
+import { getUnlockedKeys } from '../../lib/field-access';
 import { getUserFromRequest } from '../../lib/auth';
 
 const EDITABLE_FIELD_KEYS = [
@@ -144,6 +145,9 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
   })
   .get('/', async ({ user, carrierProfile }) => {
     const d = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
+    const legacyUnlocked = (carrierProfile.unlockedFields as string[]) ?? [];
+    const changeRequestUnlocked = await getUnlockedKeys(carrierProfile.id);
+    const unlocked_fields = [...new Set([...legacyUnlocked, ...changeRequestUnlocked])];
     return {
       id: carrierProfile.id,
       // 1. Основная информация
@@ -200,15 +204,42 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       bank_account: carrierProfile.bankAccount,
       bank_bik: carrierProfile.bankBik,
       is_verified: carrierProfile.isVerified,
+      is_online: carrierProfile.isOnline ?? false,
       verification_status: carrierProfile.verificationStatus ?? 'not_verified',
-      unlocked_fields: (carrierProfile.unlockedFields as string[]) ?? [],
+      unlocked_fields,
       rating: carrierProfile.rating,
       updated_at: carrierProfile.updatedAt ? carrierProfile.updatedAt.toISOString().slice(0, 10) : null,
     };
   })
   .get('/verification-status', async ({ carrierProfile }) => {
+    const vStatus = carrierProfile.verificationStatus ?? 'not_verified';
+    const LOCKED = ['submitted', 'verified', 'suspended', 'waiting_verification', 'request'];
+    const can_edit = !LOCKED.includes(vStatus);
+
+    // missing_fields — проверяем новые таблицы + legacy
+    const missing: string[] = [];
+    if (!carrierProfile.surname?.trim()) missing.push('surname');
+    if (!carrierProfile.givenName?.trim()) missing.push('given_name');
+    if (!carrierProfile.dateOfBirth) missing.push('date_of_birth');
+    if (!carrierProfile.gender?.trim()) missing.push('gender');
+
+    const docs = await db.select({ docType: driverDocuments.docType }).from(driverDocuments)
+      .where(and(eq(driverDocuments.carrierId, carrierProfile.id), inArray(driverDocuments.status, ['active', 'pending_verification'])));
+    const hasPassport = docs.some((d) => d.docType === 'passport');
+    const hasLicense = docs.some((d) => d.docType === 'drivers_license');
+    if (!hasPassport) missing.push('passport');
+    if (!hasLicense) missing.push('drivers_license');
+
+    const citizenships = await db.select().from(driverCitizenships)
+      .where(and(eq(driverCitizenships.carrierId, carrierProfile.id), eq(driverCitizenships.status, 'active')));
+    if (citizenships.length === 0 && !carrierProfile.citizenship?.trim()) missing.push('citizenship');
+
     return {
-      verification_status: carrierProfile.verificationStatus ?? 'not_verified',
+      status: vStatus,
+      submitted_at: carrierProfile.submittedAt ? new Date(carrierProfile.submittedAt).toISOString().slice(0, 10) : null,
+      comment: carrierProfile.verificationComment ?? null,
+      can_edit,
+      missing_fields: missing,
       unlocked_fields: (carrierProfile.unlockedFields as string[]) ?? [],
     };
   })
@@ -266,11 +297,13 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
   })
   .patch('/', async ({ carrierProfile, body, set }) => {
     const status = carrierProfile.verificationStatus ?? 'not_verified';
-    const unlocked = (carrierProfile.unlockedFields as string[]) ?? [];
+    const legacyUnlocked = (carrierProfile.unlockedFields as string[]) ?? [];
+    const changeRequestUnlocked = await getUnlockedKeys(carrierProfile.id);
+    const unlocked = [...legacyUnlocked, ...changeRequestUnlocked];
 
     let updateData = buildProfileUpdate(body as Record<string, unknown>);
 
-    if (['waiting_verification', 'verified', 'request'].includes(status)) {
+    if (['waiting_verification', 'verified', 'request', 'submitted', 'suspended'].includes(status)) {
       const allowedKeys = new Set(unlocked);
       const dbToFieldKey: Record<string, string> = {
         surname: 'surname', givenName: 'given_name', patronymic: 'patronymic', dateOfBirth: 'date_of_birth',
@@ -435,11 +468,76 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       bank_bik: t.Optional(t.Nullable(t.String())),
     }),
   })
+  .patch('/online-status', async ({ carrierProfile, body }) => {
+    const isOnline = (body as { is_online?: boolean }).is_online ?? false;
+    const [updated] = await db
+      .update(carrierProfiles)
+      .set({ isOnline, updatedAt: new Date() })
+      .where(eq(carrierProfiles.id, carrierProfile.id))
+      .returning();
+    return { is_online: updated!.isOnline };
+  }, {
+    body: t.Object({
+      is_online: t.Boolean(),
+    }),
+  })
   .post('/submit-for-verification', async ({ carrierProfile, body, set }) => {
+    const prevStatus = carrierProfile.verificationStatus ?? 'not_submitted';
+    const canSubmit = ['not_submitted', 'draft', 'not_verified'].includes(prevStatus);
+    if (!canSubmit) {
+      set.status = 400;
+      return { error: 'Для повторной отправки используйте /resubmit' };
+    }
     const updateData = buildProfileUpdate(body as Record<string, unknown>);
     updateData.updatedAt = new Date();
-    updateData.verificationStatus = 'waiting_verification';
-    updateData.unlockedFields = []; // сброс при новой отправке
+    updateData.verificationStatus = 'submitted';
+    updateData.submittedAt = new Date();
+    (updateData as any).unlockedFields = []; // сброс при новой отправке
+
+    // Синхронизация legacy → driver_documents/driver_citizenships (если водитель заполнил только форму)
+    const merged = { ...carrierProfile, ...updateData } as typeof carrierProfile;
+    const existingDocs = await db.select({ docType: driverDocuments.docType }).from(driverDocuments).where(eq(driverDocuments.carrierId, carrierProfile.id));
+    const hasPassport = existingDocs.some((d) => d.docType === 'passport');
+    const hasLicense = existingDocs.some((d) => d.docType === 'drivers_license');
+    if (!hasPassport && (merged.passportSeries || merged.passportNumber)) {
+      await db.insert(driverDocuments).values({
+        carrierId: carrierProfile.id,
+        docType: 'passport',
+        series: merged.passportSeries ?? null,
+        number: merged.passportNumber ?? null,
+        issuedBy: merged.passportIssuedBy ?? null,
+        issuedAt: merged.passportIssueDate ?? null,
+        expiresAt: merged.passportExpiryDate ?? null,
+        placeOfBirth: merged.placeOfBirth ?? null,
+        residentialAddress: merged.residentialAddress ?? null,
+        scanUrl: merged.passportScanUrl ?? null,
+        status: 'pending_verification',
+      });
+    }
+    if (!hasLicense && merged.licenseNumber) {
+      await db.insert(driverDocuments).values({
+        carrierId: carrierProfile.id,
+        docType: 'drivers_license',
+        number: merged.licenseNumber,
+        issuedBy: merged.licenseIssuedBy ?? null,
+        issuedAt: merged.licenseIssueDate ?? null,
+        expiresAt: merged.licenseExpiry ?? null,
+        licenseCategories: merged.licenseCategories ?? null,
+        scanUrl: merged.licenseScanUrl ?? null,
+        status: 'pending_verification',
+      });
+    }
+    const existingCitizenships = await db.select().from(driverCitizenships).where(eq(driverCitizenships.carrierId, carrierProfile.id));
+    const citizenshipList = (merged.citizenship ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    for (const country of citizenshipList) {
+      if (!existingCitizenships.some((c) => c.country === country)) {
+        await db.insert(driverCitizenships).values({
+          carrierId: carrierProfile.id,
+          country,
+          status: 'active',
+        });
+      }
+    }
 
     const [updated] = await db
       .update(carrierProfiles)
@@ -447,10 +545,20 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       .where(eq(carrierProfiles.id, carrierProfile.id))
       .returning();
 
+    await db.insert(profileVerificationHistory).values({
+      carrierId: carrierProfile.id,
+      action: 'submitted',
+      previousStatus: prevStatus,
+      newStatus: 'submitted',
+      performedBy: carrierProfile.userId,
+      performedByRole: 'driver',
+    });
+
     const d = (x: Date | null) => (x ? x.toISOString().slice(0, 10) : null);
     return {
       success: true,
-      verification_status: 'waiting_verification',
+      verification_status: 'submitted',
+      submitted_at: updated!.submittedAt ? new Date(updated!.submittedAt).toISOString().slice(0, 10) : null,
       id: updated!.id,
       surname: updated!.surname,
       given_name: updated!.givenName,
@@ -546,6 +654,50 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       bank_account: t.Optional(t.Nullable(t.String())),
       bank_bik: t.Optional(t.Nullable(t.String())),
     }),
+  })
+  .post('/resubmit', async ({ carrierProfile, body, set }) => {
+    const vStatus = carrierProfile.verificationStatus ?? 'not_verified';
+    if (vStatus !== 'rejected') {
+      set.status = 400;
+      return { error: 'Повторно отправить можно только после отклонения' };
+    }
+    const prevStatus = vStatus;
+    const updateData = buildProfileUpdate((body ?? {}) as Record<string, unknown>);
+    updateData.updatedAt = new Date();
+    updateData.verificationStatus = 'submitted';
+    updateData.submittedAt = new Date();
+    (updateData as any).verificationComment = null;
+    (updateData as any).unlockedFields = [];
+
+    const [updated] = await db
+      .update(carrierProfiles)
+      .set(updateData as any)
+      .where(eq(carrierProfiles.id, carrierProfile.id))
+      .returning();
+
+    await db.insert(profileVerificationHistory).values({
+      carrierId: carrierProfile.id,
+      action: 'resubmitted',
+      previousStatus: prevStatus,
+      newStatus: 'submitted',
+      performedBy: carrierProfile.userId,
+      performedByRole: 'driver',
+    });
+
+    return {
+      success: true,
+      verification_status: 'submitted',
+      submitted_at: updated!.submittedAt ? new Date(updated!.submittedAt).toISOString().slice(0, 10) : null,
+    };
+  }, {
+    body: t.Optional(t.Object({
+      surname: t.Optional(t.Nullable(t.String())),
+      given_name: t.Optional(t.Nullable(t.String())),
+      patronymic: t.Optional(t.Nullable(t.String())),
+      date_of_birth: t.Optional(t.Nullable(t.String())),
+      citizenship: t.Optional(t.Nullable(t.String())),
+      gender: t.Optional(t.Nullable(t.String())),
+    })),
   })
   .post('/change-request', async ({ carrierProfile, body, set }) => {
     const status = carrierProfile.verificationStatus ?? 'not_verified';
@@ -671,7 +823,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/documents/${carrierProfile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${carrierProfile.id}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -706,7 +858,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/documents/${carrierProfile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${carrierProfile.id}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -735,7 +887,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/documents/${carrierProfile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${carrierProfile.id}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -763,7 +915,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/documents/${carrierProfile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${carrierProfile.id}/${filename}`;
     return { url };
   }, {
     body: t.Object({

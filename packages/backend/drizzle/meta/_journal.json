@@ -99,6 +99,34 @@
       "when": 1773266800000,
       "tag": "0014_profile_edit_requests_field_value",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1773266900000,
+      "tag": "0015_extra_passports",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1773267000000,
+      "tag": "0016_passport_is_active",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1773267100000,
+      "tag": "0017_driver_card_v2_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1773267200000,
+      "tag": "0018_carrier_profiles_missing_columns",
+      "breakpoints": true
     }
   ]
 }

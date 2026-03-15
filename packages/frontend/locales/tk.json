@@ -1,0 +1,88 @@
+{
+  "hero": {
+    "title": "Hukukly şahslar üçin ýük daşamak",
+    "subtitle": "Kompaniýa üçin peýdaly ýük daşamagy guramaň"
+  },
+  "form": {
+    "title": "Ýönelişi saýlaň",
+    "fromPlaceholder": "Nireden",
+    "toPlaceholder": "Nirä",
+    "submit": "Talap goýuň"
+  },
+  "advantages": {
+    "title": "Hyzmat üstünlikleri",
+    "items": {
+      "vat": {
+        "title": "KDW dikeldiş",
+        "description": "Umumy salgyt ulgamyny ulanyan bolsaňyz, KDW dikeldip alyp bilersiňiz."
+      },
+      "limits": {
+        "title": "Çäkleri sazlaň",
+        "description": "Salgylar we geo zona boýunça, wagt we hepde günleri boýunça."
+      },
+      "cabinet": {
+        "title": "Amatly şahsy kabinet",
+        "description": "Sargytlary rugsat ediň, balansy dolduryň, işgärlere giriş açyň."
+      },
+      "fast": {
+        "title": "Çalt ýerine ýetiriş",
+        "description": "Ortaça ýük maşyny gelmegi — 10 minut."
+      },
+      "loaders": {
+        "title": "Ýük daşamak kömegi",
+        "description": "Ağyr ýükleri ýüklemäge we düşürmäge kömek ederler."
+      },
+      "insurance": {
+        "title": "Sugurta",
+        "description": "Daşamak wagtynda ýük 500 000 ₽ çenli sugurtalanýar."
+      }
+    }
+  },
+  "cabinet": {
+    "title": "Dolandyryş merkeziňiz — şahsy kabinet",
+    "description": "Şahsy kabinetiňizde iberiş sargyt edip bilersiňiz ýa-da işgärleriňize korporatiw hasapdan eltip bermegi tölemäge mümkinçilik açyp bilersiňiz.",
+    "button": "Kabinete giriň"
+  },
+  "steps": {
+    "title": "Biziň işleýş usuly",
+    "items": {
+      "register": {
+        "title": "Hasaba alyň",
+        "description": "Şahsy kabinet dörediň we balansy dolduryň."
+      },
+      "order": {
+        "title": "Sargyt dörediň",
+        "description": "Kabinetde ýa-da programma arkaly talap goýuň."
+      },
+      "documents": {
+        "title": "Resminamalary alyň",
+        "description": "Ýapyjy resminamalar kabinetde elýeterli bolar."
+      }
+    }
+  },
+  "services": {
+    "title": "Biziň hyzmatlarymyz",
+    "items": {
+      "office": {
+        "title": "Ofisi göçürmek",
+        "description": "Ofis mebeli we tehnikany daşarys."
+      },
+      "warehouse": {
+        "title": "Ambardan eltip bermek",
+        "description": "Islendik agramly zatlary ýükler we alarys."
+      },
+      "intercity": {
+        "title": "Şäherler arasy",
+        "description": "Bir şäherden alarys we beýleki şähere eltip bereris."
+      },
+      "customers": {
+        "title": "Müşterilere eltip bermek",
+        "description": "Müşterileriňize islendik ýükleri eltip bereris."
+      }
+    }
+  },
+  "meta": {
+    "title": "tmGo — Iş platformasy",
+    "description": "Köp regionly ýük daşamak platformasy. Sargytçylary we daşamakçylary birleşdirýäris."
+  }
+}

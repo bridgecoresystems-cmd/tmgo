@@ -19,6 +19,12 @@ import { cabinetDriverVehiclesRoutes } from './routes/cabinet/driver-vehicles';
 import { cabinetDriverOrdersRoutes } from './routes/cabinet/driver-orders';
 import { cabinetDriverServicesRoutes } from './routes/cabinet/driver-services';
 import { cabinetDriverProfileRoutes } from './routes/cabinet/driver-profile';
+import { cabinetDriverCitizenshipsRoutes } from './routes/cabinet/driver-citizenships';
+import { cabinetDriverContactsRoutes } from './routes/cabinet/driver-contacts';
+import { cabinetDriverDocumentsRoutes } from './routes/cabinet/driver-documents';
+import { cabinetDriverChangeRequestsRoutes } from './routes/cabinet/driver-change-requests';
+import { adminChangeRequestsRoutes } from './routes/admin/change-requests';
+import { adminDriversVerifyRoutes } from './routes/admin/drivers-verify';
 import { cabinetClientServicesRoutes } from './routes/cabinet/client-services';
 import { cabinetChatRoutes } from './routes/cabinet/chat';
 import { cabinetProfileRoutes } from './routes/cabinet/profile';
@@ -48,7 +54,7 @@ const app = new Elysia()
     set.headers['Content-Type'] = result.contentType;
     return result.buf;
   })
-  .get('/cabinet/driver/documents/:carrierId/:filename', async ({ request, params, set }) => {
+  .get('/cabinet/driver/document-files/:carrierId/:filename', async ({ request, params, set }) => {
     const user = await getUserFromRequest(request);
     if (!user) {
       set.status = 401;
@@ -77,6 +83,8 @@ const app = new Elysia()
   .use(authRoutes)
   .use(publicCitiesRoutes)
   .use(adminUsersRoutes)
+  .use(adminChangeRequestsRoutes)
+  .use(adminDriversVerifyRoutes)
   .use(adminImpersonateRoutes)
   .use(adminMailingRoutes)
   .use(adminCitiesRoutes)
@@ -85,6 +93,10 @@ const app = new Elysia()
   .use(cabinetClientServicesRoutes)
   .use(cabinetDriverVehiclesRoutes)
   .use(cabinetDriverProfileRoutes)
+  .use(cabinetDriverCitizenshipsRoutes)
+  .use(cabinetDriverContactsRoutes)
+  .use(cabinetDriverDocumentsRoutes)
+  .use(cabinetDriverChangeRequestsRoutes)
   .use(cabinetDriverOrdersRoutes)
   .use(cabinetDriverServicesRoutes)
   .use(cabinetChatRoutes)

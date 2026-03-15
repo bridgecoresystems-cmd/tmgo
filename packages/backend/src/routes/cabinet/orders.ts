@@ -3,6 +3,7 @@ import { db } from '../../db';
 import { orders, cities, orderResponses, carrierProfiles, vehicles, users } from '../../db/schema';
 import { eq, desc, and, ne } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
+import { createTripSnapshot } from '../../lib/trip-snapshot';
 
 export const cabinetOrdersRoutes = new Elysia({ prefix: '/cabinet/orders' })
   .derive(async ({ request, set }) => {
@@ -196,11 +197,17 @@ export const cabinetOrdersRoutes = new Elysia({ prefix: '/cabinet/orders' })
       return { error: 'Response not found' };
     }
 
+    const snapshot = await createTripSnapshot(resp.carrierId);
+
     await db.transaction(async (tx) => {
       await tx.update(orders).set({
         carrierId: resp.carrierId,
         vehicleId: resp.vehicleId,
         status: 'ACCEPTED',
+        snapshotPassportId: snapshot.passportId,
+        snapshotLicenseId: snapshot.driversLicenseId,
+        snapshotVehicleId: snapshot.vehicleId,
+        snapshotCreatedAt: snapshot.snapshotAt,
         updatedAt: new Date(),
       }).where(eq(orders.id, params.id));
       await tx.update(orderResponses).set({ status: 'ACCEPTED' }).where(eq(orderResponses.id, params.responseId));

@@ -22,7 +22,7 @@
       />
     </n-layout-sider>
 
-    <n-layout>
+    <n-layout content-style="display: flex; flex-direction: column; min-height: 100vh;">
       <ImpersonateBanner />
       <n-layout-header bordered class="cabinet-header">
         <div class="header-left">
@@ -30,6 +30,7 @@
         </div>
         <div class="header-right">
           <n-space align="center" style="gap: 12px">
+            <DriverOnlineStatusToggle v-if="session?.user?.role === 'driver'" />
             <VerificationBadge v-if="verificationStatus" :status="verificationStatus" />
             <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
               <n-space align="center" style="cursor: pointer">
@@ -54,11 +55,15 @@
         </div>
       </n-layout-header>
 
-      <n-layout-content class="cabinet-content">
+      <n-layout-content class="cabinet-content" style="flex: 1;">
         <div class="content-container">
           <slot />
         </div>
       </n-layout-content>
+
+      <n-layout-footer bordered class="cabinet-footer">
+        &copy; 2026 BridgeCore Systems | TMGO Logistics Platform
+      </n-layout-footer>
     </n-layout>
   </n-layout>
 
@@ -118,7 +123,8 @@ function renderAlertsLabel() {
 
 const menuOptions: MenuOption[] = [
   { label: 'Главная', key: '/cabinet/driver', icon: renderIcon(HomeOutline) },
-  { label: 'Карточка водителя', key: '/cabinet/driver/card', icon: renderIcon(IdCardOutline) },
+  { label: 'Карточка водителя (V2)', key: '/cabinet/driver/card-v2', icon: renderIcon(IdCardOutline) },
+  { label: 'Карточка (Старая)', key: '/cabinet/driver/card', icon: renderIcon(IdCardOutline) },
   { label: () => renderAlertsLabel(), key: '/cabinet/driver/alerts', icon: renderIcon(AlertCircleOutline) },
   { label: 'Мой транспорт', key: '/cabinet/driver/vehicles', icon: renderIcon(CarOutline) },
   { label: 'Мои заказы', key: '/cabinet/driver/orders', icon: renderIcon(CubeOutline) },
@@ -196,5 +202,15 @@ async function handleUserSelect(key: string) {
   height: 28px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.cabinet-footer {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #999;
+  font-size: 12px;
 }
 </style>

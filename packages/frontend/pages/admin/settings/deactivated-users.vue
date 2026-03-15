@@ -129,7 +129,7 @@ async function handleDeletePermanent(id: string) {
     message.success('Пользователь удалён навсегда')
     users.value = users.value.filter((u) => u.id !== id)
   } catch (e: any) {
-    message.error(e?.data?.message || e?.message || 'Ошибка удаления')
+    message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка удаления')
   } finally {
     deletingId.value = null
   }

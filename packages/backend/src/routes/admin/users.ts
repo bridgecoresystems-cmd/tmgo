@@ -3,8 +3,8 @@ import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
 import { db } from '../../db';
-import { users, accounts, carrierProfiles, sessions, profileEditRequests } from '../../db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { users, accounts, carrierProfiles, sessions, profileEditRequests, vehicles, orderResponses, driverServices, orders, orderMessages } from '../../db/schema';
+import { eq, and, desc, inArray } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 
 export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
@@ -136,26 +136,66 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     await db.delete(sessions).where(eq(sessions.userId, params.id));
     return { success: true, message: 'Пользователь деактивирован' };
   })
-  .delete('/:id', async ({ params, error }) => {
-    const [target] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
-    if (!target) return error(404, 'User not found');
-    if (target.role === 'admin') {
-      const admins = await db.select().from(users).where(eq(users.role, 'admin'));
-      if (admins.length <= 1) {
-        return error(400, 'Нельзя удалить последнего администратора');
+  .delete('/:id', async ({ params, error, set }) => {
+    try {
+      const [target] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+      if (!target) return error(404, 'User not found');
+      if (target.role === 'admin') {
+        const admins = await db.select().from(users).where(eq(users.role, 'admin'));
+        if (admins.length <= 1) {
+          return error(400, 'Нельзя удалить последнего администратора');
+        }
       }
+
+      const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+      if (profile) {
+        const profileId = profile.id;
+        await db.delete(driverServices).where(eq(driverServices.carrierId, profileId));
+        await db.delete(orderResponses).where(eq(orderResponses.carrierId, profileId));
+        const carrierVehicles = await db.select({ id: vehicles.id }).from(vehicles).where(eq(vehicles.carrierId, profileId));
+        const vehicleIds = carrierVehicles.map((v) => v.id);
+        if (vehicleIds.length > 0) {
+          await db.update(orders).set({ vehicleId: null }).where(inArray(orders.vehicleId, vehicleIds));
+        }
+        await db.delete(vehicles).where(eq(vehicles.carrierId, profileId));
+        await db.update(orders).set({ carrierId: null }).where(eq(orders.carrierId, profileId));
+      }
+
+      const clientOrders = await db.select({ id: orders.id }).from(orders).where(eq(orders.clientId, params.id));
+      for (const o of clientOrders) {
+        await db.delete(orderResponses).where(eq(orderResponses.orderId, o.id));
+        await db.delete(orderMessages).where(eq(orderMessages.orderId, o.id));
+      }
+      await db.delete(orders).where(eq(orders.clientId, params.id));
+      await db.delete(orderMessages).where(eq(orderMessages.senderId, params.id));
+      await db.delete(sessions).where(eq(sessions.userId, params.id));
+      await db.delete(accounts).where(eq(accounts.userId, params.id));
+      if (profile) {
+        await db.delete(carrierProfiles).where(eq(carrierProfiles.userId, params.id));
+      }
+      await db.delete(users).where(eq(users.id, params.id));
+      return { success: true, message: 'Пользователь удалён навсегда' };
+    } catch (e: any) {
+      console.error('[admin users DELETE]', e);
+      set.status = 500;
+      return { error: e?.message || 'Ошибка удаления пользователя' };
     }
-    await db.delete(users).where(eq(users.id, params.id));
-    return { success: true, message: 'Пользователь удалён навсегда' };
   })
-  .get('/:id/driver-profile', async ({ params, error }) => {
-    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
-    if (!user) return error(404, 'User not found');
-    if (user.role !== 'driver') return error(400, 'User is not a driver');
-    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
-    if (!profile) return error(404, 'Driver profile not found');
-    const d = (x: Date | null) => (x ? x.toISOString().slice(0, 10) : null);
-    return {
+  .get('/:id/driver-profile', async ({ params, error, set }) => {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+      if (!user) return error(404, 'User not found');
+      if (user.role !== 'driver') return error(400, 'User is not a driver');
+      const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+      if (!profile) return error(404, 'Driver profile not found');
+      const d = (x: Date | string | null | undefined) => {
+        if (x == null) return null;
+        const dt = x instanceof Date ? x : new Date(x as string);
+        return isNaN(dt.getTime()) ? null : dt.toISOString().slice(0, 10);
+      };
+      const ratingVal = profile.rating;
+      const rating = ratingVal != null ? String(ratingVal) : null;
+      return {
       id: profile.id,
       surname: profile.surname,
       given_name: profile.givenName,
@@ -205,11 +245,16 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       bank_account: profile.bankAccount,
       bank_bik: profile.bankBik,
       is_verified: profile.isVerified,
-      verification_status: profile.verificationStatus ?? 'not_verified',
+      verification_status: String(profile.verificationStatus ?? 'not_verified'),
       unlocked_fields: (profile.unlockedFields as string[]) ?? [],
-      rating: profile.rating,
+      rating,
       updated_at: profile.updatedAt ? profile.updatedAt.toISOString().slice(0, 10) : null,
     };
+    } catch (e: any) {
+      console.error('[admin driver-profile GET]', e);
+      set.status = 500;
+      return { error: e?.message || 'Internal server error' };
+    }
   })
   .patch('/:id/driver-profile', async ({ params, body, error }) => {
     const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
