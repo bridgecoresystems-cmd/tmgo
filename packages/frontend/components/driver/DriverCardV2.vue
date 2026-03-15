@@ -1,6 +1,19 @@
 <template>
   <div class="driver-card-v2">
-    <n-spin :show="loading">
+    <!-- Когда верифицирован — показываем только статус -->
+    <div v-if="isDriverContext && isVerified" class="verified-status-block">
+      <n-alert type="success" class="verified-alert">
+        <template #header>
+          <n-space align="center" :size="12">
+            <n-icon :component="CheckmarkCircle" size="24" color="#18a058" />
+            <span class="verified-title">Верифицирован</span>
+          </n-space>
+        </template>
+        <p v-if="verifiedDate" class="verified-date">Отправлено: {{ verifiedDate }}</p>
+      </n-alert>
+    </div>
+
+    <n-spin v-else :show="loading">
       <div v-if="!loading" style="min-height: 400px; padding: 20px;">
         <n-alert v-if="error" type="error" class="mb-16">
           {{ error }}
@@ -341,11 +354,12 @@
 </template>
 
 <script setup lang="ts">
+import { CheckmarkCircle } from '@vicons/ionicons5'
 import { 
   useMessage, 
   NForm, NFormItem, NInput, NCard, NSpace, NButton, NSelect, NDatePicker, 
   NUpload, NTag, NText, NRadioGroup, NRadio, NCheckboxGroup, NCheckbox, 
-  NSpin, NAlert, NH3, NDivider
+  NSpin, NAlert, NH3, NIcon
 } from 'naive-ui'
 import { citizenships } from '@tmgo/shared'
 
@@ -356,6 +370,14 @@ const props = defineProps<{
 const emit = defineEmits(['saved', 'submitted'])
 
 const { apiBase } = useApiBase()
+const { data: verificationData, fetchStatus: fetchVerification } = useDriverVerificationStatus()
+
+const isVerified = computed(() => verificationData.value?.status === 'verified')
+const verifiedDate = computed(() => {
+  const d = verificationData.value?.submitted_at
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('ru-RU')
+})
 const message = useMessage()
 const loading = ref(false)
 const saving = ref(false)
@@ -563,13 +585,34 @@ function openScan(url: string) {
   window.open(fullUrl, '_blank')
 }
 
-onMounted(loadProfile)
+onMounted(() => {
+  if (props.isDriverContext) fetchVerification()
+  loadProfile()
+})
 </script>
 
 <style scoped>
 .driver-card-v2 {
   max-width: 900px;
   margin: 0 auto;
+}
+.verified-status-block {
+  padding: 20px;
+  min-height: 200px;
+}
+.verified-alert {
+  background: #f0f9eb;
+  border-color: #c2e7b0;
+}
+.verified-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #18a058;
+}
+.verified-date {
+  margin: 4px 0 0;
+  font-size: 13px;
+  opacity: 0.9;
 }
 .v2-form {
   padding: 20px 0;

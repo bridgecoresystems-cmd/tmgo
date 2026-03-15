@@ -3,8 +3,8 @@ import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
 import { db } from '../../db';
-import { carrierProfiles, profileEditRequests, driverDocuments, driverCitizenships, profileVerificationHistory } from '../../db/schema';
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { carrierProfiles, profileEditRequests, driverDocuments, driverCitizenships, driverContacts, profileVerificationHistory } from '../../db/schema';
+import { eq, and, desc, inArray, isNull } from 'drizzle-orm';
 import { getUnlockedKeys } from '../../lib/field-access';
 import { getUserFromRequest } from '../../lib/auth';
 
@@ -148,6 +148,28 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     const legacyUnlocked = (carrierProfile.unlockedFields as string[]) ?? [];
     const changeRequestUnlocked = await getUnlockedKeys(carrierProfile.id);
     const unlocked_fields = [...new Set([...legacyUnlocked, ...changeRequestUnlocked])];
+
+    // Merge citizenships: legacy + driver_citizenships (active)
+    const legacyCitizenships = (carrierProfile.citizenship ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    const citizenshipsFromTable = await db.select({ country: driverCitizenships.country })
+      .from(driverCitizenships)
+      .where(and(eq(driverCitizenships.carrierId, carrierProfile.id), eq(driverCitizenships.status, 'active')));
+    const allCitizenships = [...new Set([...legacyCitizenships, ...citizenshipsFromTable.map((c) => c.country).filter(Boolean)])];
+    const citizenship = allCitizenships.join(', ');
+
+    // Merge phones: legacy + driver_contacts (phone type)
+    const legacyPhones = (carrierProfile.phone ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    const contactsFromTable = await db.select({ value: driverContacts.value })
+      .from(driverContacts)
+      .where(and(
+        eq(driverContacts.carrierId, carrierProfile.id),
+        eq(driverContacts.contactType, 'phone'),
+        eq(driverContacts.isActive, true),
+        isNull(driverContacts.deletedAt),
+      ));
+    const allPhones = [...new Set([...legacyPhones, ...contactsFromTable.map((c) => c.value).filter(Boolean)])];
+    const phone = allPhones.join(', ');
+
     return {
       id: carrierProfile.id,
       // 1. Основная информация
@@ -155,9 +177,9 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       given_name: carrierProfile.givenName,
       patronymic: carrierProfile.patronymic,
       date_of_birth: d(carrierProfile.dateOfBirth),
-      citizenship: carrierProfile.citizenship,
+      citizenship,
       gender: carrierProfile.gender,
-      phone: carrierProfile.phone,
+      phone,
       email: user.email,
       additional_emails: carrierProfile.additionalEmails ?? '',
       status: carrierProfile.status,

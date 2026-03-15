@@ -3,8 +3,8 @@ import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
 import { db } from '../../db';
-import { users, accounts, carrierProfiles, sessions, profileEditRequests, vehicles, orderResponses, driverServices, orders, orderMessages } from '../../db/schema';
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { users, accounts, carrierProfiles, sessions, profileEditRequests, vehicles, orderResponses, driverServices, orders, orderMessages, driverCitizenships, driverContacts } from '../../db/schema';
+import { eq, and, desc, inArray, isNull } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 
 export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
@@ -195,15 +195,35 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       };
       const ratingVal = profile.rating;
       const rating = ratingVal != null ? String(ratingVal) : null;
+
+      const legacyCitizenships = (profile.citizenship ?? '').split(',').map((s: string) => s.trim()).filter(Boolean);
+      const citizenshipsFromTable = await db.select({ country: driverCitizenships.country })
+        .from(driverCitizenships)
+        .where(and(eq(driverCitizenships.carrierId, profile.id), eq(driverCitizenships.status, 'active')));
+      const allCitizenships = [...new Set([...legacyCitizenships, ...citizenshipsFromTable.map((c) => c.country).filter(Boolean)])];
+      const citizenship = allCitizenships.join(', ');
+
+      const legacyPhones = (profile.phone ?? '').split(',').map((s: string) => s.trim()).filter(Boolean);
+      const contactsFromTable = await db.select({ value: driverContacts.value })
+        .from(driverContacts)
+        .where(and(
+          eq(driverContacts.carrierId, profile.id),
+          eq(driverContacts.contactType, 'phone'),
+          eq(driverContacts.isActive, true),
+          isNull(driverContacts.deletedAt),
+        ));
+      const allPhones = [...new Set([...legacyPhones, ...contactsFromTable.map((c) => c.value).filter(Boolean)])];
+      const phone = allPhones.join(', ');
+
       return {
       id: profile.id,
       surname: profile.surname,
       given_name: profile.givenName,
       patronymic: profile.patronymic,
       date_of_birth: d(profile.dateOfBirth),
-      citizenship: profile.citizenship,
+      citizenship,
       gender: profile.gender,
-      phone: profile.phone,
+      phone,
       email: user.email,
       additional_emails: profile.additionalEmails ?? '',
       status: profile.status,

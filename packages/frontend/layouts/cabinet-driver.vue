@@ -18,6 +18,7 @@
         :collapsed="collapsed"
         :options="menuOptions"
         :value="activeKey"
+        v-model:expanded-keys="expandedKeys"
         @update:value="handleMenuSelect"
       />
     </n-layout-sider>
@@ -121,10 +122,33 @@ function renderAlertsLabel() {
   return label
 }
 
+const cardSubmenuKeys = ['/cabinet/driver/my-card', '/cabinet/driver/card-v2', '/cabinet/driver/add-documents']
+const expandedKeys = ref<string[]>([])
+
+watch(
+  () => route.path,
+  (path) => {
+    if (cardSubmenuKeys.some((k) => path === k || path.startsWith(k + '/'))) {
+      if (!expandedKeys.value.includes('card-driver')) {
+        expandedKeys.value = [...expandedKeys.value, 'card-driver']
+      }
+    }
+  },
+  { immediate: true }
+)
+
 const menuOptions: MenuOption[] = [
   { label: 'Главная', key: '/cabinet/driver', icon: renderIcon(HomeOutline) },
-  { label: 'Карточка водителя (V2)', key: '/cabinet/driver/card-v2', icon: renderIcon(IdCardOutline) },
-  { label: 'Карточка (Старая)', key: '/cabinet/driver/card', icon: renderIcon(IdCardOutline) },
+  {
+    label: 'Карточка водителя',
+    key: 'card-driver',
+    icon: renderIcon(IdCardOutline),
+    children: [
+      { label: 'Моя карточка', key: '/cabinet/driver/my-card' },
+      { label: 'Верификация', key: '/cabinet/driver/card-v2' },
+      { label: 'Добавить документы', key: '/cabinet/driver/add-documents' },
+    ],
+  },
   { label: () => renderAlertsLabel(), key: '/cabinet/driver/alerts', icon: renderIcon(AlertCircleOutline) },
   { label: 'Мой транспорт', key: '/cabinet/driver/vehicles', icon: renderIcon(CarOutline) },
   { label: 'Мои заказы', key: '/cabinet/driver/orders', icon: renderIcon(CubeOutline) },

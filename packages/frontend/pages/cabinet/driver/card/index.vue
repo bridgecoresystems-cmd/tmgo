@@ -3,6 +3,9 @@
     <n-h3 style="margin: 0 0 20px 0;">Карточка водителя</n-h3>
     <DriverProfileVerificationStatus />
     <n-tabs v-model:value="mainTab" type="line" animated class="card-tabs">
+      <n-tab-pane name="my-card" tab="Моя карточка">
+        <DriverCardView :is-driver-context="true" />
+      </n-tab-pane>
       <n-tab-pane name="profile" tab="Профиль (Старая)">
         <DriverCardForm
           ref="formRef"
@@ -54,11 +57,11 @@ const changeRequestsRef = ref<{ fetch: () => void } | null>(null)
 const loadUrl = computed(() => `${apiBase}/cabinet/driver/profile`)
 const saveUrl = computed(() => `${apiBase}/cabinet/driver/profile`)
 
-const mainTabNames = ['profile', 'documents', 'citizenships', 'contacts', 'change-requests'] as const
+const mainTabNames = ['my-card', 'profile', 'profile-v2', 'documents', 'citizenships', 'contacts', 'change-requests'] as const
 const mainTab = ref<string>(
   (route.query.tab as string) && mainTabNames.includes(route.query.tab as any)
     ? (route.query.tab as string)
-    : 'profile'
+    : 'my-card'
 )
 
 const profileSubTabNames = ['main', 'passport', 'license', 'permits'] as const

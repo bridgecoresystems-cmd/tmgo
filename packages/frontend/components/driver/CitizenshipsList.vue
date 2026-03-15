@@ -42,7 +42,13 @@
     <n-modal v-model:show="showAddModal" preset="card" title="Добавить гражданство" style="max-width: 400px">
       <n-form :model="addForm" label-placement="top">
         <n-form-item label="Страна" required>
-          <n-input v-model:value="addForm.country" placeholder="Россия" />
+          <n-select
+            v-model:value="addForm.country"
+            :options="citizenshipOptions"
+            filterable
+            placeholder="Выберите страну"
+            style="width: 100%"
+          />
         </n-form-item>
         <n-form-item label="Дата приобретения">
           <n-date-picker
@@ -66,12 +72,22 @@
 
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
+import { citizenships } from '@tmgo/shared'
 
 const { list, loading, error, fetch, add, revoke } = useDriverCitizenships()
 const message = useMessage()
 const showAddModal = ref(false)
 const adding = ref(false)
 const addForm = reactive({ country: '', acquired_at: null as string | null })
+
+const citizenshipOptions = computed(() => {
+  const activeCountries = new Set(
+    list.value.filter((c) => c.status === 'active').map((c) => c.country)
+  )
+  return citizenships
+    .filter((c) => !activeCountries.has(c))
+    .map((c) => ({ label: c, value: c }))
+})
 
 async function doAdd() {
   if (!addForm.country?.trim()) {
