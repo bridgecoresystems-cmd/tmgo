@@ -44,6 +44,10 @@
                 <span class="view-label">Email (Логин):</span>
                 <span class="view-value">{{ profile.email }}</span>
               </div>
+              <div v-if="emailsDisplay" class="view-row">
+                <span class="view-label">Доп. email:</span>
+                <span class="view-value">{{ emailsDisplay }}</span>
+              </div>
               <div v-if="profile.status" class="view-row">
                 <span class="view-label">Статус (Диспетчер):</span>
                 <span class="view-value">{{ statusLabel }}</span>
@@ -88,6 +92,40 @@
                 </span>
               </div>
             </div>
+            <!-- Дополнительные паспорта (из «Добавить документы») -->
+            <template v-for="(ep, idx) in extraPassports" :key="ep.id">
+              <n-divider v-if="idx === 0 && hasMainPassportData" style="margin: 16px 0;" />
+              <div class="view-grid extra-passport-block" :class="{ 'extra-passport-block--not-first': idx > 0 }">
+                <div v-if="ep.series || ep.number" class="view-row">
+                  <span class="view-label">Серия / Номер паспорта{{ hasMainPassportData ? ` (${idx + 2})` : ` ${idx + 1}` }}:</span>
+                  <span class="view-value">{{ [ep.series, ep.number].filter(Boolean).join(' ') || '—' }}</span>
+                </div>
+                <div v-if="ep.issued_at || ep.expires_at" class="view-row">
+                  <span class="view-label">Даты действия:</span>
+                  <span class="view-value">{{ formatDate(ep.issued_at) }} — {{ formatDate(ep.expires_at) }}</span>
+                </div>
+                <div v-if="ep.issued_by" class="view-row">
+                  <span class="view-label">Кем выдан:</span>
+                  <span class="view-value">{{ ep.issued_by }}</span>
+                </div>
+                <div v-if="ep.place_of_birth" class="view-row">
+                  <span class="view-label">Место рождения:</span>
+                  <span class="view-value">{{ ep.place_of_birth }}</span>
+                </div>
+                <div v-if="ep.residential_address" class="view-row">
+                  <span class="view-label">Адрес проживания:</span>
+                  <span class="view-value">{{ ep.residential_address }}</span>
+                </div>
+                <div v-if="ep.scan_url" class="view-row">
+                  <span class="view-label">Скан паспорта (PDF/JPG):</span>
+                  <span class="view-value">
+                    <n-button text type="primary" size="small" @click="openScanModal(ep.scan_url, hasMainPassportData ? `Скан паспорта (${idx + 2})` : `Скан паспорта ${idx + 1}`)">
+                      Просмотр скана
+                    </n-button>
+                  </span>
+                </div>
+              </div>
+            </template>
           </n-card>
 
           <!-- 3. Водительское удостоверение -->
@@ -134,6 +172,36 @@
                 </div>
               </template>
             </div>
+            <!-- Дополнительные ВУ (из «Добавить документы») -->
+            <template v-for="(el, idx) in extraLicenses" :key="el.id">
+              <n-divider v-if="idx === 0 && hasMainLicenseData" style="margin: 16px 0;" />
+              <div class="view-grid extra-passport-block" :class="{ 'extra-passport-block--not-first': idx > 0 }">
+                <div v-if="el.number" class="view-row">
+                  <span class="view-label">Номер ВУ{{ hasMainLicenseData ? ` (${idx + 2})` : ` ${idx + 1}` }}:</span>
+                  <span class="view-value">{{ el.number }}</span>
+                </div>
+                <div v-if="el.license_categories" class="view-row">
+                  <span class="view-label">Категории прав:</span>
+                  <span class="view-value">{{ el.license_categories }}</span>
+                </div>
+                <div v-if="el.issued_at || el.expires_at" class="view-row">
+                  <span class="view-label">Даты действия ВУ:</span>
+                  <span class="view-value">{{ formatDate(el.issued_at) }} — {{ formatDate(el.expires_at) }}</span>
+                </div>
+                <div v-if="el.issued_by" class="view-row">
+                  <span class="view-label">Кем выдан:</span>
+                  <span class="view-value">{{ el.issued_by }}</span>
+                </div>
+                <div v-if="el.scan_url" class="view-row">
+                  <span class="view-label">Скан ВУ (PDF/JPG):</span>
+                  <span class="view-value">
+                    <n-button text type="primary" size="small" @click="openScanModal(el.scan_url, hasMainLicenseData ? `Скан ВУ (${idx + 2})` : `Скан ВУ ${idx + 1}`)">
+                      Просмотр скана
+                    </n-button>
+                  </span>
+                </div>
+              </div>
+            </template>
           </n-card>
 
           <!-- 4. Разрешительные документы — только заполненные -->
@@ -288,6 +356,13 @@ const phonesDisplay = computed(() => {
   return Array.isArray(arr) ? arr.filter(Boolean).join(', ') : (p.phone || '')
 })
 
+const emailsDisplay = computed(() => {
+  const p = profile.value
+  if (!p) return ''
+  const arr = p.extra_emails ?? (p.additional_emails ? p.additional_emails.split(',').map((s: string) => s.trim()).filter(Boolean) : [])
+  return Array.isArray(arr) ? arr.filter(Boolean).join(', ') : (p.additional_emails || '')
+})
+
 const genderLabel = computed(() => {
   const g = profile.value?.gender
   return g === 'female' ? 'Женский' : g === 'male' ? 'Мужской' : g || '—'
@@ -339,15 +414,42 @@ const visaDatesDisplay = computed(() => {
   return `${formatDate(from)} — ${formatDate(to)}`
 })
 
-const hasPassportData = computed(() => {
+const extraPassports = computed(() => {
+  const arr = profile.value?.passports_from_documents
+  if (!Array.isArray(arr)) return []
+  const mainSeries = (profile.value?.passport_series ?? '').trim().toUpperCase()
+  const mainNumber = (profile.value?.passport_number ?? '').trim()
+  const mainKey = `${mainSeries} ${mainNumber}`.trim()
+  if (!mainKey) return arr
+  return arr.filter((ep: any) => {
+    const epSeries = (ep.series ?? '').trim().toUpperCase()
+    const epNumber = (ep.number ?? '').trim()
+    const epKey = `${epSeries} ${epNumber}`.trim()
+    return epKey !== mainKey
+  })
+})
+
+const hasMainPassportData = computed(() => {
   const p = profile.value
   return p && (passportSeriesNumber.value || p.passport_issued_by || p.place_of_birth || p.residential_address || p.passport_scan_url)
 })
 
-const hasLicenseData = computed(() => {
+const hasPassportData = computed(() => hasMainPassportData.value || extraPassports.value.length > 0)
+
+const extraLicenses = computed(() => {
+  const arr = profile.value?.licenses_from_documents
+  if (!Array.isArray(arr)) return []
+  const mainNumber = (profile.value?.license_number ?? '').trim()
+  if (!mainNumber) return arr
+  return arr.filter((el: any) => (el.number ?? '').trim() !== mainNumber)
+})
+
+const hasMainLicenseData = computed(() => {
   const p = profile.value
   return p && (p.license_number || licenseCategoriesDisplay.value || licenseDatesDisplay.value || p.license_scan_url || p.has_international_license)
 })
+
+const hasLicenseData = computed(() => hasMainLicenseData.value || extraLicenses.value.length > 0)
 
 const hasVisaData = computed(() => {
   const p = profile.value
@@ -501,6 +603,15 @@ onMounted(() => {
 }
 .view-value {
   color: var(--n-text-color, #333);
+}
+.extra-passport-block {
+  margin-top: 8px;
+  padding-top: 12px;
+}
+.extra-passport-block--not-first {
+  border-top: 1px dashed var(--n-border-color, #e5e7eb);
+  margin-top: 16px;
+  padding-top: 16px;
 }
 .mb-16 { margin-bottom: 16px; }
 .mb-24 { margin-bottom: 24px; }

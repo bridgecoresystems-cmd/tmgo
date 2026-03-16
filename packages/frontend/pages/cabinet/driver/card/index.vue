@@ -31,9 +31,6 @@
       <n-tab-pane name="contacts" tab="Контакты">
         <DriverContactsList ref="contactsRef" />
       </n-tab-pane>
-      <n-tab-pane name="change-requests" tab="Запросы на изменение">
-        <DriverChangeRequestsList ref="changeRequestsRef" />
-      </n-tab-pane>
     </n-tabs>
   </div>
 </template>
@@ -52,12 +49,11 @@ const formRef = ref<{ loadProfile: () => Promise<void>; handleSave: () => Promis
 const documentsRef = ref<{ fetch: (showHistory?: boolean) => void } | null>(null)
 const citizenshipsRef = ref<{ fetch: () => void } | null>(null)
 const contactsRef = ref<{ fetch: () => void } | null>(null)
-const changeRequestsRef = ref<{ fetch: () => void } | null>(null)
 
 const loadUrl = computed(() => `${apiBase}/cabinet/driver/profile`)
 const saveUrl = computed(() => `${apiBase}/cabinet/driver/profile`)
 
-const mainTabNames = ['my-card', 'profile', 'profile-v2', 'documents', 'citizenships', 'contacts', 'change-requests'] as const
+const mainTabNames = ['my-card', 'profile', 'profile-v2', 'documents', 'citizenships', 'contacts'] as const
 const mainTab = ref<string>(
   (route.query.tab as string) && mainTabNames.includes(route.query.tab as any)
     ? (route.query.tab as string)
@@ -103,7 +99,6 @@ function onFormSaved() {
   documentsRef.value?.fetch()
   citizenshipsRef.value?.fetch()
   contactsRef.value?.fetch()
-  changeRequestsRef.value?.fetch()
 }
 
 onMounted(() => {

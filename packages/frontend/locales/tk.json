@@ -1,62 +1,62 @@
 {
   "hero": {
-    "title": "Hukukly şahslar üçin ýük daşamak",
-    "subtitle": "Kompaniýa üçin peýdaly ýük daşamagy guramaň"
+    "title": "Hukuk taraplar üçin ýük daşamak",
+    "subtitle": "Şäherçe üçin ýük daşamagy peýdaly şertlerde gurnaň"
   },
   "form": {
-    "title": "Ýönelişi saýlaň",
+    "title": "Ugry saýlaň",
     "fromPlaceholder": "Nireden",
     "toPlaceholder": "Nirä",
-    "submit": "Talap goýuň"
+    "submit": "Ýüz tutma goýmak"
   },
   "advantages": {
-    "title": "Hyzmat üstünlikleri",
+    "title": "Hyzmatyň artykmaçlyklary",
     "items": {
       "vat": {
-        "title": "KDW dikeldiş",
-        "description": "Umumy salgyt ulgamyny ulanyan bolsaňyz, KDW dikeldip alyp bilersiňiz."
+        "title": "KDV-ni yzyna almak",
+        "description": "Eger umumy salgyt ulgamy boýunça işleýän bolsaňyz, KDV-ni yzyna alyp bilersiňiz."
       },
       "limits": {
-        "title": "Çäkleri sazlaň",
-        "description": "Salgylar we geo zona boýunça, wagt we hepde günleri boýunça."
+        "title": "Çäklendirmeleri düzmek",
+        "description": "Adresler we geografik zonaalar, wagt we hepde günleri boýunça."
       },
       "cabinet": {
-        "title": "Amatly şahsy kabinet",
-        "description": "Sargytlary rugsat ediň, balansy dolduryň, işgärlere giriş açyň."
+        "title": "Amatly şahsy otag",
+        "description": "Sargytlary resmileşdiriň, balansy dolduryň, işgärlere giriş açyň."
       },
       "fast": {
-        "title": "Çalt ýerine ýetiriş",
-        "description": "Ortaça ýük maşyny gelmegi — 10 minut."
+        "title": "Çalt iberilmek",
+        "description": "Ýük ulagynyň ortaça gelim wagty — 10 minut."
       },
       "loaders": {
-        "title": "Ýük daşamak kömegi",
-        "description": "Ağyr ýükleri ýüklemäge we düşürmäge kömek ederler."
+        "title": "Ýükçileriň kömegi",
+        "description": "Agyr ýükleri ýüklemäge we düşürmäge kömek ederler."
       },
       "insurance": {
-        "title": "Sugurta",
-        "description": "Daşamak wagtynda ýük 500 000 ₽ çenli sugurtalanýar."
+        "title": "Ätiýaçlandyryş",
+        "description": "Daşamak wagtynda ýük 500 000 ₽ çenli ätiýaçlandyrylýar."
       }
     }
   },
   "cabinet": {
-    "title": "Dolandyryş merkeziňiz — şahsy kabinet",
-    "description": "Şahsy kabinetiňizde iberiş sargyt edip bilersiňiz ýa-da işgärleriňize korporatiw hasapdan eltip bermegi tölemäge mümkinçilik açyp bilersiňiz.",
-    "button": "Kabinete giriň"
+    "title": "Dolandyryş merkeziňiz — şahsy otag",
+    "description": "Şahsy otagyňyzda iberme sargyt edip ýa-da işgärleriňize korporatiw hasapdan eltip bermegi tölemek mümkinçiligini berip bilersiňiz.",
+    "button": "Otaga girmek"
   },
   "steps": {
-    "title": "Biziň işleýş usuly",
+    "title": "Biz nähili işleýäris",
     "items": {
       "register": {
-        "title": "Hasaba alyň",
-        "description": "Şahsy kabinet dörediň we balansy dolduryň."
+        "title": "Hasaba duruň",
+        "description": "Şahsy otag dörediň we balansy dolduryň."
       },
       "order": {
         "title": "Sargyt dörediň",
-        "description": "Kabinetde ýa-da programma arkaly talap goýuň."
+        "description": "Otagyňyzda ýa-da programma arkaly ýüz tutma resmileşdiriň."
       },
       "documents": {
         "title": "Resminamalary alyň",
-        "description": "Ýapyjy resminamalar kabinetde elýeterli bolar."
+        "description": "Ýapyjy resminamalar otagyňyzda elýeter bolar."
       }
     }
   },
@@ -64,25 +64,68 @@
     "title": "Biziň hyzmatlarymyz",
     "items": {
       "office": {
-        "title": "Ofisi göçürmek",
-        "description": "Ofis mebeli we tehnikany daşarys."
+        "title": "Ofis göçürmek",
+        "description": "Ofis mebelleri we tehnikany daşarys."
       },
       "warehouse": {
-        "title": "Ambardan eltip bermek",
-        "description": "Islendik agramly zatlary ýükler we alarys."
+        "title": "Ammar ammarlara eltip bermek",
+        "description": "Islendik agramly harytlary ýükläris we alarys."
       },
       "intercity": {
-        "title": "Şäherler arasy",
-        "description": "Bir şäherden alarys we beýleki şähere eltip bereris."
+        "title": "Şäherara",
+        "description": "Bir şäherden alyp başga şähere eltip bereris."
       },
       "customers": {
-        "title": "Müşterilere eltip bermek",
-        "description": "Müşterileriňize islendik ýükleri eltip bereris."
+        "title": "Alyjylara eltip bermek",
+        "description": "Islendik ýükleri müşderilerinize eltip bereris."
       }
     }
   },
   "meta": {
-    "title": "tmGo — Iş platformasy",
-    "description": "Köp regionly ýük daşamak platformasy. Sargytçylary we daşamakçylary birleşdirýäris."
+    "title": "tmGo — Işewürlik üçin platforma",
+    "description": "Ýük daşamak üçin köpsebitli platforma. Sargyt berýänleri we daşaýjylary birleşdirýäris."
+  },
+  "auth": {
+    "signup": {
+      "title": "Hasaba durmak",
+      "emailLabel": "Email (giriş) *",
+      "emailPlaceholder": "example@mail.com",
+      "roleLabel": "Rol *",
+      "roleClient": "Müşderi",
+      "roleDriver": "Daşaýjy",
+      "passwordLabel": "Parol *",
+      "passwordPlaceholder": "Azyndan 8 simwol",
+      "passwordConfirmLabel": "Paroly tassyklaň *",
+      "passwordConfirmPlaceholder": "Paroly gaýtalaň",
+      "submit": "Hasaba duruň",
+      "submitLoading": "Hasaba durulýar...",
+      "alreadyHave": "Eýýäm hasaba durdyňyzmy?",
+      "loginLink": "Girmek"
+    },
+    "login": {
+      "title": "Girmek",
+      "emailLabel": "Email",
+      "emailPlaceholder": "your@email.com",
+      "passwordLabel": "Parol",
+      "passwordPlaceholder": "Paroly giriziň",
+      "submit": "Girmek",
+      "submitLoading": "Girilýär...",
+      "noAccount": "Hasap ýokmy?",
+      "signupLink": "Hasaba durmak"
+    },
+    "errors": {
+      "serverUnavailable": "Serwer elýeterli däl. Barlag: 1) Telefon kompýuter bilen bir Wi‑Fi-da. 2) Backend işleýärmi (packages/backend-da bun run dev). 3) Telefondaky brauzerde http://<PC-IP>:8000 açyň — \"TMGO API is running\" görünmeli.",
+      "serverUnavailableShort": "Serwer elýeterli däl. Telefon kompýuter bilen bir Wi‑Fi-damy? Backend işleýärmi?",
+      "loginFailed": "Giriş amatsyz",
+      "passwordsMismatch": "Parollar gabat gelmeýär",
+      "registerFailed": "Hasaba durmak amatsyz"
+    }
+  },
+  "layout": {
+    "login": "Girmek",
+    "signup": "Hasaba durmak",
+    "profile": "Otag",
+    "logout": "Çykmak",
+    "footer": "© 2026 BridgeCore Systems | TMGO Logistics Platform"
   }
 }

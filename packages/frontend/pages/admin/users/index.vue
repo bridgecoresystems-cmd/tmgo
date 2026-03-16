@@ -18,6 +18,13 @@
           clearable
           style="width: 180px"
         />
+        <n-select
+          v-model:value="onlineFilter"
+          :options="onlineFilterOptions"
+          placeholder="Онлайн"
+          clearable
+          style="width: 140px"
+        />
         <n-input v-model:value="search" placeholder="Поиск по email / имени" style="width: 280px;" clearable />
       </n-space>
     </div>
@@ -70,6 +77,7 @@ const { impersonate } = useImpersonate()
 const dialog = useDialog()
 const search = ref('')
 const verificationFilter = ref<string | null>(null)
+const onlineFilter = ref<string | null>(null)
 const loading = ref(true)
 const showAddModal = ref(false)
 const adding = ref(false)
@@ -104,6 +112,11 @@ const verificationFilterOptions = [
   { label: 'Ожидает проверки', value: 'waiting_verification' },
   { label: 'Запрос', value: 'request' },
   { label: 'Верифицирован', value: 'verified' },
+]
+
+const onlineFilterOptions = [
+  { label: 'Онлайн', value: 'online' },
+  { label: 'Оффлайн', value: 'offline' },
 ]
 
 const activeAdminCount = ref(0)
@@ -146,6 +159,19 @@ const columns: DataTableColumns = [
     key: 'verification_status',
     width: 140,
     render: (row) => row.role === 'driver' ? getVerificationTag(row.verification_status) : '—',
+  },
+  {
+    title: 'Онлайн',
+    key: 'is_online',
+    width: 90,
+    render: (row) => {
+      if (row.role !== 'driver') return '—'
+      const online = row.is_online === true
+      return h(NTag, {
+        type: online ? 'success' : 'default',
+        size: 'small',
+      }, { default: () => online ? 'Онлайн' : 'Оффлайн' })
+    },
   },
   {
     title: '',
@@ -198,6 +224,13 @@ const filteredUsers = computed(() => {
       if (u.role !== 'driver') return false
       const s = u.verification_status ?? 'not_verified'
       return s === verificationFilter.value
+    })
+  }
+  if (onlineFilter.value) {
+    list = list.filter((u) => {
+      if (u.role !== 'driver') return false
+      const online = u.is_online === true
+      return onlineFilter.value === 'online' ? online : !online
     })
   }
   if (!search.value) return list

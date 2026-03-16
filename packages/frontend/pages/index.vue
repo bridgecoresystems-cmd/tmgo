@@ -1,15 +1,5 @@
 <template>
   <div class="landing-page">
-    <!-- Language switcher -->
-    <div class="lang-switcher">
-      <n-select
-        :value="locale"
-        :options="localeOptions"
-        size="small"
-        :consistent-menu-width="false"
-        @update:value="(v) => setLocale(v)"
-      />
-    </div>
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-background">
@@ -118,16 +108,13 @@
         </n-grid>
       </div>
     </section>
+
+    <footer class="page-footer">{{ $t('layout.footer') }}</footer>
   </div>
 </template>
 
 <script setup lang="ts">
-const { locale, setLocale, t } = useI18n()
-const localeOptions = [
-  { label: 'Русский', value: 'ru' },
-  { label: 'English', value: 'en' },
-  { label: 'Türkmençe', value: 'tk' },
-]
+const { t } = useI18n()
 const { session, loading } = useAuth()
 
 // Автоматический редирект в кабинет для авторизованных (после загрузки сессии)
@@ -213,14 +200,20 @@ useHead({
 .landing-page {
   background: #fff;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 80px);
 }
 
-.lang-switcher {
-  position: fixed;
-  top: 16px;
-  right: 20px;
-  z-index: 100;
-  min-width: 120px;
+.page-footer {
+  margin-top: auto;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+  font-size: 14px;
+  color: #666;
 }
 
 .container {

@@ -170,6 +170,61 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
     const allPhones = [...new Set([...legacyPhones, ...contactsFromTable.map((c) => c.value).filter(Boolean)])];
     const phone = allPhones.join(', ');
 
+    // Merge emails: legacy + driver_contacts (email type)
+    const legacyEmails = (carrierProfile.additionalEmails ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    const emailsFromTable = await db.select({ value: driverContacts.value })
+      .from(driverContacts)
+      .where(and(
+        eq(driverContacts.carrierId, carrierProfile.id),
+        eq(driverContacts.contactType, 'email'),
+        eq(driverContacts.isActive, true),
+        isNull(driverContacts.deletedAt),
+      ));
+    const allEmails = [...new Set([...legacyEmails, ...emailsFromTable.map((c) => c.value).filter(Boolean)])];
+    const additional_emails = allEmails.join(', ');
+
+    // Паспорта из driver_documents (дополнительные, добавленные через «Добавить документы»)
+    const passportDocs = await db.select()
+      .from(driverDocuments)
+      .where(and(
+        eq(driverDocuments.carrierId, carrierProfile.id),
+        eq(driverDocuments.docType, 'passport'),
+        inArray(driverDocuments.status, ['active', 'pending_verification']),
+      ))
+      .orderBy(desc(driverDocuments.createdAt));
+    const passports_from_documents = passportDocs.map((doc) => ({
+      id: doc.id,
+      series: doc.series,
+      number: doc.number,
+      issued_by: doc.issuedBy,
+      issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+      expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+      place_of_birth: doc.placeOfBirth,
+      residential_address: doc.residentialAddress,
+      scan_url: doc.scanUrl,
+      status: doc.status,
+    }));
+
+    // ВУ из driver_documents (дополнительные, добавленные через «Добавить документы»)
+    const licenseDocs = await db.select()
+      .from(driverDocuments)
+      .where(and(
+        eq(driverDocuments.carrierId, carrierProfile.id),
+        eq(driverDocuments.docType, 'drivers_license'),
+        inArray(driverDocuments.status, ['active', 'pending_verification']),
+      ))
+      .orderBy(desc(driverDocuments.createdAt));
+    const licenses_from_documents = licenseDocs.map((doc) => ({
+      id: doc.id,
+      number: doc.number,
+      issued_by: doc.issuedBy,
+      issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+      expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+      license_categories: doc.licenseCategories,
+      scan_url: doc.scanUrl,
+      status: doc.status,
+    }));
+
     return {
       id: carrierProfile.id,
       // 1. Основная информация
@@ -181,7 +236,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       gender: carrierProfile.gender,
       phone,
       email: user.email,
-      additional_emails: carrierProfile.additionalEmails ?? '',
+      additional_emails,
       status: carrierProfile.status,
       employment_category: carrierProfile.employmentCategory,
       // Остальные поля
@@ -193,6 +248,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       license_issue_date: d(carrierProfile.licenseIssueDate),
       license_issued_by: carrierProfile.licenseIssuedBy,
       license_scan_url: carrierProfile.licenseScanUrl,
+      licenses_from_documents,
       has_international_license: carrierProfile.hasInternationalLicense,
       international_license_number: carrierProfile.internationalLicenseNumber,
       international_license_validity: carrierProfile.internationalLicenseValidity,
@@ -212,6 +268,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       passport_scan_url: carrierProfile.passportScanUrl,
       passport_is_active: carrierProfile.passportIsActive,
       extra_passports: (carrierProfile.extraPassports as any[]) ?? [],
+      passports_from_documents,
       // 4. Разрешительные документы
       permission_entry_zone: carrierProfile.permissionEntryZone,
       permission_issue_date: d(carrierProfile.permissionIssueDate),

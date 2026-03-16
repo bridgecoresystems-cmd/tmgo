@@ -45,6 +45,7 @@ export const adminChangeRequestsRoutes = new Elysia({ prefix: '/admin/change-req
         surname: carrierProfiles.surname,
         givenName: carrierProfiles.givenName,
         patronymic: carrierProfiles.patronymic,
+        userId: carrierProfiles.userId,
       })
       .from(profileChangeRequests)
       .innerJoin(carrierProfiles, eq(profileChangeRequests.carrierId, carrierProfiles.id))
@@ -58,9 +59,10 @@ export const adminChangeRequestsRoutes = new Elysia({ prefix: '/admin/change-req
       return parts.length ? parts.join(' ') : null;
     };
 
-    return list.map(({ request: r, surname, givenName, patronymic }) =>
-      formatRequest(r, driverName(surname, givenName, patronymic)),
-    );
+    return list.map(({ request: r, surname, givenName, patronymic, userId }) => ({
+      ...formatRequest(r, driverName(surname, givenName, patronymic)),
+      user_id: userId,
+    }));
   })
 
   // POST /admin/change-requests/:requestId/approve

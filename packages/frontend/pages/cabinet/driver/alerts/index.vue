@@ -24,7 +24,7 @@
           Срок действия до: {{ formatDate(a.expiryDate) }}
         </div>
         <NuxtLink :to="alertLink(a)" class="alert-card__link">
-          Обновить в карточке водителя →
+          Добавить документ →
         </NuxtLink>
       </n-card>
     </div>
@@ -46,13 +46,13 @@ function formatDate(s: string) {
 
 function alertLink(a: { type: string }): string {
   const tabMap: Record<string, string> = {
-    passport: 'passport',
-    license: 'license',
-    permission: 'permits',
-    medical: 'license',
+    passport: 'documents',
+    license: 'documents',
+    permission: 'documents',
+    medical: 'documents',
   }
-  const tab = tabMap[a.type] || 'main'
-  return `/cabinet/driver/card?tab=${tab}`
+  const tab = tabMap[a.type] || 'documents'
+  return `/cabinet/driver/add-documents?tab=${tab}`
 }
 
 onMounted(async () => {

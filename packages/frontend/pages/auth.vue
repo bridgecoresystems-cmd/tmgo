@@ -12,44 +12,46 @@
       <!-- Форма регистрации -->
       <div class="signup" :class="{ active: isSignupMode }">
         <form @submit.prevent="handleRegister">
-          <label for="chk" class="form-title">Регистрация</label>
+          <label for="chk" class="form-title">{{ $t('auth.signup.title') }}</label>
           
           <div class="form-group">
-            <label class="form-label">Email (логин) *</label>
+            <label class="form-label">{{ $t('auth.signup.emailLabel') }}</label>
             <input 
               type="email" 
               v-model="registerForm.email"
-              placeholder="example@mail.com" 
+              :placeholder="$t('auth.signup.emailPlaceholder')" 
               required 
             >
           </div>
 
           <div class="form-group">
-            <label class="form-label">Роль *</label>
+            <label class="form-label">{{ $t('auth.signup.roleLabel') }}</label>
             <select v-model="registerForm.role" class="custom-select">
-              <option value="client">Заказчик</option>
-              <option value="driver">Перевозчик</option>
+              <option value="client">{{ $t('auth.signup.roleClient') }}</option>
+              <option value="driver">{{ $t('auth.signup.roleDriver') }}</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Пароль *</label>
-            <input 
-              type="password" 
-              v-model="registerForm.password"
-              placeholder="Минимум 8 символов"
-              required 
-            >
+            <label class="form-label">{{ $t('auth.signup.passwordLabel') }}</label>
+            <n-input
+              v-model:value="registerForm.password"
+              type="password"
+              show-password-on="click"
+              :placeholder="$t('auth.signup.passwordPlaceholder')"
+              required
+            />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Подтвердите пароль *</label>
-            <input 
-              type="password" 
-              v-model="registerForm.passwordConfirm"
-              placeholder="Повторите пароль"
-              required 
-            >
+            <label class="form-label">{{ $t('auth.signup.passwordConfirmLabel') }}</label>
+            <n-input
+              v-model:value="registerForm.passwordConfirm"
+              type="password"
+              show-password-on="click"
+              :placeholder="$t('auth.signup.passwordConfirmPlaceholder')"
+              required
+            />
           </div>
 
           <button 
@@ -57,12 +59,12 @@
             class="btn-submit"
             :disabled="loading"
           >
-            {{ loading ? 'Регистрация...' : 'Зарегистрироваться' }}
+            {{ loading ? $t('auth.signup.submitLoading') : $t('auth.signup.submit') }}
           </button>
           
           <p class="form-switch">
-            Уже зарегистрированы? 
-            <span @click="navigateTo('/auth?mode=login')" class="switch-link">Войти</span>
+            {{ $t('auth.signup.alreadyHave') }} 
+            <span @click="navigateTo('/auth?mode=login')" class="switch-link">{{ $t('auth.signup.loginLink') }}</span>
           </p>
         </form>
       </div>
@@ -70,26 +72,27 @@
       <!-- Форма входа -->
       <div class="login" :class="{ active: !isSignupMode }">
         <form @submit.prevent="handleLogin">
-          <label for="chk" class="form-title">Вход</label>
+          <label for="chk" class="form-title">{{ $t('auth.login.title') }}</label>
           
           <div class="form-group">
-            <label class="form-label">Email</label>
+            <label class="form-label">{{ $t('auth.login.emailLabel') }}</label>
             <input 
               type="email" 
               v-model="loginForm.email"
-              placeholder="your@email.com" 
+              :placeholder="$t('auth.login.emailPlaceholder')" 
               required 
             >
           </div>
 
           <div class="form-group">
-            <label class="form-label">Пароль</label>
-            <input 
-              type="password" 
-              v-model="loginForm.password"
-              placeholder="Введите пароль" 
-              required 
-            >
+            <label class="form-label">{{ $t('auth.login.passwordLabel') }}</label>
+            <n-input
+              v-model:value="loginForm.password"
+              type="password"
+              show-password-on="click"
+              :placeholder="$t('auth.login.passwordPlaceholder')"
+              required
+            />
           </div>
 
           <button 
@@ -97,12 +100,12 @@
             class="btn-submit"
             :disabled="loading"
           >
-            {{ loading ? 'Вход...' : 'Войти' }}
+            {{ loading ? $t('auth.login.submitLoading') : $t('auth.login.submit') }}
           </button>
           
           <p class="form-switch">
-            Нет аккаунта? 
-            <span @click="navigateTo('/auth?mode=signup')" class="switch-link">Регистрация</span>
+            {{ $t('auth.login.noAccount') }} 
+            <span @click="navigateTo('/auth?mode=signup')" class="switch-link">{{ $t('auth.login.signupLink') }}</span>
           </p>
         </form>
       </div>
@@ -118,6 +121,7 @@ definePageMeta({ layout: 'default' })
 const { signIn, signUp } = useAuth()
 const route = useRoute()
 const message = useMessage()
+const { t } = useI18n()
 
 const isSignupMode = ref(route.query.mode === 'signup')
 watch(() => route.query.mode, (mode) => {
@@ -151,9 +155,9 @@ const handleLogin = async () => {
   } catch (e: any) {
     const msg = e?.message || ''
     if (msg.toLowerCase().includes('failed to fetch') || msg.includes('network')) {
-      message.error('Сервер недоступен. Проверьте: 1) Телефон на той же Wi‑Fi, что и ПК. 2) Backend запущен (bun run dev в packages/backend). 3) Откройте в браузере телефона http://<IP-ПК>:8000 — должна быть надпись "TMGO API is running".')
+      message.error(t('auth.errors.serverUnavailable'))
     } else {
-      message.error(msg || 'Ошибка входа')
+      message.error(msg || t('auth.errors.loginFailed'))
     }
   } finally {
     loading.value = false
@@ -162,7 +166,7 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
   if (registerForm.password !== registerForm.passwordConfirm) {
-    message.error('Пароли не совпадают')
+    message.error(t('auth.errors.passwordsMismatch'))
     return
   }
 
@@ -185,9 +189,9 @@ const handleRegister = async () => {
   } catch (e: any) {
     const msg = e?.message || ''
     if (msg.toLowerCase().includes('failed to fetch') || msg.includes('network')) {
-      message.error('Сервер недоступен. Телефон на той же Wi‑Fi, что и ПК? Backend запущен?')
+      message.error(t('auth.errors.serverUnavailableShort'))
     } else {
-      message.error(msg || 'Ошибка регистрации')
+      message.error(msg || t('auth.errors.registerFailed'))
     }
   } finally {
     loading.value = false
@@ -289,6 +293,10 @@ input, .custom-select {
   font-size: 14px;
   transition: all 0.3s;
   box-sizing: border-box;
+}
+
+.form-group :deep(.n-input) {
+  width: 100%;
 }
 
 input:focus, .custom-select:focus {

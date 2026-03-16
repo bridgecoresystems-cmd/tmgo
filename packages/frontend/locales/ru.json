@@ -84,5 +84,48 @@
   "meta": {
     "title": "tmGo — Платформа для бизнеса",
     "description": "Мультирегиональная платформа для грузоперевозок. Объединяем заказчиков и перевозчиков."
+  },
+  "auth": {
+    "signup": {
+      "title": "Регистрация",
+      "emailLabel": "Email (логин) *",
+      "emailPlaceholder": "example@mail.com",
+      "roleLabel": "Роль *",
+      "roleClient": "Заказчик",
+      "roleDriver": "Перевозчик",
+      "passwordLabel": "Пароль *",
+      "passwordPlaceholder": "Минимум 8 символов",
+      "passwordConfirmLabel": "Подтвердите пароль *",
+      "passwordConfirmPlaceholder": "Повторите пароль",
+      "submit": "Зарегистрироваться",
+      "submitLoading": "Регистрация...",
+      "alreadyHave": "Уже зарегистрированы?",
+      "loginLink": "Войти"
+    },
+    "login": {
+      "title": "Вход",
+      "emailLabel": "Email",
+      "emailPlaceholder": "your@email.com",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Введите пароль",
+      "submit": "Войти",
+      "submitLoading": "Вход...",
+      "noAccount": "Нет аккаунта?",
+      "signupLink": "Регистрация"
+    },
+    "errors": {
+      "serverUnavailable": "Сервер недоступен. Проверьте: 1) Телефон на той же Wi‑Fi, что и ПК. 2) Backend запущен (bun run dev в packages/backend). 3) Откройте в браузере телефона http://<IP-ПК>:8000 — должна быть надпись \"TMGO API is running\".",
+      "serverUnavailableShort": "Сервер недоступен. Телефон на той же Wi‑Fi, что и ПК? Backend запущен?",
+      "loginFailed": "Ошибка входа",
+      "passwordsMismatch": "Пароли не совпадают",
+      "registerFailed": "Ошибка регистрации"
+    }
+  },
+  "layout": {
+    "login": "Войти",
+    "signup": "Регистрация",
+    "profile": "Кабинет",
+    "logout": "Выйти",
+    "footer": "© 2026 BridgeCore Systems | TMGO Logistics Platform"
   }
 }

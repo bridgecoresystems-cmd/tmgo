@@ -26,6 +26,8 @@ export default defineNuxtConfig({
     defaultLocale: 'ru',
     fallbackLocale: 'ru',
     vueI18n: 'i18n.config.ts',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: false,
   },
   naiveui: {
     colorMode: 'light'

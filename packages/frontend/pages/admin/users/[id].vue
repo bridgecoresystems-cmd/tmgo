@@ -101,6 +101,46 @@
         />
       </n-card>
 
+      <n-card v-if="user?.role === 'driver'" title="Запросы на изменение" style="margin-top: 20px;">
+        <n-tabs v-model:value="changeRequestsFilter" type="line" @update:value="fetchChangeRequests">
+          <n-tab-pane name="pending" tab="Ожидают" />
+          <n-tab-pane name="approved" tab="Одобрены" />
+          <n-tab-pane name="rejected" tab="Отклонены" />
+          <n-tab-pane name="all" tab="Все" />
+        </n-tabs>
+        <n-spin :show="changeRequestsLoading">
+          <n-empty v-if="!changeRequestsLoading && changeRequests.length === 0" description="Нет запросов" />
+          <n-list v-else bordered>
+            <n-list-item v-for="r in changeRequests" :key="r.id">
+              <n-thing>
+                <template #header>
+                  <n-space align="center">
+                    <span>{{ changeRequestFieldLabel(r.field_key) }}</span>
+                    <n-tag :type="changeRequestStatusTagType(r.status)" size="small">{{ changeRequestStatusLabel(r.status) }}</n-tag>
+                  </n-space>
+                </template>
+                <template #description>
+                  <p v-if="r.reason" style="margin: 4px 0;">{{ r.reason }}</p>
+                  <p v-if="r.requested_value" style="margin: 4px 0; font-size: 13px;">Желаемое значение: {{ r.requested_value }}</p>
+                  <p v-if="r.admin_comment" style="margin: 4px 0; font-size: 12px; opacity: 0.9;">Ответ: {{ r.admin_comment }}</p>
+                  <p style="margin: 4px 0; font-size: 12px; opacity: 0.7;">{{ r.requested_at }}</p>
+                </template>
+              </n-thing>
+              <template #suffix>
+                <n-space v-if="r.status === 'pending'">
+                  <n-button type="success" size="small" :loading="approvingRequestId === r.id" @click="openApproveModal(r)">
+                    Одобрить
+                  </n-button>
+                  <n-button type="error" quaternary size="small" :loading="rejectingRequestId === r.id" @click="openRejectModal(r)">
+                    Отклонить
+                  </n-button>
+                </n-space>
+              </template>
+            </n-list-item>
+          </n-list>
+        </n-spin>
+      </n-card>
+
       <n-card v-else>
         <n-descriptions :column="1" label-placement="left">
           <n-descriptions-item label="Имя">{{ user?.name || '—' }}</n-descriptions-item>
@@ -137,6 +177,35 @@
         </n-space>
       </template>
     </n-modal>
+
+    <n-modal v-model:show="approveRequestModal" preset="card" title="Одобрить запрос" style="max-width: 400px">
+      <n-form-item label="Комментарий (опционально)">
+        <n-input v-model:value="approveRequestComment" type="textarea" placeholder="Комментарий для водителя" :rows="2" />
+      </n-form-item>
+      <n-form-item label="Срок разблокировки (дней)">
+        <n-input-number v-model:value="approveRequestUnlockDays" :min="1" :max="90" />
+      </n-form-item>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="approveRequestModal = false">Отмена</n-button>
+          <n-button type="success" :loading="!!approvingRequestId" @click="submitApproveRequest">Одобрить</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <n-modal v-model:show="rejectRequestModal" preset="card" title="Отклонить запрос" style="max-width: 400px">
+      <n-form-item label="Причина отклонения (обязательно)">
+        <n-input v-model:value="rejectRequestComment" type="textarea" placeholder="Укажите причину..." :rows="3" />
+      </n-form-item>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="rejectRequestModal = false">Отмена</n-button>
+          <n-button type="error" :loading="!!rejectingRequestId" :disabled="!rejectRequestComment?.trim()" @click="submitRejectRequest">
+            Отклонить
+          </n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -161,6 +230,129 @@ const deleting = ref(false)
 const user = ref<any>(null)
 const profile = ref<any>(null)
 const formRef = ref<{ loadProfile: () => Promise<void>; handleSave: () => Promise<void> } | null>(null)
+
+const changeRequestsFilter = ref('pending')
+const changeRequests = ref<any[]>([])
+const changeRequestsLoading = ref(false)
+const approvingRequestId = ref<string | null>(null)
+const rejectingRequestId = ref<string | null>(null)
+const approveRequestModal = ref(false)
+const rejectRequestModal = ref(false)
+const approveRequestComment = ref('')
+const approveRequestUnlockDays = ref(7)
+const rejectRequestComment = ref('')
+const selectedChangeRequest = ref<any>(null)
+
+const CHANGE_REQUEST_FIELD_LABELS: Record<string, string> = {
+  'passport:add': 'Добавить паспорт',
+  'passport:renew': 'Обновить паспорт',
+  'citizenship:add': 'Добавить гражданство',
+  'citizenship:revoke': 'Отказ от гражданства',
+  'drivers_license:renew': 'Обновить ВУ',
+  'medical_certificate:renew': 'Обновить медсправку',
+  'visa:add': 'Добавить визу',
+  'insurance:add': 'Добавить страховку',
+  'entry_permit:add': 'Добавить разрешение на въезд',
+  surname: 'Фамилия',
+  given_name: 'Имя',
+  identity_correction: 'Исправление данных',
+}
+
+function changeRequestFieldLabel(key: string) {
+  return CHANGE_REQUEST_FIELD_LABELS[key] || key
+}
+
+function changeRequestStatusLabel(s: string) {
+  const m: Record<string, string> = {
+    pending: 'Ожидает',
+    approved: 'Одобрен',
+    rejected: 'Отклонён',
+    cancelled: 'Отозван',
+  }
+  return m[s] || s
+}
+
+function changeRequestStatusTagType(s: string) {
+  if (s === 'approved') return 'success'
+  if (s === 'rejected') return 'error'
+  if (s === 'pending') return 'warning'
+  return 'default'
+}
+
+async function fetchChangeRequests() {
+  if (user.value?.role !== 'driver') return
+  changeRequestsLoading.value = true
+  try {
+    changeRequests.value = await $fetch(`${apiBase}/admin/users/${route.params.id}/change-requests`, {
+      credentials: 'include',
+      query: { status: changeRequestsFilter.value },
+    })
+    changeRequests.value = Array.isArray(changeRequests.value) ? changeRequests.value : []
+  } catch (e: any) {
+    message.error(e?.data?.error || 'Ошибка загрузки')
+    changeRequests.value = []
+  } finally {
+    changeRequestsLoading.value = false
+  }
+}
+
+function openApproveModal(r: any) {
+  selectedChangeRequest.value = r
+  approveRequestComment.value = ''
+  approveRequestUnlockDays.value = 7
+  approveRequestModal.value = true
+}
+
+async function submitApproveRequest() {
+  if (!selectedChangeRequest.value?.id) return
+  approvingRequestId.value = selectedChangeRequest.value.id
+  try {
+    await $fetch(`${apiBase}/admin/change-requests/${selectedChangeRequest.value.id}/approve`, {
+      method: 'POST',
+      credentials: 'include',
+      body: { comment: approveRequestComment.value || null, unlock_days: approveRequestUnlockDays.value },
+    })
+    message.success('Запрос одобрен')
+    approveRequestModal.value = false
+    selectedChangeRequest.value = null
+    await fetchChangeRequests()
+    onFormSaved()
+  } catch (e: any) {
+    message.error(e?.data?.error || 'Ошибка')
+  } finally {
+    approvingRequestId.value = null
+  }
+}
+
+function openRejectModal(r: any) {
+  selectedChangeRequest.value = r
+  rejectRequestComment.value = ''
+  rejectRequestModal.value = true
+}
+
+async function submitRejectRequest() {
+  if (!selectedChangeRequest.value?.id || !rejectRequestComment.value?.trim()) {
+    message.error('Укажите причину отклонения')
+    return
+  }
+  rejectingRequestId.value = selectedChangeRequest.value.id
+  try {
+    await $fetch(`${apiBase}/admin/change-requests/${selectedChangeRequest.value.id}/reject`, {
+      method: 'POST',
+      credentials: 'include',
+      body: { comment: rejectRequestComment.value.trim() },
+    })
+    message.success('Запрос отклонён')
+    rejectRequestModal.value = false
+    selectedChangeRequest.value = null
+    await fetchChangeRequests()
+    onFormSaved()
+  } catch (e: any) {
+    message.error(e?.data?.error || 'Ошибка')
+  } finally {
+    rejectingRequestId.value = null
+  }
+}
 
 const loadUrl = computed(() => `${apiBase}/admin/users/${route.params.id}/driver-profile`)
 const saveUrl = computed(() => `${apiBase}/admin/users/${route.params.id}/driver-profile`)
@@ -190,6 +382,7 @@ async function load() {
     if (u?.role === 'driver') {
       const p = await $fetch<any>(`${apiBase}/admin/users/${route.params.id}/driver-profile`, { credentials: 'include' })
       profile.value = p
+      await fetchChangeRequests()
     } else {
       profile.value = null
     }
@@ -207,6 +400,7 @@ function onFormSaved() {
         profile.value = p
       })
       .catch(() => {})
+    fetchChangeRequests()
   }
 }
 
@@ -352,6 +546,7 @@ async function handleRestore() {
 }
 
 onMounted(load)
+watch(changeRequestsFilter, fetchChangeRequests)
 </script>
 
 <style scoped>

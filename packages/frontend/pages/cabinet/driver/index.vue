@@ -1,16 +1,17 @@
 <template>
   <div class="dashboard-page">
-    <!-- Уведомление о заполнении карточки -->
+    <!-- Уведомление о верификации -->
     <n-alert
       v-if="showOnboardingAlert"
-      title="Заполните карточку водителя"
+      title="Пройдите верификацию"
       type="warning"
       class="mb-24"
     >
-      Для того чтобы начать принимать заказы и проходить верификацию, вам необходимо заполнить полную информацию о себе и своих документах.
+      Для того чтобы начать принимать заказы, пройдите верификацию
+      <NuxtLink to="/cabinet/driver/card-v2" class="alert-link">здесь</NuxtLink>.
       <template #footer>
         <n-button type="primary" size="small" @click="navigateTo('/cabinet/driver/card-v2')">
-          Заполнить карточку
+          Пройти верификацию
         </n-button>
       </template>
     </n-alert>
@@ -52,6 +53,14 @@ const showOnboardingAlert = computed(() => {
   padding: 20px 0;
 }
 .mb-24 { margin-bottom: 24px; }
+.alert-link {
+  color: var(--n-primary-color);
+  text-decoration: underline;
+  font-weight: 500;
+}
+.alert-link:hover {
+  opacity: 0.9;
+}
 .shadow-sm {
   box-shadow: 0 4px 24px rgba(0,0,0,0.05);
 }

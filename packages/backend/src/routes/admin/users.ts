@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
 import { db } from '../../db';
-import { users, accounts, carrierProfiles, sessions, profileEditRequests, vehicles, orderResponses, driverServices, orders, orderMessages, driverCitizenships, driverContacts } from '../../db/schema';
+import { users, accounts, carrierProfiles, sessions, profileEditRequests, profileChangeRequests, vehicles, orderResponses, driverServices, orders, orderMessages, driverCitizenships, driverContacts, driverDocuments } from '../../db/schema';
 import { eq, and, desc, inArray, isNull } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 
@@ -63,6 +63,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
         givenName: carrierProfiles.givenName,
         patronymic: carrierProfiles.patronymic,
         verificationStatus: carrierProfiles.verificationStatus,
+        isOnline: carrierProfiles.isOnline,
       })
       .from(users)
       .leftJoin(carrierProfiles, eq(users.id, carrierProfiles.userId))
@@ -82,6 +83,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
         is_active: row.isActive,
         driverName,
         verification_status: row.verificationStatus ?? null,
+        is_online: row.role === 'driver' ? (row.isOnline ?? false) : null,
       };
     });
   })
@@ -215,6 +217,58 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       const allPhones = [...new Set([...legacyPhones, ...contactsFromTable.map((c) => c.value).filter(Boolean)])];
       const phone = allPhones.join(', ');
 
+      const legacyEmails = (profile.additionalEmails ?? '').split(',').map((s: string) => s.trim()).filter(Boolean);
+      const emailsFromTable = await db.select({ value: driverContacts.value })
+        .from(driverContacts)
+        .where(and(
+          eq(driverContacts.carrierId, profile.id),
+          eq(driverContacts.contactType, 'email'),
+          eq(driverContacts.isActive, true),
+          isNull(driverContacts.deletedAt),
+        ));
+      const allEmails = [...new Set([...legacyEmails, ...emailsFromTable.map((c) => c.value).filter(Boolean)])];
+      const additional_emails = allEmails.join(', ');
+
+      const passportDocs = await db.select()
+        .from(driverDocuments)
+        .where(and(
+          eq(driverDocuments.carrierId, profile.id),
+          eq(driverDocuments.docType, 'passport'),
+          inArray(driverDocuments.status, ['active', 'pending_verification']),
+        ))
+        .orderBy(desc(driverDocuments.createdAt));
+      const passports_from_documents = passportDocs.map((doc) => ({
+        id: doc.id,
+        series: doc.series,
+        number: doc.number,
+        issued_by: doc.issuedBy,
+        issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+        expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+        place_of_birth: doc.placeOfBirth,
+        residential_address: doc.residentialAddress,
+        scan_url: doc.scanUrl,
+        status: doc.status,
+      }));
+
+      const licenseDocs = await db.select()
+        .from(driverDocuments)
+        .where(and(
+          eq(driverDocuments.carrierId, profile.id),
+          eq(driverDocuments.docType, 'drivers_license'),
+          inArray(driverDocuments.status, ['active', 'pending_verification']),
+        ))
+        .orderBy(desc(driverDocuments.createdAt));
+      const licenses_from_documents = licenseDocs.map((doc) => ({
+        id: doc.id,
+        number: doc.number,
+        issued_by: doc.issuedBy,
+        issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+        expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+        license_categories: doc.licenseCategories,
+        scan_url: doc.scanUrl,
+        status: doc.status,
+      }));
+
       return {
       id: profile.id,
       surname: profile.surname,
@@ -225,7 +279,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       gender: profile.gender,
       phone,
       email: user.email,
-      additional_emails: profile.additionalEmails ?? '',
+      additional_emails,
       status: profile.status,
       employment_category: profile.employmentCategory,
       company_name: profile.companyName,
@@ -235,6 +289,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       license_issue_date: d(profile.licenseIssueDate),
       license_issued_by: profile.licenseIssuedBy,
       license_scan_url: profile.licenseScanUrl,
+      licenses_from_documents,
       has_international_license: profile.hasInternationalLicense,
       international_license_number: profile.internationalLicenseNumber,
       international_license_validity: profile.internationalLicenseValidity,
@@ -253,6 +308,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       passport_scan_url: profile.passportScanUrl,
       passport_is_active: profile.passportIsActive,
       extra_passports: (profile.extraPassports as any[]) ?? [],
+      passports_from_documents,
       permission_entry_zone: profile.permissionEntryZone,
       permission_issue_date: d(profile.permissionIssueDate),
       permission_validity_date: d(profile.permissionValidityDate),
@@ -468,6 +524,39 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       requested_at: r.requestedAt,
       resolved_at: r.resolvedAt,
       field_value: r.fieldValue ?? fieldValue(r.fieldKey),
+    }));
+  })
+  .get('/:id/change-requests', async ({ params, query, error }) => {
+    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!user) return error(404, 'User not found');
+    if (user.role !== 'driver') return error(400, 'User is not a driver');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const status = (query as { status?: string }).status ?? 'pending';
+    const list = await db
+      .select()
+      .from(profileChangeRequests)
+      .where(
+        status === 'all'
+          ? eq(profileChangeRequests.carrierId, profile.id)
+          : and(eq(profileChangeRequests.carrierId, profile.id), eq(profileChangeRequests.status, status))
+      )
+      .orderBy(desc(profileChangeRequests.requestedAt));
+    const driverName = [profile.surname, profile.givenName, profile.patronymic].filter(Boolean).join(' ') || null;
+    const d = (x: Date | null | undefined) => (x ? new Date(x).toISOString().slice(0, 10) : null);
+    return list.map((r) => ({
+      id: r.id,
+      carrier_id: r.carrierId,
+      driver_name: driverName,
+      field_key: r.fieldKey,
+      current_value: r.currentValue,
+      requested_value: r.requestedValue,
+      reason: r.reason,
+      status: r.status,
+      admin_comment: r.adminComment,
+      requested_at: d(r.requestedAt),
+      resolved_at: d(r.resolvedAt),
+      unlocked_until: d(r.unlockedUntil),
     }));
   })
   .post('/:id/edit-requests/:requestId/approve', async ({ params, error, adminUser }) => {
