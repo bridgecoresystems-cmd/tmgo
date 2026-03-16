@@ -199,6 +199,8 @@ const columns: DataTableColumns = [
         canDelete
           ? h(NPopconfirm, {
               onPositiveClick: () => handleDeactivate(row),
+              positiveText: 'Да',
+              negativeText: 'Отмена',
             }, {
               trigger: () => h(NButton, {
                 quaternary: true,
@@ -208,8 +210,6 @@ const columns: DataTableColumns = [
                 onClick: (e: Event) => e.stopPropagation(),
               }, { default: () => '×' }),
               default: () => 'Деактивировать пользователя? Он исчезнет из списка, но данные сохранятся.',
-              positiveText: 'Да',
-              negativeText: 'Отмена',
             })
           : null,
       ].filter(Boolean));

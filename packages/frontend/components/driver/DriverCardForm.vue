@@ -6,7 +6,13 @@
     </n-alert>
 
     <n-card v-else>
-      <n-tabs v-model:value="activeTab" type="line" animated @update:value="onTabChange">
+      <n-tabs
+        v-model:value="activeTab"
+        type="line"
+        animated
+        :class="{ 'form-sections-mode': layoutMode === 'sections' }"
+        @update:value="onTabChange"
+      >
         <n-tab-pane name="main" tab="1. Основная информация">
           <n-form :model="form" label-placement="top" class="form-uniform" style="max-width: 600px; padding-top: 16px;">
             <n-form-item label="Водитель ID">
@@ -624,7 +630,7 @@
           </n-form>
         </n-tab-pane>
 
-        <n-tab-pane v-if="!isDriverContext" name="requests" tab="5. Запросы">
+        <n-tab-pane v-if="!isDriverContext && layoutMode !== 'sections'" name="requests" tab="5. Запросы">
           <div style="padding: 16px 0; max-width: 600px;">
             <n-empty v-if="editRequests.length === 0" description="Нет запросов на изменение" />
             <n-space v-else vertical>
@@ -699,8 +705,10 @@ const props = withDefaults(
     isDriverContext?: boolean
     /** Когда передан — форма заполняется из него без fetch (для админки) */
     initialProfile?: Record<string, any> | null
+    /** 'tabs' = вкладки, 'sections' = все 4 раздела в одном скролле как в DriverCardV2 */
+    layoutMode?: 'tabs' | 'sections'
   }>(),
-  { activeTab: 'main', isDriverContext: false }
+  { activeTab: 'main', isDriverContext: false, layoutMode: 'tabs' }
 )
 
 const emit = defineEmits<{ saved: []; 'update:activeTab': [value: string] }>()
@@ -1685,5 +1693,27 @@ defineExpose({
 }
 .edit-request-row:last-child {
   border-bottom: none;
+}
+
+/* Режим секций: все 4 раздела в одном скролле как в DriverCardV2 */
+.form-sections-mode :deep(.n-tabs-nav) {
+  display: none;
+}
+.form-sections-mode :deep(.n-tabs-pane-wrapper),
+.form-sections-mode :deep(.n-tabs-pane-wrapper > div) {
+  display: block !important;
+}
+.form-sections-mode :deep(.n-tab-pane) {
+  display: block !important;
+  padding: 0 0 24px 0;
+  border: none;
+}
+.form-sections-mode :deep(.n-tab-pane:not(:first-child)) {
+  padding-top: 24px;
+  border-top: 1px solid var(--n-border-color);
+  margin-top: 24px;
+}
+.form-sections-mode :deep(.n-tab-pane) .n-form {
+  padding-top: 0;
 }
 </style>

@@ -89,7 +89,7 @@
     "signup": {
       "title": "Hasaba durmak",
       "emailLabel": "Email (giriş) *",
-      "emailPlaceholder": "example@mail.com",
+      "emailPlaceholder": "example{'@'}mail.com",
       "roleLabel": "Rol *",
       "roleClient": "Müşderi",
       "roleDriver": "Daşaýjy",
@@ -105,7 +105,7 @@
     "login": {
       "title": "Girmek",
       "emailLabel": "Email",
-      "emailPlaceholder": "your@email.com",
+      "emailPlaceholder": "your{'@'}email.com",
       "passwordLabel": "Parol",
       "passwordPlaceholder": "Paroly giriziň",
       "submit": "Girmek",

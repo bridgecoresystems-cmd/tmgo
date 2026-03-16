@@ -89,7 +89,7 @@
     "signup": {
       "title": "Sign up",
       "emailLabel": "Email (login) *",
-      "emailPlaceholder": "example@mail.com",
+      "emailPlaceholder": "example{'@'}mail.com",
       "roleLabel": "Role *",
       "roleClient": "Client",
       "roleDriver": "Carrier",
@@ -105,7 +105,7 @@
     "login": {
       "title": "Sign in",
       "emailLabel": "Email",
-      "emailPlaceholder": "your@email.com",
+      "emailPlaceholder": "your{'@'}email.com",
       "passwordLabel": "Password",
       "passwordPlaceholder": "Enter password",
       "submit": "Sign in",
