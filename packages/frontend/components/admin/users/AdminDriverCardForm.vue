@@ -114,170 +114,109 @@
             </n-space>
           </n-card>
 
-          <!-- 2. Паспортные данные -->
+          <!-- 2. Паспортные данные (единый список как гражданство/телефоны) -->
           <n-h3 prefix="bar" align-text>2. Паспортные данные</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
-              <n-form-item label="Серия / Номер паспорта" required>
-                <n-space>
-                  <n-input v-model:value="form.passport_series" placeholder="AB" style="width: 80px" />
-                  <n-input v-model:value="form.passport_number" placeholder="123456" style="width: 160px" />
-                </n-space>
-              </n-form-item>
-
-              <n-form-item label="Даты действия" required>
-                <n-space align="center">
-                  <n-date-picker
-                    :value="form.passport_issue_date ? new Date(form.passport_issue_date).getTime() : null"
-                    type="date"
-                    placeholder="Дата выдачи"
-                    @update:value="(v) => { form.passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
-                  />
-                  <n-text depth="3">—</n-text>
-                  <n-date-picker
-                    :value="form.passport_expiry_date ? new Date(form.passport_expiry_date).getTime() : null"
-                    type="date"
-                    placeholder="Дата окончания"
-                    @update:value="(v) => { form.passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
-                  />
-                </n-space>
-              </n-form-item>
-
-              <n-form-item label="Кем выдан" required path="passport_issued_by">
-                <n-input v-model:value="form.passport_issued_by" placeholder="ОВД г. Ашхабад" />
-              </n-form-item>
-
-              <n-form-item label="Место рождения" required path="place_of_birth">
-                <n-input v-model:value="form.place_of_birth" placeholder="г. Мары" />
-              </n-form-item>
-
-              <n-form-item label="Адрес проживания" required path="residential_address">
-                <n-input v-model:value="form.residential_address" placeholder="ул. Махтумкули, д. 10" />
-              </n-form-item>
-
-              <n-form-item label="Скан паспорта (PDF/JPG)" required>
-                <n-space vertical>
-                  <n-upload :max="1" :custom-request="(o) => handlePassportUpload(o)" :show-file-list="false">
-                    <n-button size="small">{{ form.passport_scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
-                  </n-upload>
-                  <n-button v-if="form.passport_scan_url" text type="primary" size="small" @click="openScan(form.passport_scan_url)">
-                    Просмотр скана
-                  </n-button>
-                </n-space>
-              </n-form-item>
-
-              <!-- Второй паспорт -->
-              <template v-if="hasPassport2">
-                <n-divider style="margin: 24px 0 16px;">Паспорт (2)</n-divider>
-                <n-form-item label="Серия / Номер паспорта">
-                  <n-space>
-                    <n-input v-model:value="form.extra_passports[0].passport_series" placeholder="AB" style="width: 80px" />
-                    <n-input v-model:value="form.extra_passports[0].passport_number" placeholder="1234567" style="width: 160px" />
+              <template v-for="(p, pi) in passportsList" :key="p._key">
+                <n-divider v-if="pi > 0" style="margin: 24px 0 16px;">Паспорт {{ pi + 1 }}</n-divider>
+                <n-form-item :label="`Серия / Номер паспорта${pi > 0 ? ` (${pi + 1})` : ''}`" :required="pi === 0">
+                  <n-space align="center">
+                    <n-input v-model:value="p.series" placeholder="AB" style="width: 80px" />
+                    <n-input v-model:value="p.number" placeholder="123456" style="width: 160px" />
+                    <n-button v-if="pi > 0" quaternary circle type="error" @click="removePassport(pi)">×</n-button>
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Статус паспорта">
-                  <n-switch v-model:value="form.extra_passports[0].is_active">
-                    <template #checked>Активен</template>
-                    <template #unchecked>Неактивен</template>
-                  </n-switch>
-                </n-form-item>
-                <n-form-item label="Даты действия">
+                <n-form-item label="Даты действия" :required="pi === 0">
                   <n-space align="center">
                     <n-date-picker
-                      :value="form.extra_passports[0].passport_issue_date ? new Date(form.extra_passports[0].passport_issue_date).getTime() : null"
+                      :value="p.issued_at ? new Date(p.issued_at).getTime() : null"
                       type="date"
                       placeholder="Дата выдачи"
-                      @update:value="(v) => { form.extra_passports[0].passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                      @update:value="(v) => { p.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
                     />
                     <n-text depth="3">—</n-text>
                     <n-date-picker
-                      :value="form.extra_passports[0].passport_expiry_date ? new Date(form.extra_passports[0].passport_expiry_date).getTime() : null"
+                      :value="p.expires_at ? new Date(p.expires_at).getTime() : null"
                       type="date"
                       placeholder="Дата окончания"
-                      @update:value="(v) => { form.extra_passports[0].passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                      @update:value="(v) => { p.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
                     />
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Кем выдан">
-                  <n-input v-model:value="form.extra_passports[0].passport_issued_by" placeholder="МВД Туркменистана" />
+                <n-form-item label="Кем выдан" :required="pi === 0">
+                  <n-input v-model:value="p.issued_by" placeholder="ОВД г. Ашхабад" />
                 </n-form-item>
-                <n-form-item label="Место рождения">
-                  <n-input v-model:value="form.extra_passports[0].place_of_birth" placeholder="Ашхабад" />
+                <n-form-item label="Место рождения" :required="pi === 0">
+                  <n-input v-model:value="p.place_of_birth" placeholder="г. Мары" />
                 </n-form-item>
-                <n-form-item label="Адрес проживания">
-                  <n-input v-model:value="form.extra_passports[0].residential_address" type="textarea" placeholder="Ашхабад, ул. Гарашсызлык, д. 45" :rows="2" />
+                <n-form-item label="Адрес проживания" :required="pi === 0">
+                  <n-input v-model:value="p.residential_address" placeholder="ул. Махтумкули, д. 10" />
                 </n-form-item>
-                <n-form-item label="Скан паспорта (PDF/JPG)">
-                  <n-space vertical>
-                    <n-upload :max="1" :custom-request="(o) => handleExtraPassportUpload(o)" :show-file-list="false">
-                      <n-button size="small">{{ form.extra_passports[0]?.passport_scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                <n-form-item label="Скан паспорта (PDF/JPG)" :required="pi === 0">
+                  <n-space align="center">
+                    <n-upload :max="1" :custom-request="(o) => handlePassportScanUpload(o, p)" :show-file-list="false">
+                      <n-button size="small">{{ p.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
                     </n-upload>
-                    <n-button v-if="form.extra_passports[0]?.passport_scan_url" text type="primary" size="small" @click="openScan(form.extra_passports[0].passport_scan_url)">
+                    <n-button v-if="p.scan_url" text type="primary" size="small" @click="openScan(p.scan_url)">
                       Просмотр скана
                     </n-button>
                   </n-space>
                 </n-form-item>
-                <n-button quaternary type="error" size="small" @click="removePassport2">Удалить второй паспорт</n-button>
               </template>
-
-              <n-button v-if="!hasPassport2" quaternary type="primary" size="small" @click="addPassport2">+ Добавить второй паспорт</n-button>
+              <n-button quaternary type="primary" size="small" @click="addPassport">+ Добавить паспорт</n-button>
             </n-space>
           </n-card>
 
-          <!-- 3. Водительское удостоверение -->
+          <!-- 3. Водительское удостоверение (единый список) -->
           <n-h3 prefix="bar" align-text>3. Водительское удостоверение</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
-              <n-form-item label="Номер ВУ" required path="license_number">
-                <n-input v-model:value="form.license_number" placeholder="tm-123456" style="width: 240px" />
-              </n-form-item>
-
-              <n-form-item label="Категории прав" required>
-                <n-checkbox-group v-model:value="form.license_categories_arr">
-                  <n-space>
-                    <n-checkbox value="A">A</n-checkbox>
-                    <n-checkbox value="B">B</n-checkbox>
-                    <n-checkbox value="C">C</n-checkbox>
-                    <n-checkbox value="D">D</n-checkbox>
-                    <n-checkbox value="E">E</n-checkbox>
+              <template v-for="(lic, li) in licensesList" :key="lic._key">
+                <n-divider v-if="li > 0" style="margin: 24px 0 16px;">ВУ {{ li + 1 }}</n-divider>
+                <n-form-item :label="`Номер ВУ${li > 0 ? ` (${li + 1})` : ''}`" :required="li === 0">
+                  <n-space align="center">
+                    <n-input v-model:value="lic.number" placeholder="tm-123456" style="width: 240px" />
+                    <n-button v-if="li > 0" quaternary circle type="error" @click="removeLicense(li)">×</n-button>
                   </n-space>
-                </n-checkbox-group>
-              </n-form-item>
+                </n-form-item>
+                <n-form-item label="Категории прав" :required="li === 0">
+                  <n-input v-model:value="lic.license_categories" placeholder="B, C, D, E" style="width: 200px" />
+                </n-form-item>
+                <n-form-item label="Даты действия ВУ" :required="li === 0">
+                  <n-space align="center">
+                    <n-date-picker
+                      :value="lic.issued_at ? new Date(lic.issued_at).getTime() : null"
+                      type="date"
+                      placeholder="Дата выдачи"
+                      @update:value="(v) => { lic.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                    />
+                    <n-text depth="3">—</n-text>
+                    <n-date-picker
+                      :value="lic.expires_at ? new Date(lic.expires_at).getTime() : null"
+                      type="date"
+                      placeholder="Дата окончания"
+                      @update:value="(v) => { lic.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                    />
+                  </n-space>
+                </n-form-item>
+                <n-form-item label="Кем выдано">
+                  <n-input v-model:value="lic.issued_by" placeholder="МВД Туркменистана" />
+                </n-form-item>
+                <n-form-item label="Скан ВУ (PDF/JPG)" :required="li === 0">
+                  <n-space align="center">
+                    <n-upload :max="1" :custom-request="(o) => handleLicenseScanUpload(o, lic)" :show-file-list="false">
+                      <n-button size="small">{{ lic.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                    </n-upload>
+                    <n-button v-if="lic.scan_url" text type="primary" size="small" @click="openScan(lic.scan_url)">
+                      Просмотр скана
+                    </n-button>
+                  </n-space>
+                </n-form-item>
+              </template>
+              <n-button quaternary type="primary" size="small" @click="addLicense">+ Добавить ВУ</n-button>
 
-              <n-form-item label="Даты действия ВУ" required>
-                <n-space align="center">
-                  <n-date-picker
-                    :value="form.license_issue_date ? new Date(form.license_issue_date).getTime() : null"
-                    type="date"
-                    placeholder="Дата выдачи"
-                    @update:value="(v) => { form.license_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
-                  />
-                  <n-text depth="3">—</n-text>
-                  <n-date-picker
-                    :value="form.license_expiry ? new Date(form.license_expiry).getTime() : null"
-                    type="date"
-                    placeholder="Дата окончания"
-                    @update:value="(v) => { form.license_expiry = v ? new Date(v).toISOString().slice(0, 10) : null }"
-                  />
-                </n-space>
-              </n-form-item>
-
-              <n-form-item label="Кем выдано">
-                <n-input v-model:value="form.license_issued_by" placeholder="МВД Туркменистана" />
-              </n-form-item>
-
-              <n-form-item label="Скан ВУ (PDF/JPG)" required>
-                <n-space vertical>
-                  <n-upload :max="1" :custom-request="(o) => handleLicenseUpload(o)" :show-file-list="false">
-                    <n-button size="small">{{ form.license_scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
-                  </n-upload>
-                  <n-button v-if="form.license_scan_url" text type="primary" size="small" @click="openScan(form.license_scan_url)">
-                    Просмотр скана
-                  </n-button>
-                </n-space>
-              </n-form-item>
-
-              <n-form-item label="Международные права">
+              <n-form-item label="Международные права" class="mt-16">
                 <n-space vertical style="width: 100%">
                   <n-radio-group v-model:value="form.has_international_license">
                     <n-space>
@@ -285,7 +224,6 @@
                       <n-radio :value="false">Нет</n-radio>
                     </n-space>
                   </n-radio-group>
-
                   <template v-if="form.has_international_license">
                     <n-space vertical size="small" class="mt-8">
                       <n-form-item label="Номер МВУ" label-placement="left" label-width="120">
@@ -396,12 +334,16 @@ import {
 } from 'naive-ui'
 import { citizenships } from '@tmgo/shared'
 
+const route = useRoute()
 const props = defineProps<{
   loadUrl: string
   saveUrl: string
   apiBase: string
   initialProfile?: any
 }>()
+
+const userId = computed(() => String(route.params.id || ''))
+const documentsBaseUrl = computed(() => `${props.apiBase}/admin/users/${userId.value}/documents`)
 
 const emit = defineEmits<{ saved: [] }>()
 
@@ -499,24 +441,89 @@ const form = reactive({
   updated_at: ''
 })
 
-const hasPassport2 = computed(() => form.extra_passports.length > 0)
+const profileData = ref<Record<string, any> | null>(null)
 
-function addPassport2() {
-  form.extra_passports.push({
-    passport_series: '',
-    passport_number: '',
-    passport_issue_date: null,
-    passport_expiry_date: null,
-    passport_issued_by: '',
+type PassportItem = {
+  _key: string
+  _source: 'main' | 'extra' | 'doc' | 'new'
+  _docId?: string
+  series: string
+  number: string
+  issued_at: string | null
+  expires_at: string | null
+  issued_by: string
+  place_of_birth: string
+  residential_address: string
+  scan_url: string
+}
+
+type LicenseItem = {
+  _key: string
+  _source: 'main' | 'doc' | 'new'
+  _docId?: string
+  number: string
+  license_categories: string
+  issued_at: string | null
+  expires_at: string | null
+  issued_by: string
+  scan_url: string
+}
+
+const passportsList = ref<PassportItem[]>([])
+const licensesList = ref<LicenseItem[]>([])
+
+function addPassport() {
+  passportsList.value.push({
+    _key: `new-${Date.now()}`,
+    _source: 'new',
+    series: '',
+    number: '',
+    issued_at: null,
+    expires_at: null,
+    issued_by: '',
     place_of_birth: '',
     residential_address: '',
-    passport_scan_url: '',
-    is_active: true
+    scan_url: ''
   })
 }
 
-function removePassport2() {
-  form.extra_passports = []
+async function removePassport(idx: number) {
+  const p = passportsList.value[idx]
+  if (p._source === 'doc' && p._docId) {
+    try {
+      await $fetch(`${documentsBaseUrl.value}/${p._docId}`, { method: 'DELETE', credentials: 'include' })
+    } catch (e: any) {
+      message.error(e?.data?.error || 'Ошибка удаления')
+      return
+    }
+  }
+  passportsList.value.splice(idx, 1)
+}
+
+function addLicense() {
+  licensesList.value.push({
+    _key: `new-${Date.now()}`,
+    _source: 'new',
+    number: '',
+    license_categories: '',
+    issued_at: null,
+    expires_at: null,
+    issued_by: '',
+    scan_url: ''
+  })
+}
+
+async function removeLicense(idx: number) {
+  const lic = licensesList.value[idx]
+  if (lic._source === 'doc' && lic._docId) {
+    try {
+      await $fetch(`${documentsBaseUrl.value}/${lic._docId}`, { method: 'DELETE', credentials: 'include' })
+    } catch (e: any) {
+      message.error(e?.data?.error || 'Ошибка удаления')
+      return
+    }
+  }
+  licensesList.value.splice(idx, 1)
 }
 
 function openScan(url: string) {
@@ -524,8 +531,110 @@ function openScan(url: string) {
   window.open(fullUrl, '_blank')
 }
 
+function buildPassportsList(data: Record<string, any>): PassportItem[] {
+  const seen = new Set<string>()
+  const key = (s: string, n: string) => `${(s || '').trim().toUpperCase()}_${(n || '').trim()}`
+  const list: PassportItem[] = []
+
+  const main: PassportItem = {
+    _key: 'main',
+    _source: 'main',
+    series: data.passport_series ?? '',
+    number: data.passport_number ?? '',
+    issued_at: data.passport_issue_date ?? null,
+    expires_at: data.passport_expiry_date ?? null,
+    issued_by: data.passport_issued_by ?? '',
+    place_of_birth: data.place_of_birth ?? '',
+    residential_address: data.residential_address ?? '',
+    scan_url: data.passport_scan_url ?? ''
+  }
+  list.push(main)
+  seen.add(key(main.series, main.number))
+
+  const extra = Array.isArray(data.extra_passports) ? data.extra_passports : []
+  for (let i = 0; i < extra.length; i++) {
+    const p = extra[i]
+    const s = p.passport_series ?? p.passportSeries ?? ''
+    const n = p.passport_number ?? p.passportNumber ?? ''
+    if (seen.has(key(s, n))) continue
+    seen.add(key(s, n))
+    list.push({
+      _key: `extra-${i}`,
+      _source: 'extra',
+      series: s,
+      number: n,
+      issued_at: p.passport_issue_date ?? p.passportIssueDate ?? null,
+      expires_at: p.passport_expiry_date ?? p.passportExpiryDate ?? null,
+      issued_by: p.passport_issued_by ?? p.passportIssuedBy ?? '',
+      place_of_birth: p.place_of_birth ?? p.placeOfBirth ?? '',
+      residential_address: p.residential_address ?? p.residentialAddress ?? '',
+      scan_url: p.passport_scan_url ?? p.passportScanUrl ?? ''
+    })
+  }
+
+  const docs = Array.isArray(data.passports_from_documents) ? data.passports_from_documents : []
+  for (const d of docs) {
+    const s = d.series ?? ''
+    const n = d.number ?? ''
+    if (seen.has(key(s, n))) continue
+    seen.add(key(s, n))
+    list.push({
+      _key: `doc-${d.id}`,
+      _source: 'doc',
+      _docId: d.id,
+      series: s,
+      number: n,
+      issued_at: d.issued_at ?? null,
+      expires_at: d.expires_at ?? null,
+      issued_by: d.issued_by ?? '',
+      place_of_birth: d.place_of_birth ?? '',
+      residential_address: d.residential_address ?? '',
+      scan_url: d.scan_url ?? ''
+    })
+  }
+  return list
+}
+
+function buildLicensesList(data: Record<string, any>): LicenseItem[] {
+  const seen = new Set<string>()
+  const list: LicenseItem[] = []
+
+  const main: LicenseItem = {
+    _key: 'main',
+    _source: 'main',
+    number: data.license_number ?? '',
+    license_categories: data.license_categories ?? '',
+    issued_at: data.license_issue_date ?? null,
+    expires_at: data.license_expiry ?? null,
+    issued_by: data.license_issued_by ?? '',
+    scan_url: data.license_scan_url ?? ''
+  }
+  list.push(main)
+  if (main.number) seen.add((main.number || '').trim())
+
+  const docs = Array.isArray(data.licenses_from_documents) ? data.licenses_from_documents : []
+  for (const d of docs) {
+    const n = (d.number ?? '').trim()
+    if (n && seen.has(n)) continue
+    if (n) seen.add(n)
+    list.push({
+      _key: `doc-${d.id}`,
+      _source: 'doc',
+      _docId: d.id,
+      number: d.number ?? '',
+      license_categories: d.license_categories ?? '',
+      issued_at: d.issued_at ?? null,
+      expires_at: d.expires_at ?? null,
+      issued_by: d.issued_by ?? '',
+      scan_url: d.scan_url ?? ''
+    })
+  }
+  return list
+}
+
 function applyProfileToForm(data: Record<string, any>) {
-  if (!data) return
+  if (!data || data.error) return
+  profileData.value = data
   Object.assign(form, data)
 
   if (data.citizenship) form.citizenships = data.citizenship.split(',').map((s: string) => s.trim()).filter(Boolean)
@@ -547,17 +656,8 @@ function applyProfileToForm(data: Record<string, any>) {
     form.hire_source = data.hire_source
   }
 
-  form.extra_passports = Array.isArray(data.extra_passports) ? data.extra_passports.map((p: any) => ({
-    passport_series: p.passport_series ?? '',
-    passport_number: p.passport_number ?? '',
-    passport_issue_date: p.passport_issue_date ?? null,
-    passport_expiry_date: p.passport_expiry_date ?? null,
-    passport_issued_by: p.passport_issued_by ?? '',
-    place_of_birth: p.place_of_birth ?? '',
-    residential_address: p.residential_address ?? '',
-    passport_scan_url: p.passport_scan_url ?? '',
-    is_active: p.is_active ?? true
-  })) : []
+  passportsList.value = buildPassportsList(data)
+  licensesList.value = buildLicensesList(data)
 }
 
 async function loadProfile() {
@@ -586,6 +686,10 @@ async function loadProfile() {
 }
 
 function buildSaveBody() {
+  const mainPassport = passportsList.value[0]
+  const extraPassports = passportsList.value.slice(1).filter(p => p._source === 'extra')
+  const mainLicense = licensesList.value[0]
+
   const body: Record<string, unknown> = {
     surname: form.surname,
     given_name: form.given_name,
@@ -601,33 +705,33 @@ function buildSaveBody() {
     inn: form.inn,
     address: form.address,
 
-    passport_series: form.passport_series,
-    passport_number: form.passport_number,
-    passport_issue_date: form.passport_issue_date,
-    passport_expiry_date: form.passport_expiry_date,
-    passport_issued_by: form.passport_issued_by,
-    place_of_birth: form.place_of_birth,
-    residential_address: form.residential_address,
-    passport_scan_url: form.passport_scan_url,
-    passport_is_active: form.passport_is_active,
-    extra_passports: form.extra_passports.map(p => ({
-      passport_series: p.passport_series || null,
-      passport_number: p.passport_number || null,
-      passport_issue_date: p.passport_issue_date || null,
-      passport_expiry_date: p.passport_expiry_date || null,
-      passport_issued_by: p.passport_issued_by || null,
+    passport_series: mainPassport?.series ?? form.passport_series,
+    passport_number: mainPassport?.number ?? form.passport_number,
+    passport_issue_date: mainPassport?.issued_at ?? form.passport_issue_date,
+    passport_expiry_date: mainPassport?.expires_at ?? form.passport_expiry_date,
+    passport_issued_by: mainPassport?.issued_by ?? form.passport_issued_by,
+    place_of_birth: mainPassport?.place_of_birth ?? form.place_of_birth,
+    residential_address: mainPassport?.residential_address ?? form.residential_address,
+    passport_scan_url: mainPassport?.scan_url ?? form.passport_scan_url,
+    passport_is_active: true,
+    extra_passports: extraPassports.map(p => ({
+      passport_series: p.series || null,
+      passport_number: p.number || null,
+      passport_issue_date: p.issued_at || null,
+      passport_expiry_date: p.expires_at || null,
+      passport_issued_by: p.issued_by || null,
       place_of_birth: p.place_of_birth || null,
       residential_address: p.residential_address || null,
-      passport_scan_url: p.passport_scan_url || null,
-      is_active: p.is_active ?? true
+      passport_scan_url: p.scan_url || null,
+      is_active: true
     })),
 
-    license_number: form.license_number,
-    license_categories: form.license_categories_arr.join(', '),
-    license_issue_date: form.license_issue_date,
-    license_expiry: form.license_expiry,
-    license_issued_by: form.license_issued_by,
-    license_scan_url: form.license_scan_url,
+    license_number: mainLicense?.number ?? form.license_number,
+    license_categories: mainLicense?.license_categories ?? form.license_categories_arr.join(', '),
+    license_issue_date: mainLicense?.issued_at ?? form.license_issue_date,
+    license_expiry: mainLicense?.expires_at ?? form.license_expiry,
+    license_issued_by: mainLicense?.issued_by ?? form.license_issued_by,
+    license_scan_url: mainLicense?.scan_url ?? form.license_scan_url,
     has_international_license: form.has_international_license,
     international_license_number: form.international_license_number,
     international_license_validity: form.international_license_validity,
@@ -657,6 +761,73 @@ async function handleSave() {
       credentials: 'include',
       body: buildSaveBody()
     })
+
+    const base = documentsBaseUrl.value
+    for (const p of passportsList.value) {
+      if (p._source === 'doc' && p._docId) {
+        await $fetch(`${base}/${p._docId}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          body: {
+            series: p.series || null,
+            number: p.number || null,
+            issued_by: p.issued_by || null,
+            issued_at: p.issued_at || null,
+            expires_at: p.expires_at || null,
+            place_of_birth: p.place_of_birth || null,
+            residential_address: p.residential_address || null,
+            scan_url: p.scan_url || null
+          }
+        })
+      } else if (p._source === 'new') {
+        await $fetch(base, {
+          method: 'POST',
+          credentials: 'include',
+          body: {
+            doc_type: 'passport',
+            series: p.series || null,
+            number: p.number || null,
+            issued_by: p.issued_by || null,
+            issued_at: p.issued_at || null,
+            expires_at: p.expires_at || null,
+            place_of_birth: p.place_of_birth || null,
+            residential_address: p.residential_address || null,
+            scan_url: p.scan_url || null
+          }
+        })
+      }
+    }
+    for (const lic of licensesList.value) {
+      if (lic._source === 'doc' && lic._docId) {
+        await $fetch(`${base}/${lic._docId}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          body: {
+            number: lic.number || null,
+            issued_by: lic.issued_by || null,
+            issued_at: lic.issued_at || null,
+            expires_at: lic.expires_at || null,
+            license_categories: lic.license_categories || null,
+            scan_url: lic.scan_url || null
+          }
+        })
+      } else if (lic._source === 'new') {
+        await $fetch(base, {
+          method: 'POST',
+          credentials: 'include',
+          body: {
+            doc_type: 'drivers_license',
+            number: lic.number || null,
+            issued_by: lic.issued_by || null,
+            issued_at: lic.issued_at || null,
+            expires_at: lic.expires_at || null,
+            license_categories: lic.license_categories || null,
+            scan_url: lic.scan_url || null
+          }
+        })
+      }
+    }
+
     message.success('Профиль сохранён')
     emit('saved')
   } catch (e: any) {
@@ -666,43 +837,31 @@ async function handleSave() {
   }
 }
 
-async function handlePassportUpload({ file, onFinish, onError }: { file: { file: File }; onFinish: () => void; onError: (e: Error) => void }) {
+async function handlePassportScanUpload(
+  { file, onFinish, onError }: { file: { file: File }; onFinish: () => void; onError: (e: Error) => void },
+  p: PassportItem
+) {
   try {
     const fd = new FormData()
     fd.append('file', file.file, file.file.name)
-    const res = await $fetch<{ url: string }>(`${uploadBaseUrl.value}/upload-passport`, {
-      method: 'POST',
-      credentials: 'include',
-      body: fd
-    })
-    form.passport_scan_url = res.url
-    message.success('Файл загружен. Нажмите «Сохранить».')
-    onFinish()
-  } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
-    onError(e)
-  }
-}
-
-async function handleExtraPassportUpload({ file, onFinish, onError }: { file: { file: File }; onFinish: () => void; onError: (e: Error) => void }) {
-  try {
-    const fd = new FormData()
-    fd.append('file', file.file, file.file.name)
-    fd.append('index', '0')
-    const res = await $fetch<{ url: string }>(`${uploadBaseUrl.value}/upload-extra-passport`, {
-      method: 'POST',
-      credentials: 'include',
-      body: fd
-    })
-    if (form.extra_passports.length === 0) {
-      form.extra_passports.push({
-        passport_series: '', passport_number: '', passport_issue_date: null, passport_expiry_date: null,
-        passport_issued_by: '', place_of_birth: '', residential_address: '', passport_scan_url: res.url,
-        is_active: true
+    let url: string
+    if (p._source === 'main') {
+      const res = await $fetch<{ url: string }>(`${uploadBaseUrl.value}/upload-passport`, {
+        method: 'POST',
+        credentials: 'include',
+        body: fd
       })
+      url = res.url
     } else {
-      form.extra_passports[0] = { ...form.extra_passports[0], passport_scan_url: res.url }
+      fd.append('doc_type', 'passport')
+      const res = await $fetch<{ url: string }>(`${documentsBaseUrl.value}/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: fd
+      })
+      url = res.url
     }
+    p.scan_url = url
     message.success('Файл загружен. Нажмите «Сохранить».')
     onFinish()
   } catch (e: any) {
@@ -711,16 +870,31 @@ async function handleExtraPassportUpload({ file, onFinish, onError }: { file: { 
   }
 }
 
-async function handleLicenseUpload({ file, onFinish, onError }: { file: { file: File }; onFinish: () => void; onError: (e: Error) => void }) {
+async function handleLicenseScanUpload(
+  { file, onFinish, onError }: { file: { file: File }; onFinish: () => void; onError: (e: Error) => void },
+  lic: LicenseItem
+) {
   try {
     const fd = new FormData()
     fd.append('file', file.file, file.file.name)
-    const res = await $fetch<{ url: string }>(`${uploadBaseUrl.value}/upload-license`, {
-      method: 'POST',
-      credentials: 'include',
-      body: fd
-    })
-    form.license_scan_url = res.url
+    let url: string
+    if (lic._source === 'main') {
+      const res = await $fetch<{ url: string }>(`${uploadBaseUrl.value}/upload-license`, {
+        method: 'POST',
+        credentials: 'include',
+        body: fd
+      })
+      url = res.url
+    } else {
+      fd.append('doc_type', 'drivers_license')
+      const res = await $fetch<{ url: string }>(`${documentsBaseUrl.value}/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: fd
+      })
+      url = res.url
+    }
+    lic.scan_url = url
     message.success('Файл загружен. Нажмите «Сохранить».')
     onFinish()
   } catch (e: any) {
@@ -769,6 +943,7 @@ defineExpose({ loadProfile, handleSave })
 .mb-24 { margin-bottom: 24px; }
 .mt-8 { margin-top: 8px; }
 .mt-24 { margin-top: 24px; }
+.ml-8 { margin-left: 8px; }
 
 :deep(.n-form-item-label) {
   font-weight: 600;

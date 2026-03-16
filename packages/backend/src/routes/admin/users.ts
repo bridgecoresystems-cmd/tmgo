@@ -393,6 +393,22 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       .where(eq(carrierProfiles.id, profile.id))
       .returning();
 
+    // Синхронизация: при сохранении админом — деактивируем контакты и гражданства из таблиц,
+    // чтобы они не «всплывали» при следующей загрузке (GET объединяет legacy + таблицы)
+    if (bodyAny.phone !== undefined || bodyAny.additional_emails !== undefined || bodyAny.citizenship !== undefined) {
+      const now = new Date();
+      if (bodyAny.phone !== undefined || bodyAny.additional_emails !== undefined) {
+        await db.update(driverContacts)
+          .set({ deletedAt: now })
+          .where(eq(driverContacts.carrierId, profile.id));
+      }
+      if (bodyAny.citizenship !== undefined) {
+        await db.update(driverCitizenships)
+          .set({ status: 'revoked', revokedAt: now })
+          .where(eq(driverCitizenships.carrierId, profile.id));
+      }
+    }
+
     const d = (x: Date | null) => (x ? x.toISOString().slice(0, 10) : null);
     return {
       id: updated!.id,
@@ -644,7 +660,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/documents/${profile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -675,7 +691,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/documents/${profile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -709,7 +725,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/documents/${profile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -742,10 +758,181 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/documents/${profile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
     return { url };
   }, {
     body: t.Object({
       file: t.File(),
+    }),
+  })
+
+  // ─── Admin: документы водителя (driverDocuments) — для редактирования паспортов/ВУ из «Добавить документы» ───
+  .get('/:id/documents', async ({ params, error }) => {
+    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!user) return error(404, 'User not found');
+    if (user.role !== 'driver') return error(400, 'User is not a driver');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const docs = await db.select().from(driverDocuments).where(and(
+      eq(driverDocuments.carrierId, profile.id),
+      inArray(driverDocuments.docType, ['passport', 'drivers_license']),
+      inArray(driverDocuments.status, ['active', 'pending_verification']),
+    )).orderBy(desc(driverDocuments.createdAt));
+    const d = (x: Date | null | undefined) => (x ? new Date(x).toISOString().slice(0, 10) : null);
+    return docs.map((doc) => ({
+      id: doc.id,
+      doc_type: doc.docType,
+      series: doc.series,
+      number: doc.number,
+      issued_by: doc.issuedBy,
+      issued_at: d(doc.issuedAt),
+      expires_at: d(doc.expiresAt),
+      place_of_birth: doc.placeOfBirth,
+      residential_address: doc.residentialAddress,
+      license_categories: doc.licenseCategories,
+      scan_url: doc.scanUrl,
+      status: doc.status,
+    }));
+  })
+  .patch('/:id/documents/:docId', async ({ params, body, error }) => {
+    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!user) return error(404, 'User not found');
+    if (user.role !== 'driver') return error(400, 'User is not a driver');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const [doc] = await db.select().from(driverDocuments).where(and(
+      eq(driverDocuments.id, params.docId),
+      eq(driverDocuments.carrierId, profile.id),
+    )).limit(1);
+    if (!doc) return error(404, 'Document not found');
+    const b = body as any;
+    const updateData: Record<string, any> = { updatedAt: new Date() };
+    if (b.series !== undefined) updateData.series = b.series;
+    if (b.number !== undefined) updateData.number = b.number;
+    if (b.issued_by !== undefined) updateData.issuedBy = b.issued_by;
+    if (b.issued_at !== undefined) updateData.issuedAt = b.issued_at ? new Date(b.issued_at) : null;
+    if (b.expires_at !== undefined) updateData.expiresAt = b.expires_at ? new Date(b.expires_at) : null;
+    if (b.place_of_birth !== undefined) updateData.placeOfBirth = b.place_of_birth;
+    if (b.residential_address !== undefined) updateData.residentialAddress = b.residential_address;
+    if (b.license_categories !== undefined) updateData.licenseCategories = b.license_categories;
+    if (b.scan_url !== undefined) updateData.scanUrl = b.scan_url;
+    const [updated] = await db.update(driverDocuments).set(updateData).where(eq(driverDocuments.id, params.docId)).returning();
+    const d = (x: Date | null | undefined) => (x ? new Date(x).toISOString().slice(0, 10) : null);
+    return {
+      id: updated!.id,
+      doc_type: updated!.docType,
+      series: updated!.series,
+      number: updated!.number,
+      issued_by: updated!.issuedBy,
+      issued_at: d(updated!.issuedAt),
+      expires_at: d(updated!.expiresAt),
+      place_of_birth: updated!.placeOfBirth,
+      residential_address: updated!.residentialAddress,
+      license_categories: updated!.licenseCategories,
+      scan_url: updated!.scanUrl,
+    };
+  }, {
+    body: t.Object({
+      series: t.Optional(t.Nullable(t.String())),
+      number: t.Optional(t.Nullable(t.String())),
+      issued_by: t.Optional(t.Nullable(t.String())),
+      issued_at: t.Optional(t.Nullable(t.String())),
+      expires_at: t.Optional(t.Nullable(t.String())),
+      place_of_birth: t.Optional(t.Nullable(t.String())),
+      residential_address: t.Optional(t.Nullable(t.String())),
+      license_categories: t.Optional(t.Nullable(t.String())),
+      scan_url: t.Optional(t.Nullable(t.String())),
+    }),
+  })
+  .delete('/:id/documents/:docId', async ({ params, error }) => {
+    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!user) return error(404, 'User not found');
+    if (user.role !== 'driver') return error(400, 'User is not a driver');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const [doc] = await db.select().from(driverDocuments).where(and(
+      eq(driverDocuments.id, params.docId),
+      eq(driverDocuments.carrierId, profile.id),
+    )).limit(1);
+    if (!doc) return error(404, 'Document not found');
+    await db.update(driverDocuments)
+      .set({ status: 'revoked', validUntil: new Date(), updatedAt: new Date() })
+      .where(eq(driverDocuments.id, params.docId));
+    return { success: true };
+  })
+  .post('/:id/documents/upload', async ({ params, body, set, error }) => {
+    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!user) return error(404, 'User not found');
+    if (user.role !== 'driver') return error(400, 'User is not a driver');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const file = body.file;
+    if (!file || !file.size) { set.status = 400; return { error: 'Файл не загружен' }; }
+    const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
+    if (!['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(ext)) { set.status = 400; return { error: 'Только PDF, JPG, PNG' }; }
+    if (file.size > 10 * 1024 * 1024) { set.status = 400; return { error: 'Файл слишком большой (макс. 10 МБ)' }; }
+    const docType = (body as any).doc_type || 'document';
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', profile.id);
+    await mkdir(uploadDir, { recursive: true });
+    const filename = `${docType}_${randomUUID()}.${ext}`;
+    const buf = await file.arrayBuffer();
+    await writeFile(join(uploadDir, filename), Buffer.from(buf));
+    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
+    return { url };
+  }, {
+    body: t.Object({
+      file: t.File(),
+      doc_type: t.Optional(t.String()),
+    }),
+  })
+  .post('/:id/documents', async ({ params, body, error }) => {
+    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!user) return error(404, 'User not found');
+    if (user.role !== 'driver') return error(400, 'User is not a driver');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const docType = (body as any).doc_type as string;
+    if (!['passport', 'drivers_license'].includes(docType)) return error(400, 'Invalid doc_type');
+    const b = body as any;
+    const [doc] = await db.insert(driverDocuments).values({
+      carrierId: profile.id,
+      docType: docType as any,
+      series: b.series || null,
+      number: b.number || null,
+      issuedBy: b.issued_by || null,
+      issuedAt: b.issued_at ? new Date(b.issued_at) : null,
+      expiresAt: b.expires_at ? new Date(b.expires_at) : null,
+      placeOfBirth: b.place_of_birth || null,
+      residentialAddress: b.residential_address || null,
+      licenseCategories: b.license_categories || null,
+      scanUrl: b.scan_url || null,
+      status: 'active',
+    }).returning();
+    const d = (x: Date | null | undefined) => (x ? new Date(x).toISOString().slice(0, 10) : null);
+    return {
+      id: doc!.id,
+      doc_type: doc!.docType,
+      series: doc!.series,
+      number: doc!.number,
+      issued_by: doc!.issuedBy,
+      issued_at: d(doc!.issuedAt),
+      expires_at: d(doc!.expiresAt),
+      place_of_birth: doc!.placeOfBirth,
+      residential_address: doc!.residentialAddress,
+      license_categories: doc!.licenseCategories,
+      scan_url: doc!.scanUrl,
+    };
+  }, {
+    body: t.Object({
+      doc_type: t.Union([t.Literal('passport'), t.Literal('drivers_license')]),
+      series: t.Optional(t.Nullable(t.String())),
+      number: t.Optional(t.Nullable(t.String())),
+      issued_by: t.Optional(t.Nullable(t.String())),
+      issued_at: t.Optional(t.Nullable(t.String())),
+      expires_at: t.Optional(t.Nullable(t.String())),
+      place_of_birth: t.Optional(t.Nullable(t.String())),
+      residential_address: t.Optional(t.Nullable(t.String())),
+      license_categories: t.Optional(t.Nullable(t.String())),
+      scan_url: t.Optional(t.Nullable(t.String())),
     }),
   });

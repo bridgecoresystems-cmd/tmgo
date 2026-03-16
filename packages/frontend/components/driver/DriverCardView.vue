@@ -415,18 +415,48 @@ const visaDatesDisplay = computed(() => {
 })
 
 const extraPassports = computed(() => {
-  const arr = profile.value?.passports_from_documents
-  if (!Array.isArray(arr)) return []
+  const result: Array<{ id?: string; series?: string; number?: string; issued_at?: string; expires_at?: string; issued_by?: string; place_of_birth?: string; residential_address?: string; scan_url?: string }> = []
   const mainSeries = (profile.value?.passport_series ?? '').trim().toUpperCase()
   const mainNumber = (profile.value?.passport_number ?? '').trim()
   const mainKey = `${mainSeries} ${mainNumber}`.trim()
-  if (!mainKey) return arr
-  return arr.filter((ep: any) => {
-    const epSeries = (ep.series ?? '').trim().toUpperCase()
-    const epNumber = (ep.number ?? '').trim()
-    const epKey = `${epSeries} ${epNumber}`.trim()
-    return epKey !== mainKey
-  })
+
+  const extraFromProfile = Array.isArray(profile.value?.extra_passports) ? profile.value.extra_passports : []
+  for (let i = 0; i < extraFromProfile.length; i++) {
+    const p = extraFromProfile[i]
+    result.push({
+      id: `ep-${i}`,
+      series: p.passport_series ?? p.passportSeries ?? '',
+      number: p.passport_number ?? p.passportNumber ?? '',
+      issued_at: p.passport_issue_date ?? p.passportIssueDate ?? '',
+      expires_at: p.passport_expiry_date ?? p.passportExpiryDate ?? '',
+      issued_by: p.passport_issued_by ?? p.passportIssuedBy ?? '',
+      place_of_birth: p.place_of_birth ?? p.placeOfBirth ?? '',
+      residential_address: p.residential_address ?? p.residentialAddress ?? '',
+      scan_url: p.passport_scan_url ?? p.passportScanUrl ?? ''
+    })
+  }
+
+  const fromDocs = profile.value?.passports_from_documents
+  if (Array.isArray(fromDocs)) {
+    for (const ep of fromDocs) {
+      const epSeries = (ep.series ?? '').trim().toUpperCase()
+      const epNumber = (ep.number ?? '').trim()
+      const epKey = `${epSeries} ${epNumber}`.trim()
+      if (mainKey && epKey === mainKey) continue
+      result.push({
+        id: ep.id,
+        series: ep.series,
+        number: ep.number,
+        issued_at: ep.issued_at,
+        expires_at: ep.expires_at,
+        issued_by: ep.issued_by,
+        place_of_birth: ep.place_of_birth,
+        residential_address: ep.residential_address,
+        scan_url: ep.scan_url
+      })
+    }
+  }
+  return result
 })
 
 const hasMainPassportData = computed(() => {
