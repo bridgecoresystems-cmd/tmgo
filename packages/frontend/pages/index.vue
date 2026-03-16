@@ -1,5 +1,15 @@
 <template>
   <div class="landing-page">
+    <!-- Language switcher -->
+    <div class="lang-switcher">
+      <n-select
+        :value="locale"
+        :options="localeOptions"
+        size="small"
+        :consistent-menu-width="false"
+        @update:value="(v) => setLocale(v)"
+      />
+    </div>
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-background">
@@ -8,18 +18,18 @@
       </div>
       <div class="hero-container">
         <div class="hero-card">
-          <n-h1 class="hero-title">Грузовые перевозки для юридических лиц</n-h1>
-          <n-p class="hero-subtitle">Организуйте грузовые перевозки с выгодой для компании</n-p>
+          <n-h1 class="hero-title">{{ $t('hero.title') }}</n-h1>
+          <n-p class="hero-subtitle">{{ $t('hero.subtitle') }}</n-p>
           
           <div class="order-form-box">
-            <n-h3 class="form-title">Выберите направление</n-h3>
+            <n-h3 class="form-title">{{ $t('form.title') }}</n-h3>
             <n-space vertical size="large">
               <n-grid :cols="2" :x-gap="12">
                 <n-gi>
                   <n-select
                     v-model:value="orderForm.fromCity"
                     :options="fromCityOptions"
-                    placeholder="Откуда"
+                    :placeholder="$t('form.fromPlaceholder')"
                     filterable
                   />
                 </n-gi>
@@ -27,13 +37,13 @@
                   <n-select
                     v-model:value="orderForm.toCity"
                     :options="toCityOptions"
-                    placeholder="Куда"
+                    :placeholder="$t('form.toPlaceholder')"
                     filterable
                   />
                 </n-gi>
               </n-grid>
               <n-button type="primary" block size="large" class="hero-btn" @click="handleSubmit">
-                Оставить заявку
+                {{ $t('form.submit') }}
               </n-button>
             </n-space>
           </div>
@@ -44,14 +54,14 @@
     <!-- Advantages Section -->
     <section class="section advantages-section" id="advantages">
       <div class="container">
-        <n-h2 class="section-title">Преимущества сервиса</n-h2>
+        <n-h2 class="section-title">{{ $t('advantages.title') }}</n-h2>
         <n-grid :cols="3" :x-gap="24" :y-gap="24" responsive="screen">
-          <n-gi v-for="adv in advantages" :key="adv.title">
+          <n-gi v-for="adv in advantages" :key="adv.key">
             <n-card class="advantage-card" hoverable>
               <template #header>
-                <n-text strong class="adv-title">{{ adv.title }}</n-text>
+                <n-text strong class="adv-title">{{ $t(`advantages.items.${adv.key}.title`) }}</n-text>
               </template>
-              <n-p class="adv-desc">{{ adv.description }}</n-p>
+              <n-p class="adv-desc">{{ $t(`advantages.items.${adv.key}.description`) }}</n-p>
             </n-card>
           </n-gi>
         </n-grid>
@@ -64,11 +74,9 @@
         <n-grid :cols="2" :x-gap="48" responsive="screen" item-responsive>
           <n-gi class="flex-center">
             <div class="text-content">
-              <n-h2>Ваш центр управления — личный кабинет</n-h2>
-              <n-p>
-                В личном кабинете вы можете заказать отправление или подключить своим сотрудникам возможность оплачивать доставки с корпоративного счета.
-              </n-p>
-              <n-button type="primary" size="large" @click="navigateTo('/auth')">Войти в кабинет</n-button>
+              <n-h2>{{ $t('cabinet.title') }}</n-h2>
+              <n-p>{{ $t('cabinet.description') }}</n-p>
+              <n-button type="primary" size="large" @click="navigateTo('/auth')">{{ $t('cabinet.button') }}</n-button>
             </div>
           </n-gi>
           <n-gi class="flex-center">
@@ -83,13 +91,13 @@
     <!-- How We Work Section -->
     <section class="section how-it-works-section" id="how-it-works">
       <div class="container">
-        <n-h2 class="section-title">Как мы работаем</n-h2>
+        <n-h2 class="section-title">{{ $t('steps.title') }}</n-h2>
         <n-grid :cols="3" :x-gap="24" responsive="screen">
-          <n-gi v-for="(step, index) in steps" :key="step.title">
+          <n-gi v-for="(step, index) in steps" :key="step.key">
             <div class="step-card">
               <div class="step-number">{{ index + 1 }}</div>
-              <n-h3 class="step-title">{{ step.title }}</n-h3>
-              <n-p class="step-desc">{{ step.description }}</n-p>
+              <n-h3 class="step-title">{{ $t(`steps.items.${step.key}.title`) }}</n-h3>
+              <n-p class="step-desc">{{ $t(`steps.items.${step.key}.description`) }}</n-p>
             </div>
           </n-gi>
         </n-grid>
@@ -99,12 +107,12 @@
     <!-- Services Section -->
     <section class="section services-section" id="services">
       <div class="container">
-        <n-h2 class="section-title">Наши услуги</n-h2>
+        <n-h2 class="section-title">{{ $t('services.title') }}</n-h2>
         <n-grid :cols="4" :x-gap="20" :y-gap="20" responsive="screen">
-          <n-gi v-for="service in services" :key="service.title">
+          <n-gi v-for="service in services" :key="service.key">
             <n-card class="service-card" hoverable>
-              <n-h3 class="service-title">{{ service.title }}</n-h3>
-              <n-p class="service-desc">{{ service.description }}</n-p>
+              <n-h3 class="service-title">{{ $t(`services.items.${service.key}.title`) }}</n-h3>
+              <n-p class="service-desc">{{ $t(`services.items.${service.key}.description`) }}</n-p>
             </n-card>
           </n-gi>
         </n-grid>
@@ -114,6 +122,12 @@
 </template>
 
 <script setup lang="ts">
+const { locale, setLocale, t } = useI18n()
+const localeOptions = [
+  { label: 'Русский', value: 'ru' },
+  { label: 'English', value: 'en' },
+  { label: 'Türkmençe', value: 'tk' },
+]
 const { session, loading } = useAuth()
 
 // Автоматический редирект в кабинет для авторизованных (после загрузки сессии)
@@ -126,25 +140,25 @@ watch([session, loading], () => {
 }, { immediate: true })
 
 const advantages = [
-  { title: 'Возмещение НДС', description: 'Если вы работаете по системе общего налогообложения, то можете возмещать НДС.' },
-  { title: 'Настройка лимитов', description: 'По адресам и геозонам, времени и дням недели.' },
-  { title: 'Удобный личный кабинет', description: 'Оформляйте заказы, пополняйте баланс, открывайте доступ сотрудникам.' },
-  { title: 'Быстрая подача', description: 'Среднее время подачи грузовика — 10 минут.' },
-  { title: 'Помощь грузчиков', description: 'Помогут погрузить и разгрузить тяжёлые отправления.' },
-  { title: 'Страховка', description: 'На время перевозки груз застрахован до 500 000 ₽.' }
+  { key: 'vat' },
+  { key: 'limits' },
+  { key: 'cabinet' },
+  { key: 'fast' },
+  { key: 'loaders' },
+  { key: 'insurance' },
 ]
 
 const steps = [
-  { title: 'Зарегистрируйтесь', description: 'Создайте личный кабинет и пополните баланс.' },
-  { title: 'Создайте заказ', description: 'Оформите заявку в кабинете или через приложение.' },
-  { title: 'Получите документы', description: 'Закрывающие документы будут доступны в кабинете.' }
+  { key: 'register' },
+  { key: 'order' },
+  { key: 'documents' },
 ]
 
 const services = [
-  { title: 'Офисный переезд', description: 'Перевезем офисную мебель и технику.' },
-  { title: 'Доставка на склады', description: 'Погрузим и заберем товары любой тяжести.' },
-  { title: 'Межгород', description: 'Заберем из одного города и довезем до другого.' },
-  { title: 'Доставка покупателям', description: 'Отвезем любые грузы вашим клиентам.' }
+  { key: 'office' },
+  { key: 'warehouse' },
+  { key: 'intercity' },
+  { key: 'customers' },
 ]
 
 const scrollTo = (id: string) => {
@@ -188,9 +202,9 @@ const handleSubmit = () => {
 }
 
 useHead({
-  title: 'tmGo — Платформа для бизнеса',
+  title: () => t('meta.title'),
   meta: [
-    { name: 'description', content: 'Мультирегиональная платформа для грузоперевозок. Объединяем заказчиков и перевозчиков.' }
+    { name: 'description', content: () => t('meta.description') }
   ]
 })
 </script>
@@ -198,6 +212,15 @@ useHead({
 <style scoped>
 .landing-page {
   background: #fff;
+  position: relative;
+}
+
+.lang-switcher {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 100;
+  min-width: 120px;
 }
 
 .container {

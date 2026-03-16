@@ -14,8 +14,19 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: [
     'nuxtjs-naive-ui',
-    '@pinia/nuxt'
+    '@pinia/nuxt',
+    '@nuxtjs/i18n',
   ],
+  i18n: {
+    locales: [
+      { code: 'ru', iso: 'ru-RU', name: 'Русский' },
+      { code: 'en', iso: 'en-US', name: 'English' },
+      { code: 'tk', iso: 'tk-TM', name: 'Türkmençe' },
+    ],
+    defaultLocale: 'ru',
+    fallbackLocale: 'ru',
+    vueI18n: 'i18n.config.ts',
+  },
   naiveui: {
     colorMode: 'light'
   },
