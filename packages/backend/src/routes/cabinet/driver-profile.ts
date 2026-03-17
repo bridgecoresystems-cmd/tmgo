@@ -385,6 +385,7 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       is_online: carrierProfile.isOnline ?? false,
       verification_status: carrierProfile.verificationStatus ?? 'not_verified',
       unlocked_fields,
+      hidden_fields: (carrierProfile.hiddenFields as string[]) ?? [],
       rating: carrierProfile.rating,
       updated_at: carrierProfile.updatedAt ? carrierProfile.updatedAt.toISOString().slice(0, 10) : null,
     };

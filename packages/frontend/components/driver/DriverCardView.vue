@@ -14,45 +14,45 @@
           <n-h3 prefix="bar" align-text>1. Основная информация</n-h3>
           <n-card embedded :bordered="false" class="mb-24 view-card">
             <div class="view-grid">
-              <template v-if="profile.id">
+              <template v-if="profile.id && !isHidden('main:driver_id')">
                 <div class="view-row">
                   <span class="view-label">Водитель ID:</span>
                   <span class="view-value">{{ profile.id }} <n-tag size="small" type="info">Auto</n-tag></span>
                 </div>
               </template>
-              <div class="view-row">
+              <div v-if="!isHidden('main:surname') && !isHidden('main:given_name') && !isHidden('main:patronymic')" class="view-row">
                 <span class="view-label">ФИО:</span>
                 <span class="view-value">{{ fullName }}</span>
               </div>
-              <div v-if="profile.date_of_birth" class="view-row">
+              <div v-if="profile.date_of_birth && !isHidden('main:date_of_birth')" class="view-row">
                 <span class="view-label">Дата рождения:</span>
                 <span class="view-value">{{ formatDate(profile.date_of_birth) }}</span>
               </div>
-              <div v-if="citizenshipsDisplay" class="view-row">
+              <div v-if="citizenshipsDisplay && !isHidden('main:citizenships')" class="view-row">
                 <span class="view-label">Гражданство:</span>
                 <span class="view-value">{{ citizenshipsDisplay }}</span>
               </div>
-              <div v-if="profile.gender" class="view-row">
+              <div v-if="profile.gender && !isHidden('main:gender')" class="view-row">
                 <span class="view-label">Пол:</span>
                 <span class="view-value">{{ genderLabel }}</span>
               </div>
-              <div v-if="phonesDisplay" class="view-row">
+              <div v-if="phonesDisplay && !isHidden('main:phones')" class="view-row">
                 <span class="view-label">Контактный телефон:</span>
                 <span class="view-value">{{ phonesDisplay }}</span>
               </div>
-              <div v-if="profile.email" class="view-row">
+              <div v-if="profile.email && !isHidden('main:emails')" class="view-row">
                 <span class="view-label">Email (Логин):</span>
                 <span class="view-value">{{ profile.email }}</span>
               </div>
-              <div v-if="emailsDisplay" class="view-row">
+              <div v-if="emailsDisplay && !isHidden('main:emails')" class="view-row">
                 <span class="view-label">Доп. email:</span>
                 <span class="view-value">{{ emailsDisplay }}</span>
               </div>
-              <div v-if="profile.status" class="view-row">
+              <div v-if="profile.status && !isHidden('main:status')" class="view-row">
                 <span class="view-label">Статус (Диспетчер):</span>
                 <span class="view-value">{{ statusLabel }}</span>
               </div>
-              <div v-if="profile.employment_category" class="view-row">
+              <div v-if="profile.employment_category && !isHidden('main:employment_category')" class="view-row">
                 <span class="view-label">Категория занятости:</span>
                 <span class="view-value">{{ employmentLabel }}</span>
               </div>
@@ -61,8 +61,8 @@
 
           <!-- 2. Паспортные данные -->
           <n-h3 prefix="bar" align-text>2. Паспортные данные</n-h3>
-          <n-card v-if="hasPassportData" embedded :bordered="false" class="mb-24 view-card">
-            <div class="view-grid">
+          <n-card v-if="hasVisiblePassportData" embedded :bordered="false" class="mb-24 view-card">
+            <div v-if="!isHidden('passport:0')" class="view-grid">
               <div v-if="passportSeriesNumber" class="view-row">
                 <span class="view-label">Серия / Номер паспорта:</span>
                 <span class="view-value">{{ passportSeriesNumber }}</span>
@@ -94,6 +94,7 @@
             </div>
             <!-- Дополнительные паспорта (из «Добавить документы») -->
             <template v-for="(ep, idx) in extraPassports" :key="ep.id">
+              <template v-if="!isHidden(`passport:${hasMainPassportData ? idx + 1 : idx}`)">
               <n-divider v-if="idx === 0 && hasMainPassportData" style="margin: 16px 0;" />
               <div class="view-grid extra-passport-block" :class="{ 'extra-passport-block--not-first': idx > 0 }">
                 <div v-if="ep.series || ep.number" class="view-row">
@@ -125,13 +126,14 @@
                   </span>
                 </div>
               </div>
+              </template>
             </template>
           </n-card>
 
           <!-- 3. Водительское удостоверение -->
           <n-h3 prefix="bar" align-text>3. Водительское удостоверение</n-h3>
-          <n-card v-if="hasLicenseData" embedded :bordered="false" class="mb-24 view-card">
-            <div class="view-grid">
+          <n-card v-if="hasVisibleLicenseData" embedded :bordered="false" class="mb-24 view-card">
+            <div v-if="!isHidden('license:0')" class="view-grid">
               <div v-if="profile.license_number" class="view-row">
                 <span class="view-label">Номер ВУ:</span>
                 <span class="view-value">{{ profile.license_number }}</span>
@@ -174,6 +176,7 @@
             </div>
             <!-- Дополнительные ВУ (из «Добавить документы») -->
             <template v-for="(el, idx) in extraLicenses" :key="el.id">
+              <template v-if="!isHidden(`license:${hasMainLicenseData ? idx + 1 : idx}`)">
               <n-divider v-if="idx === 0 && hasMainLicenseData" style="margin: 16px 0;" />
               <div class="view-grid extra-passport-block" :class="{ 'extra-passport-block--not-first': idx > 0 }">
                 <div v-if="el.number" class="view-row">
@@ -201,6 +204,7 @@
                   </span>
                 </div>
               </div>
+              </template>
             </template>
           </n-card>
 
@@ -211,6 +215,7 @@
               <div class="view-grid">
                 <!-- Визы (из документов) -->
                 <template v-for="(v, vi) in visasFromDocuments" :key="v.id || vi">
+                  <template v-if="!isHidden(`visa:${vi}`)">
                   <div v-if="vi > 0" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
                     <div v-if="v.country" class="view-row">
@@ -234,6 +239,7 @@
                       </span>
                     </div>
                   </div>
+                  </template>
                 </template>
                 <!-- Legacy виза (если нет visas_from_documents) -->
                 <template v-if="hasVisaData && visasFromDocuments.length === 0">
@@ -256,6 +262,7 @@
                 </template>
                 <!-- Медсправки (из документов) -->
                 <template v-for="(m, mi) in medicalCertificatesFromDocuments" :key="m.id || mi">
+                  <template v-if="!isHidden(`medical:${mi}`)">
                   <div v-if="mi > 0 || visasFromDocuments.length > 0 || hasVisaData" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
                     <div v-if="m.number" class="view-row">
@@ -275,6 +282,7 @@
                       </span>
                     </div>
                   </div>
+                  </template>
                 </template>
                 <!-- Legacy медсправка (если нет medical_certificates_from_documents) -->
                 <template v-if="hasLegacyMedicalData && medicalCertificatesFromDocuments.length === 0">
@@ -298,6 +306,7 @@
                 </template>
                 <!-- Карты тахографа (из документов) -->
                 <template v-for="(t, ti) in tachographCardsFromDocuments" :key="t.id || ti">
+                  <template v-if="!isHidden(`tachograph:${ti}`)">
                   <div v-if="ti > 0 || medicalCertificatesFromDocuments.length > 0 || hasLegacyMedicalData" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
                     <div v-if="t.number" class="view-row">
@@ -321,6 +330,7 @@
                       </span>
                     </div>
                   </div>
+                  </template>
                 </template>
                 <!-- Legacy карта тахографа -->
                 <template v-if="profile.tachograph_card_number && tachographCardsFromDocuments.length === 0">
@@ -332,6 +342,7 @@
                 </template>
                 <!-- Сертификаты техминимума (из документов) -->
                 <template v-for="(tm, tmi) in technicalMinimumCertsFromDocuments" :key="tm.id || tmi">
+                  <template v-if="!isHidden(`tech_min:${tmi}`)">
                   <div v-if="tmi > 0 || tachographCardsFromDocuments.length > 0 || profile.tachograph_card_number" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
                     <div v-if="tm.issued_by" class="view-row">
@@ -355,6 +366,7 @@
                       </span>
                     </div>
                   </div>
+                  </template>
                 </template>
                 <!-- Legacy сертификат техминимума -->
                 <template v-if="profile.technical_minimum_certificate && technicalMinimumCertsFromDocuments.length === 0">
@@ -366,6 +378,7 @@
                 </template>
                 <!-- ADR допуски (из документов) -->
                 <template v-for="(a, ai) in adrCertsFromDocuments" :key="a.id || ai">
+                  <template v-if="!isHidden(`adr:${ai}`)">
                   <div v-if="ai > 0 || technicalMinimumCertsFromDocuments.length > 0 || profile.technical_minimum_certificate" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
                     <div v-if="a.issued_by" class="view-row">
@@ -393,6 +406,7 @@
                       </span>
                     </div>
                   </div>
+                  </template>
                 </template>
                 <div v-if="profile.other_permits" class="view-row">
                   <span class="view-label">ADR пропуск / Прочие документы:</span>
@@ -454,6 +468,11 @@ const route = useRoute()
 const loading = ref(false)
 const error = ref<string | null>(null)
 const profile = ref<Record<string, any> | null>(props.initialProfile ?? null)
+
+function isHidden(key: string) {
+  const h = profile.value?.hidden_fields
+  return Array.isArray(h) && h.includes(key)
+}
 
 const scanModalVisible = ref(false)
 const scanModalUrl = ref<string | null>(null)
@@ -605,6 +624,12 @@ const hasMainPassportData = computed(() => {
 
 const hasPassportData = computed(() => hasMainPassportData.value || extraPassports.value.length > 0)
 
+const hasVisiblePassportData = computed(() => {
+  if (!hasPassportData.value) return false
+  if (!isHidden('passport:0') && hasMainPassportData.value) return true
+  return extraPassports.value.some((_, i) => !isHidden(`passport:${hasMainPassportData.value ? i + 1 : i}`))
+})
+
 const extraLicenses = computed(() => {
   const arr = profile.value?.licenses_from_documents
   if (!Array.isArray(arr)) return []
@@ -619,6 +644,12 @@ const hasMainLicenseData = computed(() => {
 })
 
 const hasLicenseData = computed(() => hasMainLicenseData.value || extraLicenses.value.length > 0)
+
+const hasVisibleLicenseData = computed(() => {
+  if (!hasLicenseData.value) return false
+  if (!isHidden('license:0') && hasMainLicenseData.value) return true
+  return extraLicenses.value.some((_, i) => !isHidden(`license:${hasMainLicenseData.value ? i + 1 : i}`))
+})
 
 const visasFromDocuments = computed(() => {
   const arr = profile.value?.visas_from_documents

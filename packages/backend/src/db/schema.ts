@@ -240,6 +240,9 @@ export const carrierProfiles = pgTable('carrier_profiles', {
   adminEditedFields: jsonb('admin_edited_fields').$type<string[]>().default([]),
   unlockedFields: jsonb('unlocked_fields').$type<string[]>().default([]),
 
+  // Скрытые поля в карточке (main:driver_id, passport:0, license:0, visa:0, medical:0, tech_min:0, tachograph:0, adr:0)
+  hiddenFields: jsonb('hidden_fields').$type<string[]>().default([]),
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

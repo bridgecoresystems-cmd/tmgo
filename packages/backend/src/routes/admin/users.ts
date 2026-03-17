@@ -422,6 +422,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       is_verified: profile.isVerified,
       verification_status: String(profile.verificationStatus ?? 'not_verified'),
       unlocked_fields: (profile.unlockedFields as string[]) ?? [],
+      hidden_fields: (profile.hiddenFields as string[]) ?? [],
       rating,
       updated_at: profile.updatedAt ? profile.updatedAt.toISOString().slice(0, 10) : null,
     };
@@ -469,6 +470,10 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       } else {
         (updateData as any)[dbKey] = val;
       }
+    }
+    if (bodyAny.hidden_fields !== undefined) {
+      const arr = Array.isArray(bodyAny.hidden_fields) ? bodyAny.hidden_fields : [];
+      updateData.hiddenFields = arr;
     }
     if (bodyAny.extra_passports !== undefined) {
       const arr = Array.isArray(bodyAny.extra_passports) ? bodyAny.extra_passports : [];
@@ -578,6 +583,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
         passport_scan_url: t.Optional(t.Nullable(t.String())),
         is_active: t.Optional(t.Nullable(t.Boolean())),
       }))),
+      hidden_fields: t.Optional(t.Array(t.String())),
     }),
   })
   .get('/:id/edit-requests', async ({ params, error }) => {

@@ -20,23 +20,98 @@
           <n-h3 prefix="bar" align-text>1. Основная информация</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
-              <n-form-item label="Водитель ID">
+              <n-form-item>
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:driver_id')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:driver_id') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:driver_id') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Водитель ID</span>
+                  </n-space>
+                </template>
                 <n-text depth="3">{{ form.id || 'Генерируется системой' }}</n-text>
               </n-form-item>
 
-              <n-form-item label="Фамилия" required path="surname">
+              <n-form-item required path="surname">
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:surname')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:surname') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:surname') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Фамилия</span>
+                  </n-space>
+                </template>
                 <n-input v-model:value="form.surname" placeholder="Akmuradow" />
               </n-form-item>
 
-              <n-form-item label="Имя" required path="given_name">
+              <n-form-item required path="given_name">
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:given_name')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:given_name') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:given_name') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Имя</span>
+                  </n-space>
+                </template>
                 <n-input v-model:value="form.given_name" placeholder="Batyr" />
               </n-form-item>
 
-              <n-form-item label="Отчество" path="patronymic">
+              <n-form-item path="patronymic">
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:patronymic')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:patronymic') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:patronymic') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Отчество</span>
+                  </n-space>
+                </template>
                 <n-input v-model:value="form.patronymic" placeholder="Muhamednazarowich" />
               </n-form-item>
 
-              <n-form-item label="Дата рождения" required path="date_of_birth">
+              <n-form-item required path="date_of_birth">
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:date_of_birth')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:date_of_birth') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:date_of_birth') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Дата рождения</span>
+                  </n-space>
+                </template>
                 <n-date-picker
                   :value="form.date_of_birth ? new Date(form.date_of_birth).getTime() : null"
                   type="date"
@@ -45,7 +120,22 @@
                 />
               </n-form-item>
 
-              <n-form-item label="Гражданство" required>
+              <n-form-item required>
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:citizenships')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:citizenships') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:citizenships') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Гражданство</span>
+                  </n-space>
+                </template>
                 <n-space vertical style="width: 100%">
                   <n-space v-for="(c, i) in form.citizenships" :key="i" align="center">
                     <n-select
@@ -61,7 +151,22 @@
                 </n-space>
               </n-form-item>
 
-              <n-form-item label="Пол" required path="gender">
+              <n-form-item required path="gender">
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:gender')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:gender') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:gender') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Пол</span>
+                  </n-space>
+                </template>
                 <n-radio-group v-model:value="form.gender">
                   <n-space>
                     <n-radio value="male">Мужской</n-radio>
@@ -70,7 +175,22 @@
                 </n-radio-group>
               </n-form-item>
 
-              <n-form-item label="Контактный телефон" required>
+              <n-form-item required>
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:phones')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:phones') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:phones') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Контактный телефон</span>
+                  </n-space>
+                </template>
                 <n-space vertical style="width: 100%">
                   <n-space v-for="(p, i) in form.phones" :key="i" align="center">
                     <n-input v-model:value="form.phones[i]" placeholder="+99364852563" style="width: 200px" />
@@ -80,7 +200,22 @@
                 </n-space>
               </n-form-item>
 
-              <n-form-item label="Email (Логин)" required>
+              <n-form-item required>
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:emails')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:emails') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:emails') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Email (Логин)</span>
+                  </n-space>
+                </template>
                 <n-space vertical style="width: 100%">
                   <n-input :value="form.email" disabled style="width: 300px" />
                   <n-space v-for="(e, i) in form.extra_emails" :key="i" align="center">
@@ -91,13 +226,42 @@
                 </n-space>
               </n-form-item>
 
-              <n-form-item label="Статус (Диспетчер)">
+              <n-form-item>
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:status')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:status') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:status') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Статус (Диспетчер)</span>
+                  </n-space>
+                </template>
                 <n-select v-model:value="form.status" :options="statusOptions" style="width: 200px" />
               </n-form-item>
 
-              <n-form-item label="Категория занятости">
+              <n-form-item>
+                <template #label>
+                  <n-space align="center">
+                    <n-tooltip>
+                      <template #trigger>
+                        <n-button quaternary circle size="tiny" @click="toggleHidden('main:employment_category')">
+                          <template #icon>
+                            <n-icon><component :is="isHidden('main:employment_category') ? EyeOffOutline : EyeOutline" /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      {{ isHidden('main:employment_category') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    </n-tooltip>
+                    <span>Категория занятости</span>
+                  </n-space>
+                </template>
                 <n-select v-model:value="form.employment_category" :options="employmentOptions" style="width: 200px" />
-
               </n-form-item>
 
               <n-form-item label="Компания">
@@ -114,12 +278,24 @@
             </n-space>
           </n-card>
 
-          <!-- 2. Паспортные данные (единый список как гражданство/телефоны) -->
+          <!-- 2. Паспортные данные -->
           <n-h3 prefix="bar" align-text>2. Паспортные данные</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
               <template v-for="(p, pi) in passportsList" :key="p._key">
-                <n-divider v-if="pi > 0" style="margin: 24px 0 16px;">Паспорт {{ pi + 1 }}</n-divider>
+                <div class="section-header">
+                  <n-tooltip>
+                    <template #trigger>
+                      <n-button quaternary circle size="tiny" @click="toggleHidden(`passport:${pi}`)">
+                        <template #icon>
+                          <n-icon><component :is="isHidden(`passport:${pi}`) ? EyeOffOutline : EyeOutline" /></n-icon>
+                        </template>
+                      </n-button>
+                    </template>
+                    {{ isHidden(`passport:${pi}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                  </n-tooltip>
+                  <span>Паспорт {{ pi + 1 }}</span>
+                </div>
                 <n-form-item :label="`Серия / Номер паспорта${pi > 0 ? ` (${pi + 1})` : ''}`" :required="pi === 0">
                   <n-space align="center">
                     <n-input v-model:value="p.series" placeholder="AB" style="width: 80px" />
@@ -168,12 +344,24 @@
             </n-space>
           </n-card>
 
-          <!-- 3. Водительское удостоверение (единый список) -->
+          <!-- 3. Водительское удостоверение -->
           <n-h3 prefix="bar" align-text>3. Водительское удостоверение</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
               <template v-for="(lic, li) in licensesList" :key="lic._key">
-                <n-divider v-if="li > 0" style="margin: 24px 0 16px;">ВУ {{ li + 1 }}</n-divider>
+                <div class="section-header">
+                  <n-tooltip>
+                    <template #trigger>
+                      <n-button quaternary circle size="tiny" @click="toggleHidden(`license:${li}`)">
+                        <template #icon>
+                          <n-icon><component :is="isHidden(`license:${li}`) ? EyeOffOutline : EyeOutline" /></n-icon>
+                        </template>
+                      </n-button>
+                    </template>
+                    {{ isHidden(`license:${li}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                  </n-tooltip>
+                  <span>Водительское удостоверение {{ li + 1 }}</span>
+                </div>
                 <n-form-item :label="`Номер ВУ${li > 0 ? ` (${li + 1})` : ''}`" :required="li === 0">
                   <n-space align="center">
                     <n-input v-model:value="lic.number" placeholder="tm-123456" style="width: 240px" />
@@ -247,9 +435,20 @@
           <n-h3 prefix="bar" align-text>4. Разрешительные документы</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
-              <n-text depth="3" style="margin-bottom: 8px;">Виза</n-text>
               <template v-for="(v, vi) in visasList" :key="v._key">
-                <n-divider v-if="vi > 0" style="margin: 16px 0;">Виза {{ vi + 1 }}</n-divider>
+                <div class="section-header">
+                  <n-tooltip>
+                    <template #trigger>
+                      <n-button quaternary circle size="tiny" @click="toggleHidden(`visa:${vi}`)">
+                        <template #icon>
+                          <n-icon><component :is="isHidden(`visa:${vi}`) ? EyeOffOutline : EyeOutline" /></n-icon>
+                        </template>
+                      </n-button>
+                    </template>
+                    {{ isHidden(`visa:${vi}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                  </n-tooltip>
+                  <span>Виза {{ vi + 1 }}</span>
+                </div>
                 <n-form-item :label="`Страна выдачи${vi > 0 ? ` (${vi + 1})` : ''}`">
                   <n-space align="center">
                     <n-select
@@ -295,9 +494,20 @@
               </template>
               <n-button quaternary type="primary" size="small" @click="addVisa">+ Добавить визу</n-button>
 
-              <n-divider style="margin: 24px 0 16px;">Медицинская справка</n-divider>
               <template v-for="(m, mi) in medicalCertificatesList" :key="m._key">
-                <n-divider v-if="mi > 0" style="margin: 16px 0;">Медсправка {{ mi + 1 }}</n-divider>
+                <div class="section-header">
+                  <n-tooltip>
+                    <template #trigger>
+                      <n-button quaternary circle size="tiny" @click="toggleHidden(`medical:${mi}`)">
+                        <template #icon>
+                          <n-icon><component :is="isHidden(`medical:${mi}`) ? EyeOffOutline : EyeOutline" /></n-icon>
+                        </template>
+                      </n-button>
+                    </template>
+                    {{ isHidden(`medical:${mi}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                  </n-tooltip>
+                  <span>Медицинская справка {{ mi + 1 }}</span>
+                </div>
                 <n-form-item :label="`Номер медсправки${mi > 0 ? ` (${mi + 1})` : ''}`">
                   <n-space align="center">
                     <n-input v-model:value="m.number" placeholder="№ 12345" style="width: 200px" />
@@ -333,9 +543,20 @@
               </template>
               <n-button quaternary type="primary" size="small" @click="addMedicalCertificate">+ Добавить медсправку</n-button>
 
-              <n-divider style="margin: 24px 0 16px;">Сертификат техминимума</n-divider>
               <template v-for="(tm, tmi) in technicalMinimumCertsList" :key="tm._key">
-                <n-divider v-if="tmi > 0" style="margin: 16px 0;">Сертификат техминимума {{ tmi + 1 }}</n-divider>
+                <div class="section-header">
+                  <n-tooltip>
+                    <template #trigger>
+                      <n-button quaternary circle size="tiny" @click="toggleHidden(`tech_min:${tmi}`)">
+                        <template #icon>
+                          <n-icon><component :is="isHidden(`tech_min:${tmi}`) ? EyeOffOutline : EyeOutline" /></n-icon>
+                        </template>
+                      </n-button>
+                    </template>
+                    {{ isHidden(`tech_min:${tmi}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                  </n-tooltip>
+                  <span>Сертификат техминимума {{ tmi + 1 }}</span>
+                </div>
                 <n-form-item :label="`Имя учебного заведения${tmi > 0 ? ` (${tmi + 1})` : ''}`">
                   <n-space align="center">
                     <n-input v-model:value="tm.issued_by" placeholder="Название учебного центра" style="width: 280px" />
@@ -374,9 +595,20 @@
               </template>
               <n-button quaternary type="primary" size="small" @click="addTechnicalMinimumCert">+ Добавить сертификат техминимума</n-button>
 
-              <n-divider style="margin: 24px 0 16px;">Карта тахографа</n-divider>
               <template v-for="(t, ti) in tachographCardsList" :key="t._key">
-                <n-divider v-if="ti > 0" style="margin: 16px 0;">Карта тахографа {{ ti + 1 }}</n-divider>
+                <div class="section-header">
+                  <n-tooltip>
+                    <template #trigger>
+                      <n-button quaternary circle size="tiny" @click="toggleHidden(`tachograph:${ti}`)">
+                        <template #icon>
+                          <n-icon><component :is="isHidden(`tachograph:${ti}`) ? EyeOffOutline : EyeOutline" /></n-icon>
+                        </template>
+                      </n-button>
+                    </template>
+                    {{ isHidden(`tachograph:${ti}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                  </n-tooltip>
+                  <span>Карта тахографа {{ ti + 1 }}</span>
+                </div>
                 <n-form-item :label="`Номер карты тахографа${ti > 0 ? ` (${ti + 1})` : ''}`">
                   <n-space align="center">
                     <n-input v-model:value="t.number" placeholder="№ TK-567890" style="width: 200px" />
@@ -415,9 +647,20 @@
               </template>
               <n-button quaternary type="primary" size="small" @click="addTachographCard">+ Добавить карту тахографа</n-button>
 
-              <n-divider style="margin: 24px 0 16px;">ADR допуск</n-divider>
               <template v-for="(a, ai) in adrCertsList" :key="a._key">
-                <n-divider v-if="ai > 0" style="margin: 16px 0;">ADR допуск {{ ai + 1 }}</n-divider>
+                <div class="section-header">
+                  <n-tooltip>
+                    <template #trigger>
+                      <n-button quaternary circle size="tiny" @click="toggleHidden(`adr:${ai}`)">
+                        <template #icon>
+                          <n-icon><component :is="isHidden(`adr:${ai}`) ? EyeOffOutline : EyeOutline" /></n-icon>
+                        </template>
+                      </n-button>
+                    </template>
+                    {{ isHidden(`adr:${ai}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                  </n-tooltip>
+                  <span>ADR допуск {{ ai + 1 }}</span>
+                </div>
                 <n-form-item :label="`Кем выдано${ai > 0 ? ` (${ai + 1})` : ''}`">
                   <n-space align="center">
                     <n-input v-model:value="a.issued_by" placeholder="Организация, выдавшая допуск" style="width: 280px" />
@@ -502,8 +745,9 @@
 import {
   NForm, NFormItem, NInput, NCard, NSpace, NButton, NSelect, NDatePicker,
   NUpload, NTag, NText, NRadioGroup, NRadio, NCheckboxGroup, NCheckbox,
-  NSpin, NH3, NDivider, NSwitch, useMessage
+  NSpin, NH3, NDivider, NSwitch, useMessage, NIcon, NTooltip
 } from 'naive-ui'
+import { EyeOutline, EyeOffOutline } from '@vicons/ionicons5'
 import { citizenships, visaCountries, adrClasses, licenseCategories } from '@tmgo/shared'
 
 const route = useRoute()
@@ -615,10 +859,22 @@ const form = reactive({
   bank_name: '',
   bank_account: '',
   bank_bik: '',
-  updated_at: ''
+  updated_at: '',
+  hidden_fields: [] as string[]
 })
 
 const profileData = ref<Record<string, any> | null>(null)
+
+function isHidden(key: string) {
+  return (form.hidden_fields || []).includes(key)
+}
+function toggleHidden(key: string) {
+  const arr = [...(form.hidden_fields || [])]
+  const i = arr.indexOf(key)
+  if (i >= 0) arr.splice(i, 1)
+  else arr.push(key)
+  form.hidden_fields = arr
+}
 
 type PassportItem = {
   _key: string
@@ -1123,6 +1379,7 @@ function applyProfileToForm(data: Record<string, any>) {
   if (!data || data.error) return
   profileData.value = data
   Object.assign(form, data)
+  form.hidden_fields = Array.isArray(data.hidden_fields) ? data.hidden_fields : []
 
   if (data.citizenship) form.citizenships = data.citizenship.split(',').map((s: string) => s.trim()).filter(Boolean)
   if (data.phone) form.phones = data.phone.split(',').map((s: string) => s.trim()).filter(Boolean)
@@ -1239,7 +1496,8 @@ function buildSaveBody() {
     hire_source: form.hire_source,
     bank_name: form.bank_name,
     bank_account: form.bank_account,
-    bank_bik: form.bank_bik
+    bank_bik: form.bank_bik,
+    hidden_fields: form.hidden_fields || []
   }
   return body
 }
@@ -1670,6 +1928,15 @@ defineExpose({ loadProfile, handleSave })
 }
 .mb-16 { margin-bottom: 16px; }
 .mb-24 { margin-bottom: 24px; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 24px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--n-border-color);
+}
 .mt-8 { margin-top: 8px; }
 .mt-24 { margin-top: 24px; }
 .ml-8 { margin-left: 8px; }
