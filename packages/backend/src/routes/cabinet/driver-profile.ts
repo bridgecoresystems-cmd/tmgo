@@ -225,6 +225,100 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       status: doc.status,
     }));
 
+    const visaDocs = await db.select()
+      .from(driverDocuments)
+      .where(and(
+        eq(driverDocuments.carrierId, carrierProfile.id),
+        eq(driverDocuments.docType, 'visa'),
+        inArray(driverDocuments.status, ['active', 'pending_verification']),
+      ))
+      .orderBy(desc(driverDocuments.createdAt));
+    const visas_from_documents = visaDocs.map((doc) => ({
+      id: doc.id,
+      country: doc.country,
+      number: doc.number,
+      issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+      expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+      scan_url: doc.scanUrl,
+      status: doc.status,
+    }));
+
+    const medicalDocs = await db.select()
+      .from(driverDocuments)
+      .where(and(
+        eq(driverDocuments.carrierId, carrierProfile.id),
+        eq(driverDocuments.docType, 'medical_certificate'),
+        inArray(driverDocuments.status, ['active', 'pending_verification']),
+      ))
+      .orderBy(desc(driverDocuments.createdAt));
+    const medical_certificates_from_documents = medicalDocs.map((doc) => ({
+      id: doc.id,
+      number: doc.number,
+      issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+      expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+      scan_url: doc.scanUrl,
+      status: doc.status,
+    }));
+
+    const tachographDocs = await db.select()
+      .from(driverDocuments)
+      .where(and(
+        eq(driverDocuments.carrierId, carrierProfile.id),
+        eq(driverDocuments.docType, 'tachograph_card'),
+        inArray(driverDocuments.status, ['active', 'pending_verification']),
+      ))
+      .orderBy(desc(driverDocuments.createdAt));
+    const tachograph_cards_from_documents = tachographDocs.map((doc) => ({
+      id: doc.id,
+      number: doc.number,
+      country: doc.country,
+      issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+      expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+      scan_url: doc.scanUrl,
+      status: doc.status,
+    }));
+
+    const techMinDocs = await db.select()
+      .from(driverDocuments)
+      .where(and(
+        eq(driverDocuments.carrierId, carrierProfile.id),
+        eq(driverDocuments.docType, 'technical_minimum_cert'),
+        inArray(driverDocuments.status, ['active', 'pending_verification']),
+      ))
+      .orderBy(desc(driverDocuments.createdAt));
+    const technical_minimum_certs_from_documents = techMinDocs.map((doc) => ({
+      id: doc.id,
+      number: doc.number,
+      issued_by: doc.issuedBy,
+      issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+      expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+      scan_url: doc.scanUrl,
+      status: doc.status,
+    }));
+
+    const adrDocs = await db.select()
+      .from(driverDocuments)
+      .where(and(
+        eq(driverDocuments.carrierId, carrierProfile.id),
+        eq(driverDocuments.docType, 'adr_certificate'),
+        inArray(driverDocuments.status, ['active', 'pending_verification']),
+      ))
+      .orderBy(desc(driverDocuments.createdAt));
+    const adr_certs_from_documents = adrDocs.map((doc) => {
+      const allowed = doc.licenseCategories ? doc.licenseCategories.split(',').map((s) => s.trim()).filter(Boolean) : [];
+      return {
+        id: doc.id,
+        issued_by: doc.issuedBy,
+        number: doc.number,
+        allowed_classes: allowed,
+        license_categories: doc.licenseCategories,
+        issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+        expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+        scan_url: doc.scanUrl,
+        status: doc.status,
+      };
+    });
+
     return {
       id: carrierProfile.id,
       // 1. Основная информация
@@ -269,6 +363,11 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       passport_is_active: carrierProfile.passportIsActive,
       extra_passports: (carrierProfile.extraPassports as any[]) ?? [],
       passports_from_documents,
+      visas_from_documents,
+      medical_certificates_from_documents,
+      tachograph_cards_from_documents,
+      technical_minimum_certs_from_documents,
+      adr_certs_from_documents,
       // 4. Разрешительные документы
       permission_entry_zone: carrierProfile.permissionEntryZone,
       permission_issue_date: d(carrierProfile.permissionIssueDate),

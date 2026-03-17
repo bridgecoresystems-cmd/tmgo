@@ -1,5 +1,6 @@
 /**
  * Оповещения водителя: документы с истекающим сроком (< 30 дней).
+ * Не показываем алерт по старому паспорту/ВУ, если есть более новый документ (добавлен через «Добавить документы»).
  */
 const ALERT_DAYS_THRESHOLD = 30
 
@@ -32,8 +33,6 @@ export function useDriverAlerts() {
     try {
       const data = await $fetch<any>(`${apiBase}/cabinet/driver/profile`, { credentials: 'include' })
       const now = new Date()
-      const threshold = new Date(now)
-      threshold.setDate(threshold.getDate() + ALERT_DAYS_THRESHOLD)
 
       const items: DriverAlert[] = []
 
@@ -60,13 +59,34 @@ export function useDriverAlerts() {
         }
       }
 
-      add('passport', 'Паспорт (1)', data.passport_expiry_date, undefined, data.passport_is_active)
-      // Второй и последующие паспорта — проверяем срок каждого
-      const extra = Array.isArray(data.extra_passports) ? data.extra_passports : []
-      extra.forEach((p: { passport_expiry_date?: string | null; is_active?: boolean }, i: number) => {
-        add('passport', `Паспорт (${i + 2})`, p.passport_expiry_date, `extra-${i}`, p.is_active)
-      })
-      add('license', 'Водительское удостоверение', data.license_expiry)
+      // Паспорта: если есть passports_from_documents (добавлены через «Добавить документы»),
+      // то новый документ уже есть — не показываем алерт по старому паспорту из профиля
+      const fromDocsPassports = Array.isArray(data.passports_from_documents) ? data.passports_from_documents : []
+      const hasNewerPassport = fromDocsPassports.length > 0
+
+      if (!hasNewerPassport) {
+        add('passport', 'Паспорт (1)', data.passport_expiry_date, undefined, data.passport_is_active)
+        const extra = Array.isArray(data.extra_passports) ? data.extra_passports : []
+        extra.forEach((p: { passport_expiry_date?: string | null; is_active?: boolean }, i: number) => {
+          add('passport', `Паспорт (${i + 2})`, p.passport_expiry_date, `extra-${i}`, p.is_active)
+        })
+      } else {
+        // Только самый новый паспорт (первый в списке — orderBy createdAt desc)
+        const newest = fromDocsPassports[0]
+        if (newest) add('passport', 'Паспорт (1)', newest.expires_at, 'doc-0', true)
+      }
+
+      // ВУ: аналогично — если есть licenses_from_documents, не показываем алерт по старому ВУ из профиля
+      const fromDocsLicenses = Array.isArray(data.licenses_from_documents) ? data.licenses_from_documents : []
+      const hasNewerLicense = fromDocsLicenses.length > 0
+
+      if (!hasNewerLicense) {
+        add('license', 'Водительское удостоверение', data.license_expiry)
+      } else {
+        const newestLic = fromDocsLicenses[0]
+        if (newestLic) add('license', 'Водительское удостоверение', newestLic.expires_at, 'doc-0', true)
+      }
+
       add('permission', 'Разрешение на въезд', data.permission_validity_date)
 
       // Медосмотр действует 1 год — срок = дата осмотра + 365 дней

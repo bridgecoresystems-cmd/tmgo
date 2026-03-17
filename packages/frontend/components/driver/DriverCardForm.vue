@@ -464,7 +464,11 @@
               <n-input v-model:value="form.license_number" placeholder="TM-123456" />
             </n-form-item>
             <n-form-item label="Категории прав">
-              <n-input v-model:value="form.license_categories" placeholder="B / C / D / E" />
+              <n-checkbox-group v-model:value="form.license_categories_arr">
+                <n-space>
+                  <n-checkbox v-for="c in licenseCategories" :key="c.value" :value="c.value" :label="c.label" />
+                </n-space>
+              </n-checkbox-group>
             </n-form-item>
             <n-form-item label="Дата выдачи">
               <n-date-picker
@@ -692,7 +696,7 @@
 
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
-import { citizenships } from '@tmgo/shared'
+import { citizenships, licenseCategories } from '@tmgo/shared'
 
 const props = withDefaults(
   defineProps<{
@@ -1189,6 +1193,7 @@ const form = reactive({
   license_number: '' as string,
   license_expiry: null as string | null,
   license_categories: '' as string,
+  license_categories_arr: [] as string[],
   license_issue_date: null as string | null,
   license_issued_by: '' as string,
   license_scan_url: '' as string,
@@ -1258,6 +1263,7 @@ function applyProfileData(data: Record<string, any>) {
   form.license_number = data.license_number ?? ''
   form.license_expiry = data.license_expiry ?? null
   form.license_categories = data.license_categories ?? ''
+  form.license_categories_arr = data.license_categories ? data.license_categories.split(',').map((s: string) => s.trim()).filter(Boolean) : []
   form.license_issue_date = data.license_issue_date ?? null
   form.license_issued_by = data.license_issued_by ?? ''
   form.license_scan_url = data.license_scan_url ?? ''
@@ -1357,7 +1363,7 @@ function buildSaveBody() {
     company_name: form.company_name || null,
     license_number: form.license_number || null,
     license_expiry: form.license_expiry || null,
-    license_categories: form.license_categories || null,
+    license_categories: (form.license_categories_arr?.length ? form.license_categories_arr.join(', ') : form.license_categories) || null,
     license_issue_date: form.license_issue_date || null,
     license_issued_by: form.license_issued_by || null,
     license_scan_url: form.license_scan_url || null,

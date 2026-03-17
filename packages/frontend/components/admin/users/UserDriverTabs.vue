@@ -1,5 +1,6 @@
 <template>
-  <n-tabs type="line" animated class="admin-driver-tabs">
+  <div class="print-area">
+    <n-tabs type="line" animated class="admin-driver-tabs">
     <n-tab-pane name="card" tab="Карточка">
       <n-card embedded :bordered="false" class="mt-16">
         <DriverCardView :is-driver-context="false" :initial-profile="profile" />
@@ -35,7 +36,8 @@
         />
       </n-card>
     </n-tab-pane>
-  </n-tabs>
+    </n-tabs>
+  </div>
 </template>
 
 <script setup lang="ts">

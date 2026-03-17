@@ -17,3 +17,27 @@ body {
   margin: 0 auto;
   padding: 0 20px;
 }
+
+/* Печать только области с классом print-area */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  /* Скрыть вкладки при печати (админка) */
+  .print-area .n-tabs-nav,
+  .print-area .n-tabs-tab-wrapper {
+    display: none !important;
+  }
+}

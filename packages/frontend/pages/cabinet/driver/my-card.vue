@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <n-card class="shadow-sm print-card">
+    <n-card class="shadow-sm print-card print-area">
       <DriverCardView :is-driver-context="true" />
     </n-card>
   </div>
@@ -44,8 +44,7 @@ function doPrint() {
   gap: 16px;
 }
 @media print {
-  .card-header .n-button,
-  .card-header .header-row .n-button {
+  .card-header {
     display: none !important;
   }
 }

@@ -74,6 +74,7 @@
     :title="chatTitle"
     :current-user-id="session?.user?.id"
   />
+  <ScrollToTopButton />
 </template>
 
 <script setup lang="ts">

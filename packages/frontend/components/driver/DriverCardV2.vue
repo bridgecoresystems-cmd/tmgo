@@ -264,58 +264,228 @@
           </n-space>
         </n-card>
 
-        <!-- 4. Разрешительные документы -->
+        <!-- 4. Разрешительные документы (виза, медсправка, техминимум, тахограф, ADR) -->
         <n-h3 prefix="bar" align-text>4. Разрешительные документы</n-h3>
         <n-card embedded :bordered="false" class="mb-24">
           <n-space vertical size="large">
-            <n-form-item label="Разрешение на въезд (Виза)">
-              <n-space vertical style="width: 100%">
-                <n-input v-model:value="form.permission_entry_zone" placeholder="Номер визы / зона" />
+            <n-text depth="3" style="margin-bottom: 8px;">Виза</n-text>
+            <template v-for="(v, vi) in visasList" :key="v._key">
+              <n-divider v-if="vi > 0" style="margin: 16px 0;">Виза {{ vi + 1 }}</n-divider>
+              <n-form-item :label="`Страна выдачи${vi > 0 ? ` (${vi + 1})` : ''}`">
+                <n-space align="center">
+                  <n-select
+                    v-model:value="v.country"
+                    :options="visaCountryOptions"
+                    filterable
+                    placeholder="Выберите страну"
+                    style="width: 240px"
+                  />
+                  <n-button v-if="vi > 0" quaternary circle type="error" @click="removeVisa(vi)">×</n-button>
+                </n-space>
+              </n-form-item>
+              <n-form-item label="Номер визы">
+                <n-input v-model:value="v.number" placeholder="1234567" style="width: 200px" />
+              </n-form-item>
+              <n-form-item label="Дата начала — Дата окончания">
                 <n-space align="center">
                   <n-date-picker
-                    :value="form.permission_issue_date ? new Date(form.permission_issue_date).getTime() : null"
+                    :value="v.issued_at ? new Date(v.issued_at).getTime() : null"
                     type="date"
-                    placeholder="Дата выдачи"
-                    @update:value="(v) => { form.permission_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                    placeholder="Дата начала"
+                    @update:value="(val) => { v.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                   <n-text depth="3">—</n-text>
                   <n-date-picker
-                    :value="form.permission_validity_date ? new Date(form.permission_validity_date).getTime() : null"
+                    :value="v.expires_at ? new Date(v.expires_at).getTime() : null"
                     type="date"
                     placeholder="Дата окончания"
-                    @update:value="(v) => { form.permission_validity_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                    @update:value="(val) => { v.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                 </n-space>
-                <n-upload :max="1" :custom-request="(o) => handleUpload(o, 'visa')" :show-file-list="false">
-                  <n-button size="small">Загрузить скан визы</n-button>
-                </n-upload>
-              </n-space>
-            </n-form-item>
+              </n-form-item>
+              <n-form-item label="Скан визы">
+                <n-space align="center">
+                  <n-upload :max="1" :custom-request="(o) => handleVisaUpload(o, v)" :show-file-list="false">
+                    <n-button size="small">{{ v.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                  </n-upload>
+                  <n-button v-if="v.scan_url" text type="primary" size="small" @click="openScan(v.scan_url)">
+                    Просмотр скана
+                  </n-button>
+                </n-space>
+              </n-form-item>
+            </template>
+            <n-button quaternary type="primary" size="small" @click="addVisa">+ Добавить визу</n-button>
 
-            <n-form-item label="Медицинская справка">
-              <n-space vertical style="width: 100%">
-                <n-input v-model:value="form.medical_certificate" placeholder="Номер справки" />
+            <n-divider style="margin: 24px 0 16px;">Медицинская справка</n-divider>
+            <template v-for="(m, mi) in medicalCertificatesList" :key="m._key">
+              <n-divider v-if="mi > 0" style="margin: 16px 0;">Медсправка {{ mi + 1 }}</n-divider>
+              <n-form-item :label="`Номер медсправки${mi > 0 ? ` (${mi + 1})` : ''}`">
+                <n-space align="center">
+                  <n-input v-model:value="m.number" placeholder="№ 12345" style="width: 200px" />
+                  <n-button v-if="mi > 0" quaternary circle type="error" @click="removeMedicalCertificate(mi)">×</n-button>
+                </n-space>
+              </n-form-item>
+              <n-form-item label="Дата выдачи">
                 <n-date-picker
-                  :value="form.last_medical_examination_date ? new Date(form.last_medical_examination_date).getTime() : null"
+                  :value="m.issued_at ? new Date(m.issued_at).getTime() : null"
                   type="date"
-                  placeholder="Действует до (или дата осмотра)"
-                  @update:value="(v) => { form.last_medical_examination_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                  placeholder="Дата выдачи"
+                  @update:value="(val) => { m.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                 />
-                <n-upload :max="1" :custom-request="(o) => handleUpload(o, 'medical')" :show-file-list="false">
-                  <n-button size="small">Загрузить скан справки</n-button>
-                </n-upload>
-              </n-space>
-            </n-form-item>
+              </n-form-item>
+              <n-form-item label="Дата окончания">
+                <n-date-picker
+                  :value="m.expires_at ? new Date(m.expires_at).getTime() : null"
+                  type="date"
+                  placeholder="Дата окончания"
+                  @update:value="(val) => { m.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                />
+              </n-form-item>
+              <n-form-item label="Скан медсправки">
+                <n-space align="center">
+                  <n-upload :max="1" :custom-request="(o) => handleMedicalCertificateUpload(o, m)" :show-file-list="false">
+                    <n-button size="small">{{ m.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                  </n-upload>
+                  <n-button v-if="m.scan_url" text type="primary" size="small" @click="openScan(m.scan_url)">
+                    Просмотр скана
+                  </n-button>
+                </n-space>
+              </n-form-item>
+            </template>
+            <n-button quaternary type="primary" size="small" @click="addMedicalCertificate">+ Добавить медсправку</n-button>
 
-            <n-form-item label="Техминимум">
-              <n-input v-model:value="form.technical_minimum_certificate" placeholder="№ TM-2025-0098" />
-            </n-form-item>
+            <n-divider style="margin: 24px 0 16px;">Сертификат техминимума</n-divider>
+            <template v-for="(tm, tmi) in technicalMinimumCertsList" :key="tm._key">
+              <n-divider v-if="tmi > 0" style="margin: 16px 0;">Сертификат техминимума {{ tmi + 1 }}</n-divider>
+              <n-form-item :label="`Имя учебного заведения${tmi > 0 ? ` (${tmi + 1})` : ''}`">
+                <n-space align="center">
+                  <n-input v-model:value="tm.issued_by" placeholder="Название учебного центра" style="width: 280px" />
+                  <n-button v-if="tmi > 0" quaternary circle type="error" @click="removeTechnicalMinimumCert(tmi)">×</n-button>
+                </n-space>
+              </n-form-item>
+              <n-form-item label="Номер сертификата">
+                <n-input v-model:value="tm.number" placeholder="№ TM-2025-0098" style="width: 200px" />
+              </n-form-item>
+              <n-form-item label="Дата получения">
+                <n-date-picker
+                  :value="tm.issued_at ? new Date(tm.issued_at).getTime() : null"
+                  type="date"
+                  placeholder="Дата получения"
+                  @update:value="(val) => { tm.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                />
+              </n-form-item>
+              <n-form-item label="Дата окончания">
+                <n-date-picker
+                  :value="tm.expires_at ? new Date(tm.expires_at).getTime() : null"
+                  type="date"
+                  placeholder="Дата окончания"
+                  @update:value="(val) => { tm.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                />
+              </n-form-item>
+              <n-form-item label="Скан документа">
+                <n-space align="center">
+                  <n-upload :max="1" :custom-request="(o) => handleTechnicalMinimumCertUpload(o, tm)" :show-file-list="false">
+                    <n-button size="small">{{ tm.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                  </n-upload>
+                  <n-button v-if="tm.scan_url" text type="primary" size="small" @click="openScan(tm.scan_url)">
+                    Просмотр скана
+                  </n-button>
+                </n-space>
+              </n-form-item>
+            </template>
+            <n-button quaternary type="primary" size="small" @click="addTechnicalMinimumCert">+ Добавить сертификат техминимума</n-button>
 
-            <n-form-item label="Карта тахографа">
-              <n-input v-model:value="form.tachograph_card_number" placeholder="№ TK-567890" />
-            </n-form-item>
+            <n-divider style="margin: 24px 0 16px;">ADR допуск</n-divider>
+            <template v-for="(a, ai) in adrCertsList" :key="a._key">
+              <n-divider v-if="ai > 0" style="margin: 16px 0;">ADR допуск {{ ai + 1 }}</n-divider>
+              <n-form-item :label="`Кем выдано${ai > 0 ? ` (${ai + 1})` : ''}`">
+                <n-space align="center">
+                  <n-input v-model:value="a.issued_by" placeholder="Организация, выдавшая допуск" style="width: 280px" />
+                  <n-button v-if="ai > 0" quaternary circle type="error" @click="removeAdrCert(ai)">×</n-button>
+                </n-space>
+              </n-form-item>
+              <n-form-item label="Номер свидетельства">
+                <n-input v-model:value="a.number" placeholder="№ ADR-2025-001" style="width: 200px" />
+              </n-form-item>
+              <n-form-item label="Разрешённые классы">
+                <n-checkbox-group v-model:value="a.allowed_classes">
+                  <n-space vertical size="small">
+                    <n-checkbox v-for="c in adrClasses" :key="c.value" :value="c.value" :label="c.label" />
+                  </n-space>
+                </n-checkbox-group>
+              </n-form-item>
+              <n-form-item label="Дата выдачи">
+                <n-date-picker
+                  :value="a.issued_at ? new Date(a.issued_at).getTime() : null"
+                  type="date"
+                  placeholder="Дата выдачи"
+                  @update:value="(val) => { a.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                />
+              </n-form-item>
+              <n-form-item label="Дата окончания">
+                <n-date-picker
+                  :value="a.expires_at ? new Date(a.expires_at).getTime() : null"
+                  type="date"
+                  placeholder="Дата окончания"
+                  @update:value="(val) => { a.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                />
+              </n-form-item>
+              <n-form-item label="Скан документа">
+                <n-space align="center">
+                  <n-upload :max="1" :custom-request="(o) => handleAdrCertUpload(o, a)" :show-file-list="false">
+                    <n-button size="small">{{ a.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                  </n-upload>
+                  <n-button v-if="a.scan_url" text type="primary" size="small" @click="openScan(a.scan_url)">
+                    Просмотр скана
+                  </n-button>
+                </n-space>
+              </n-form-item>
+            </template>
+            <n-button quaternary type="primary" size="small" @click="addAdrCert">+ Добавить ADR допуск</n-button>
 
-            <n-form-item label="Прочие документы">
+            <n-divider style="margin: 24px 0 16px;">Карта тахографа</n-divider>
+            <template v-for="(t, ti) in tachographCardsList" :key="t._key">
+              <n-divider v-if="ti > 0" style="margin: 16px 0;">Карта тахографа {{ ti + 1 }}</n-divider>
+              <n-form-item :label="`Номер карты тахографа${ti > 0 ? ` (${ti + 1})` : ''}`">
+                <n-space align="center">
+                  <n-input v-model:value="t.number" placeholder="№ TK-567890" style="width: 200px" />
+                  <n-button v-if="ti > 0" quaternary circle type="error" @click="removeTachographCard(ti)">×</n-button>
+                </n-space>
+              </n-form-item>
+              <n-form-item label="Страна выдачи">
+                <n-select v-model:value="t.country" :options="visaCountryOptions" filterable placeholder="Выберите страну" style="width: 240px" />
+              </n-form-item>
+              <n-form-item label="Дата выдачи">
+                <n-date-picker
+                  :value="t.issued_at ? new Date(t.issued_at).getTime() : null"
+                  type="date"
+                  placeholder="Дата выдачи"
+                  @update:value="(val) => { t.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                />
+              </n-form-item>
+              <n-form-item label="Дата окончания">
+                <n-date-picker
+                  :value="t.expires_at ? new Date(t.expires_at).getTime() : null"
+                  type="date"
+                  placeholder="Дата окончания"
+                  @update:value="(val) => { t.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                />
+              </n-form-item>
+              <n-form-item label="Скан документа">
+                <n-space align="center">
+                  <n-upload :max="1" :custom-request="(o) => handleTachographCardUpload(o, t)" :show-file-list="false">
+                    <n-button size="small">{{ t.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                  </n-upload>
+                  <n-button v-if="t.scan_url" text type="primary" size="small" @click="openScan(t.scan_url)">
+                    Просмотр скана
+                  </n-button>
+                </n-space>
+              </n-form-item>
+            </template>
+            <n-button quaternary type="primary" size="small" @click="addTachographCard">+ Добавить карту тахографа</n-button>
+
+            <n-divider style="margin: 24px 0 16px;">ADR пропуск</n-divider>
+            <n-form-item label="ADR пропуск / Прочие документы">
               <n-input v-model:value="form.other_permits" type="textarea" placeholder="Страховка, пропуск, допуск ADR и т. д." />
             </n-form-item>
 
@@ -328,8 +498,11 @@
                 <n-tag v-if="form.passport_scan_url" type="success" size="small">Паспорт</n-tag>
                 <n-tag v-if="form.license_scan_url" type="success" size="small">ВУ</n-tag>
                 <n-tag v-if="form.international_license_scan_url" type="success" size="small">МВУ</n-tag>
-                <n-tag v-if="form.visa_scan_url" type="success" size="small">Виза</n-tag>
-                <n-tag v-if="form.medical_certificate_scan_url" type="success" size="small">Медсправка</n-tag>
+                <n-tag v-if="visasList.some((v: any) => v.scan_url)" type="success" size="small">Виза</n-tag>
+                <n-tag v-if="medicalCertificatesList.some((m: any) => m.scan_url)" type="success" size="small">Медсправка</n-tag>
+                <n-tag v-if="technicalMinimumCertsList.some((tm: any) => tm.scan_url)" type="success" size="small">Техминимум</n-tag>
+                <n-tag v-if="adrCertsList.some((a: any) => a.scan_url)" type="success" size="small">ADR</n-tag>
+                <n-tag v-if="tachographCardsList.some((t: any) => t.scan_url)" type="success" size="small">Карта тахографа</n-tag>
                 <n-text v-if="!anyScanUploaded" depth="3">Нет прикреплённых файлов</n-text>
               </n-space>
             </n-form-item>
@@ -361,7 +534,7 @@ import {
   NUpload, NTag, NText, NRadioGroup, NRadio, NCheckboxGroup, NCheckbox, 
   NSpin, NAlert, NH3, NIcon
 } from 'naive-ui'
-import { citizenships } from '@tmgo/shared'
+import { citizenships, visaCountries, adrClasses } from '@tmgo/shared'
 
 const props = defineProps<{
   isDriverContext?: boolean
@@ -386,6 +559,10 @@ const error = ref<string | null>(null)
 
 const citizenshipOptions = computed(() => 
   citizenships.map(c => ({ label: c, value: c }))
+)
+
+const visaCountryOptions = computed(() =>
+  visaCountries.map(c => ({ label: c, value: c }))
 )
 
 const form = reactive({
@@ -436,6 +613,68 @@ const form = reactive({
   verification_status: 'not_submitted'
 })
 
+type VisaItem = {
+  _key: string
+  _source: 'doc' | 'new'
+  _docId?: string
+  country: string
+  number: string
+  issued_at: string | null
+  expires_at: string | null
+  scan_url: string
+}
+
+type MedicalCertificateItem = {
+  _key: string
+  _source: 'doc' | 'new'
+  _docId?: string
+  number: string
+  issued_at: string | null
+  expires_at: string | null
+  scan_url: string
+}
+
+type TachographCardItem = {
+  _key: string
+  _source: 'doc' | 'new'
+  _docId?: string
+  number: string
+  country: string
+  issued_at: string | null
+  expires_at: string | null
+  scan_url: string
+}
+
+type TechnicalMinimumCertItem = {
+  _key: string
+  _source: 'doc' | 'new'
+  _docId?: string
+  issued_by: string
+  number: string
+  issued_at: string | null
+  expires_at: string | null
+  scan_url: string
+}
+
+type AdrCertItem = {
+  _key: string
+  _source: 'doc' | 'new'
+  _docId?: string
+  issued_by: string
+  number: string
+  allowed_classes: string[]
+  issued_at: string | null
+  expires_at: string | null
+  scan_url: string
+}
+
+const visasList = ref<VisaItem[]>([])
+const medicalCertificatesList = ref<MedicalCertificateItem[]>([])
+const tachographCardsList = ref<TachographCardItem[]>([])
+const technicalMinimumCertsList = ref<TechnicalMinimumCertItem[]>([])
+const adrCertsList = ref<AdrCertItem[]>([])
+
+
 const statusOptions = [
   { label: 'Активен', value: 'active' },
   { label: 'В отпуске', value: 'on_leave' },
@@ -455,7 +694,12 @@ const hireSourceOptions = [
 ]
 
 const anyScanUploaded = computed(() => {
-  return !!(form.passport_scan_url || form.license_scan_url || form.international_license_scan_url || form.visa_scan_url || form.medical_certificate_scan_url)
+  const hasVisaScans = visasList.value.some(v => v.scan_url)
+  const hasMedicalScans = medicalCertificatesList.value.some(m => m.scan_url)
+  const hasTechMinScans = technicalMinimumCertsList.value.some(tm => tm.scan_url)
+  const hasAdrScans = adrCertsList.value.some(a => a.scan_url)
+  const hasTachographScans = tachographCardsList.value.some(t => t.scan_url)
+  return !!(form.passport_scan_url || form.license_scan_url || form.international_license_scan_url || hasVisaScans || hasMedicalScans || hasTechMinScans || hasAdrScans || hasTachographScans)
 })
 
 const isLocked = computed(() => 
@@ -485,7 +729,11 @@ async function loadProfile() {
     if (!form.citizenships || form.citizenships.length === 0) form.citizenships = ['']
     if (!form.phones || form.phones.length === 0) form.phones = ['']
 
-    console.log('Loaded form data:', form)
+    visasList.value = buildVisasList(data)
+    medicalCertificatesList.value = buildMedicalCertificatesList(data)
+    tachographCardsList.value = buildTachographCardsList(data)
+    technicalMinimumCertsList.value = buildTechnicalMinimumCertsList(data)
+    adrCertsList.value = buildAdrCertsList(data)
   } catch (e: any) {
     console.error('Error loading profile:', e)
     error.value = e?.data?.error || 'Ошибка загрузки профиля'
@@ -516,6 +764,15 @@ async function handleSave() {
       credentials: 'include',
       body: buildSaveBody()
     })
+
+    if (props.isDriverContext) {
+      await syncVisasToDocuments()
+      await syncMedicalCertificatesToDocuments()
+      await syncTechnicalMinimumCertsToDocuments()
+      await syncAdrCertsToDocuments()
+      await syncTachographCardsToDocuments()
+    }
+
     message.success('Черновик сохранен')
     emit('saved')
   } catch (e: any) {
@@ -548,6 +805,15 @@ async function handleSubmit() {
       credentials: 'include',
       body: buildSaveBody()
     })
+
+    if (props.isDriverContext) {
+      await syncVisasToDocuments()
+      await syncMedicalCertificatesToDocuments()
+      await syncTechnicalMinimumCertsToDocuments()
+      await syncAdrCertsToDocuments()
+      await syncTachographCardsToDocuments()
+    }
+
     message.success('Карточка отправлена на верификацию')
     form.verification_status = 'submitted'
     emit('submitted')
@@ -555,6 +821,485 @@ async function handleSubmit() {
     message.error(e?.data?.error || 'Ошибка отправки')
   } finally {
     submitting.value = false
+  }
+}
+
+function buildVisasList(data: Record<string, any>): VisaItem[] {
+  const docs = Array.isArray(data?.visas_from_documents) ? data.visas_from_documents : []
+  if (docs.length === 0) {
+    return [{ _key: 'new-0', _source: 'new', country: '', number: '', issued_at: null, expires_at: null, scan_url: '' }]
+  }
+  return docs.map((d: any) => ({
+    _key: `doc-${d.id}`,
+    _source: 'doc' as const,
+    _docId: d.id,
+    country: d.country ?? '',
+    number: d.number ?? '',
+    issued_at: d.issued_at ?? null,
+    expires_at: d.expires_at ?? null,
+    scan_url: d.scan_url ?? ''
+  }))
+}
+
+function addVisa() {
+  visasList.value.push({
+    _key: `new-${Date.now()}`,
+    _source: 'new',
+    country: '',
+    number: '',
+    issued_at: null,
+    expires_at: null,
+    scan_url: ''
+  })
+}
+
+function removeVisa(idx: number) {
+  visasList.value.splice(idx, 1)
+  if (visasList.value.length === 0) {
+    visasList.value.push({ _key: 'new-0', _source: 'new', country: '', number: '', issued_at: null, expires_at: null, scan_url: '' })
+  }
+}
+
+function buildMedicalCertificatesList(data: Record<string, any>): MedicalCertificateItem[] {
+  const docs = Array.isArray(data?.medical_certificates_from_documents) ? data.medical_certificates_from_documents : []
+  if (docs.length === 0) {
+    return [{ _key: 'new-0', _source: 'new', number: '', issued_at: null, expires_at: null, scan_url: '' }]
+  }
+  return docs.map((d: any) => ({
+    _key: `doc-${d.id}`,
+    _source: 'doc' as const,
+    _docId: d.id,
+    number: d.number ?? '',
+    issued_at: d.issued_at ?? null,
+    expires_at: d.expires_at ?? null,
+    scan_url: d.scan_url ?? ''
+  }))
+}
+
+function addMedicalCertificate() {
+  medicalCertificatesList.value.push({
+    _key: `new-${Date.now()}`,
+    _source: 'new',
+    number: '',
+    issued_at: null,
+    expires_at: null,
+    scan_url: ''
+  })
+}
+
+function removeMedicalCertificate(idx: number) {
+  medicalCertificatesList.value.splice(idx, 1)
+  if (medicalCertificatesList.value.length === 0) {
+    medicalCertificatesList.value.push({ _key: 'new-0', _source: 'new', number: '', issued_at: null, expires_at: null, scan_url: '' })
+  }
+}
+
+function buildTachographCardsList(data: Record<string, any>): TachographCardItem[] {
+  const docs = Array.isArray(data?.tachograph_cards_from_documents) ? data.tachograph_cards_from_documents : []
+  if (docs.length === 0) {
+    return [{ _key: 'new-0', _source: 'new', number: '', country: '', issued_at: null, expires_at: null, scan_url: '' }]
+  }
+  return docs.map((d: any) => ({
+    _key: `doc-${d.id}`,
+    _source: 'doc' as const,
+    _docId: d.id,
+    number: d.number ?? '',
+    country: d.country ?? '',
+    issued_at: d.issued_at ?? null,
+    expires_at: d.expires_at ?? null,
+    scan_url: d.scan_url ?? ''
+  }))
+}
+
+function buildTechnicalMinimumCertsList(data: Record<string, any>): TechnicalMinimumCertItem[] {
+  const docs = Array.isArray(data?.technical_minimum_certs_from_documents) ? data.technical_minimum_certs_from_documents : []
+  if (docs.length === 0) {
+    return [{
+      _key: 'new-0',
+      _source: 'new',
+      issued_by: '',
+      number: '',
+      issued_at: null,
+      expires_at: null,
+      scan_url: ''
+    }]
+  }
+  return docs.map((d: any) => ({
+    _key: `doc-${d.id}`,
+    _source: 'doc' as const,
+    _docId: d.id,
+    issued_by: d.issued_by ?? '',
+    number: d.number ?? '',
+    issued_at: d.issued_at ?? null,
+    expires_at: d.expires_at ?? null,
+    scan_url: d.scan_url ?? ''
+  }))
+}
+
+function addTechnicalMinimumCert() {
+  technicalMinimumCertsList.value.push({
+    _key: `new-${Date.now()}`,
+    _source: 'new',
+    issued_by: '',
+    number: '',
+    issued_at: null,
+    expires_at: null,
+    scan_url: ''
+  })
+}
+
+function buildAdrCertsList(data: Record<string, any>): AdrCertItem[] {
+  const docs = Array.isArray(data?.adr_certs_from_documents) ? data.adr_certs_from_documents : []
+  if (docs.length === 0) {
+    return [{
+      _key: 'new-0',
+      _source: 'new',
+      issued_by: '',
+      number: '',
+      allowed_classes: [],
+      issued_at: null,
+      expires_at: null,
+      scan_url: ''
+    }]
+  }
+  return docs.map((d: any) => ({
+    _key: `doc-${d.id}`,
+    _source: 'doc' as const,
+    _docId: d.id,
+    issued_by: d.issued_by ?? '',
+    number: d.number ?? '',
+    allowed_classes: Array.isArray(d.allowed_classes) ? d.allowed_classes : (d.license_categories ? d.license_categories.split(',').map((s: string) => s.trim()).filter(Boolean) : []),
+    issued_at: d.issued_at ?? null,
+    expires_at: d.expires_at ?? null,
+    scan_url: d.scan_url ?? ''
+  }))
+}
+
+function addAdrCert() {
+  adrCertsList.value.push({
+    _key: `new-${Date.now()}`,
+    _source: 'new',
+    issued_by: '',
+    number: '',
+    allowed_classes: [],
+    issued_at: null,
+    expires_at: null,
+    scan_url: ''
+  })
+}
+
+function removeAdrCert(idx: number) {
+  adrCertsList.value.splice(idx, 1)
+  if (adrCertsList.value.length === 0) {
+    adrCertsList.value.push({
+      _key: 'new-0',
+      _source: 'new',
+      issued_by: '',
+      number: '',
+      allowed_classes: [],
+      issued_at: null,
+      expires_at: null,
+      scan_url: ''
+    })
+  }
+}
+
+function removeTechnicalMinimumCert(idx: number) {
+  technicalMinimumCertsList.value.splice(idx, 1)
+  if (technicalMinimumCertsList.value.length === 0) {
+    technicalMinimumCertsList.value.push({
+      _key: 'new-0',
+      _source: 'new',
+      issued_by: '',
+      number: '',
+      issued_at: null,
+      expires_at: null,
+      scan_url: ''
+    })
+  }
+}
+
+function addTachographCard() {
+  tachographCardsList.value.push({
+    _key: `new-${Date.now()}`,
+    _source: 'new',
+    number: '',
+    country: '',
+    issued_at: null,
+    expires_at: null,
+    scan_url: ''
+  })
+}
+
+function removeTachographCard(idx: number) {
+  tachographCardsList.value.splice(idx, 1)
+  if (tachographCardsList.value.length === 0) {
+    tachographCardsList.value.push({ _key: 'new-0', _source: 'new', number: '', country: '', issued_at: null, expires_at: null, scan_url: '' })
+  }
+}
+
+async function syncVisasToDocuments() {
+  const base = `${apiBase}/cabinet/driver/documents`
+  for (const v of visasList.value) {
+    if (v._source === 'doc' && v._docId) {
+      await $fetch(`${base}/${v._docId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        body: {
+          country: v.country || null,
+          number: v.number || null,
+          issued_at: v.issued_at || null,
+          expires_at: v.expires_at || null,
+          scan_url: v.scan_url || null
+        }
+      })
+    } else if (v._source === 'new' && (v.country || v.number || v.scan_url)) {
+      await $fetch(base, {
+        method: 'POST',
+        credentials: 'include',
+        body: {
+          doc_type: 'visa',
+          country: v.country || null,
+          number: v.number || null,
+          issued_at: v.issued_at || null,
+          expires_at: v.expires_at || null,
+          scan_url: v.scan_url || null
+        }
+      })
+    }
+  }
+}
+
+async function syncMedicalCertificatesToDocuments() {
+  const base = `${apiBase}/cabinet/driver/documents`
+  for (const m of medicalCertificatesList.value) {
+    if (m._source === 'doc' && m._docId) {
+      await $fetch(`${base}/${m._docId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        body: {
+          number: m.number || null,
+          issued_at: m.issued_at || null,
+          expires_at: m.expires_at || null,
+          scan_url: m.scan_url || null
+        }
+      })
+    } else if (m._source === 'new' && (m.number || m.scan_url)) {
+      await $fetch(base, {
+        method: 'POST',
+        credentials: 'include',
+        body: {
+          doc_type: 'medical_certificate',
+          number: m.number || null,
+          issued_at: m.issued_at || null,
+          expires_at: m.expires_at || null,
+          scan_url: m.scan_url || null
+        }
+      })
+    }
+  }
+}
+
+async function syncAdrCertsToDocuments() {
+  const base = `${apiBase}/cabinet/driver/documents`
+  for (const a of adrCertsList.value) {
+    if (a._source === 'doc' && a._docId) {
+      await $fetch(`${base}/${a._docId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        body: {
+          issued_by: a.issued_by || null,
+          number: a.number || null,
+          allowed_classes: a.allowed_classes?.length ? a.allowed_classes : null,
+          issued_at: a.issued_at || null,
+          expires_at: a.expires_at || null,
+          scan_url: a.scan_url || null
+        }
+      })
+    } else if (a._source === 'new' && (a.issued_by || a.number || a.allowed_classes?.length || a.scan_url)) {
+      await $fetch(base, {
+        method: 'POST',
+        credentials: 'include',
+        body: {
+          doc_type: 'adr_certificate',
+          issued_by: a.issued_by || null,
+          number: a.number || null,
+          allowed_classes: a.allowed_classes?.length ? a.allowed_classes : null,
+          issued_at: a.issued_at || null,
+          expires_at: a.expires_at || null,
+          scan_url: a.scan_url || null
+        }
+      })
+    }
+  }
+}
+
+async function syncTechnicalMinimumCertsToDocuments() {
+  const base = `${apiBase}/cabinet/driver/documents`
+  for (const tm of technicalMinimumCertsList.value) {
+    if (tm._source === 'doc' && tm._docId) {
+      await $fetch(`${base}/${tm._docId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        body: {
+          issued_by: tm.issued_by || null,
+          number: tm.number || null,
+          issued_at: tm.issued_at || null,
+          expires_at: tm.expires_at || null,
+          scan_url: tm.scan_url || null
+        }
+      })
+    } else if (tm._source === 'new' && (tm.issued_by || tm.number || tm.scan_url)) {
+      await $fetch(base, {
+        method: 'POST',
+        credentials: 'include',
+        body: {
+          doc_type: 'technical_minimum_cert',
+          issued_by: tm.issued_by || null,
+          number: tm.number || null,
+          issued_at: tm.issued_at || null,
+          expires_at: tm.expires_at || null,
+          scan_url: tm.scan_url || null
+        }
+      })
+    }
+  }
+}
+
+async function syncTachographCardsToDocuments() {
+  const base = `${apiBase}/cabinet/driver/documents`
+  for (const t of tachographCardsList.value) {
+    if (t._source === 'doc' && t._docId) {
+      await $fetch(`${base}/${t._docId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        body: {
+          number: t.number || null,
+          country: t.country || null,
+          issued_at: t.issued_at || null,
+          expires_at: t.expires_at || null,
+          scan_url: t.scan_url || null
+        }
+      })
+    } else if (t._source === 'new' && (t.number || t.country || t.scan_url)) {
+      await $fetch(base, {
+        method: 'POST',
+        credentials: 'include',
+        body: {
+          doc_type: 'tachograph_card',
+          number: t.number || null,
+          country: t.country || null,
+          issued_at: t.issued_at || null,
+          expires_at: t.expires_at || null,
+          scan_url: t.scan_url || null
+        }
+      })
+    }
+  }
+}
+
+async function handleTachographCardUpload(options: { file: { file?: File }; onFinish?: () => void; onError?: (e: Error) => void }, t: TachographCardItem) {
+  const f = options.file?.file
+  if (!f) return
+  try {
+    const fd = new FormData()
+    fd.append('file', f, f.name)
+    fd.append('doc_type', 'tachograph_card')
+    const res = await $fetch<{ url: string }>(`${apiBase}/cabinet/driver/documents/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: fd
+    })
+    t.scan_url = res.url
+    message.success('Файл загружен')
+    options.onFinish?.()
+  } catch (e: any) {
+    message.error('Ошибка загрузки файла')
+    options.onError?.(e)
+  }
+}
+
+async function handleAdrCertUpload(options: { file: { file?: File }; onFinish?: () => void; onError?: (e: Error) => void }, a: AdrCertItem) {
+  const f = options.file?.file
+  if (!f) return
+  try {
+    const fd = new FormData()
+    fd.append('file', f, f.name)
+    fd.append('doc_type', 'adr_certificate')
+    const res = await $fetch<{ url: string }>(`${apiBase}/cabinet/driver/documents/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: fd
+    })
+    a.scan_url = res.url
+    message.success('Файл загружен')
+    options.onFinish?.()
+  } catch (e: any) {
+    message.error('Ошибка загрузки файла')
+    options.onError?.(e)
+  }
+}
+
+async function handleTechnicalMinimumCertUpload(options: { file: { file?: File }; onFinish?: () => void; onError?: (e: Error) => void }, tm: TechnicalMinimumCertItem) {
+  const f = options.file?.file
+  if (!f) return
+  try {
+    const fd = new FormData()
+    fd.append('file', f, f.name)
+    fd.append('doc_type', 'technical_minimum_cert')
+    const res = await $fetch<{ url: string }>(`${apiBase}/cabinet/driver/documents/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: fd
+    })
+    tm.scan_url = res.url
+    message.success('Файл загружен')
+    options.onFinish?.()
+  } catch (e: any) {
+    message.error('Ошибка загрузки файла')
+    options.onError?.(e)
+  }
+}
+
+async function handleMedicalCertificateUpload(options: { file: { file?: File }; onFinish?: () => void; onError?: (e: Error) => void }, m: MedicalCertificateItem) {
+  const f = options.file?.file
+  if (!f) return
+  try {
+    const fd = new FormData()
+    fd.append('file', f, f.name)
+    fd.append('doc_type', 'medical_certificate')
+    const res = await $fetch<{ url: string }>(`${apiBase}/cabinet/driver/documents/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: fd
+    })
+    m.scan_url = res.url
+    message.success('Файл загружен')
+    options.onFinish?.()
+  } catch (e: any) {
+    message.error('Ошибка загрузки файла')
+    options.onError?.(e)
+  }
+}
+
+async function handleVisaUpload(options: { file: { file?: File }; onFinish?: () => void; onError?: (e: Error) => void }, v: VisaItem) {
+  const f = options.file?.file
+  if (!f) return
+  try {
+    const fd = new FormData()
+    fd.append('file', f, f.name)
+    fd.append('doc_type', 'visa')
+    const res = await $fetch<{ url: string }>(`${apiBase}/cabinet/driver/documents/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: fd
+    })
+    v.scan_url = res.url
+    message.success('Файл загружен')
+    options.onFinish?.()
+  } catch (e: any) {
+    message.error('Ошибка загрузки файла')
+    options.onError?.(e)
   }
 }
 

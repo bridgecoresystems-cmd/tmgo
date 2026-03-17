@@ -6,8 +6,8 @@ import { getUserFromRequest } from '../../lib/auth';
 
 const VALID_FIELD_KEYS = [
   'surname', 'given_name', 'patronymic', 'date_of_birth', 'gender',
-  'passport:add', 'passport:renew', 'drivers_license:renew', 'medical_certificate:renew',
-  'visa:add', 'insurance:add', 'entry_permit:add',
+  'passport:add', 'passport:renew', 'drivers_license:renew',   'medical_certificate:renew', 'medical_certificate:add',
+  'visa:add', 'tachograph_card:add', 'technical_minimum_cert:add', 'adr_certificate:add', 'insurance:add', 'entry_permit:add',
   'citizenship:add', 'citizenship:revoke', 'identity_correction',
 ] as const;
 

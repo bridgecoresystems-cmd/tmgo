@@ -269,6 +269,100 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
         status: doc.status,
       }));
 
+      const visaDocs = await db.select()
+        .from(driverDocuments)
+        .where(and(
+          eq(driverDocuments.carrierId, profile.id),
+          eq(driverDocuments.docType, 'visa'),
+          inArray(driverDocuments.status, ['active', 'pending_verification']),
+        ))
+        .orderBy(desc(driverDocuments.createdAt));
+      const visas_from_documents = visaDocs.map((doc) => ({
+        id: doc.id,
+        country: doc.country,
+        number: doc.number,
+        issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+        expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+        scan_url: doc.scanUrl,
+        status: doc.status,
+      }));
+
+      const medicalDocs = await db.select()
+        .from(driverDocuments)
+        .where(and(
+          eq(driverDocuments.carrierId, profile.id),
+          eq(driverDocuments.docType, 'medical_certificate'),
+          inArray(driverDocuments.status, ['active', 'pending_verification']),
+        ))
+        .orderBy(desc(driverDocuments.createdAt));
+      const medical_certificates_from_documents = medicalDocs.map((doc) => ({
+        id: doc.id,
+        number: doc.number,
+        issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+        expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+        scan_url: doc.scanUrl,
+        status: doc.status,
+      }));
+
+      const tachographDocs = await db.select()
+        .from(driverDocuments)
+        .where(and(
+          eq(driverDocuments.carrierId, profile.id),
+          eq(driverDocuments.docType, 'tachograph_card'),
+          inArray(driverDocuments.status, ['active', 'pending_verification']),
+        ))
+        .orderBy(desc(driverDocuments.createdAt));
+      const tachograph_cards_from_documents = tachographDocs.map((doc) => ({
+        id: doc.id,
+        number: doc.number,
+        country: doc.country,
+        issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+        expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+        scan_url: doc.scanUrl,
+        status: doc.status,
+      }));
+
+      const techMinDocs = await db.select()
+        .from(driverDocuments)
+        .where(and(
+          eq(driverDocuments.carrierId, profile.id),
+          eq(driverDocuments.docType, 'technical_minimum_cert'),
+          inArray(driverDocuments.status, ['active', 'pending_verification']),
+        ))
+        .orderBy(desc(driverDocuments.createdAt));
+      const technical_minimum_certs_from_documents = techMinDocs.map((doc) => ({
+        id: doc.id,
+        number: doc.number,
+        issued_by: doc.issuedBy,
+        issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+        expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+        scan_url: doc.scanUrl,
+        status: doc.status,
+      }));
+
+      const adrDocs = await db.select()
+        .from(driverDocuments)
+        .where(and(
+          eq(driverDocuments.carrierId, profile.id),
+          eq(driverDocuments.docType, 'adr_certificate'),
+          inArray(driverDocuments.status, ['active', 'pending_verification']),
+        ))
+        .orderBy(desc(driverDocuments.createdAt));
+      const adr_certs_from_documents = adrDocs.map((doc) => {
+        const allowed = doc.licenseCategories ? doc.licenseCategories.split(',').map((s) => s.trim()).filter(Boolean) : [];
+        return {
+          id: doc.id,
+          issued_by: doc.issuedBy,
+          number: doc.number,
+          allowed_classes: allowed,
+          license_categories: doc.licenseCategories,
+          issued_at: doc.issuedAt ? new Date(doc.issuedAt).toISOString().slice(0, 10) : null,
+          expires_at: doc.expiresAt ? new Date(doc.expiresAt).toISOString().slice(0, 10) : null,
+          scan_url: doc.scanUrl,
+          status: doc.status,
+        };
+      });
+
       return {
       id: profile.id,
       surname: profile.surname,
@@ -309,6 +403,11 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       passport_is_active: profile.passportIsActive,
       extra_passports: (profile.extraPassports as any[]) ?? [],
       passports_from_documents,
+      visas_from_documents,
+      medical_certificates_from_documents,
+      tachograph_cards_from_documents,
+      technical_minimum_certs_from_documents,
+      adr_certs_from_documents,
       permission_entry_zone: profile.permissionEntryZone,
       permission_issue_date: d(profile.permissionIssueDate),
       permission_validity_date: d(profile.permissionValidityDate),
@@ -775,13 +874,14 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     if (!profile) return error(404, 'Driver profile not found');
     const docs = await db.select().from(driverDocuments).where(and(
       eq(driverDocuments.carrierId, profile.id),
-      inArray(driverDocuments.docType, ['passport', 'drivers_license']),
+      inArray(driverDocuments.docType, ['passport', 'drivers_license', 'visa', 'medical_certificate', 'tachograph_card', 'technical_minimum_cert', 'adr_certificate']),
       inArray(driverDocuments.status, ['active', 'pending_verification']),
     )).orderBy(desc(driverDocuments.createdAt));
     const d = (x: Date | null | undefined) => (x ? new Date(x).toISOString().slice(0, 10) : null);
     return docs.map((doc) => ({
       id: doc.id,
       doc_type: doc.docType,
+      country: doc.country,
       series: doc.series,
       number: doc.number,
       issued_by: doc.issuedBy,
@@ -807,6 +907,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     if (!doc) return error(404, 'Document not found');
     const b = body as any;
     const updateData: Record<string, any> = { updatedAt: new Date() };
+    if (b.country !== undefined) updateData.country = b.country;
     if (b.series !== undefined) updateData.series = b.series;
     if (b.number !== undefined) updateData.number = b.number;
     if (b.issued_by !== undefined) updateData.issuedBy = b.issued_by;
@@ -814,13 +915,18 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     if (b.expires_at !== undefined) updateData.expiresAt = b.expires_at ? new Date(b.expires_at) : null;
     if (b.place_of_birth !== undefined) updateData.placeOfBirth = b.place_of_birth;
     if (b.residential_address !== undefined) updateData.residentialAddress = b.residential_address;
-    if (b.license_categories !== undefined) updateData.licenseCategories = b.license_categories;
+    if (b.allowed_classes !== undefined) {
+      updateData.licenseCategories = Array.isArray(b.allowed_classes) ? b.allowed_classes.filter(Boolean).join(',') : null;
+    } else if (b.license_categories !== undefined) {
+      updateData.licenseCategories = b.license_categories;
+    }
     if (b.scan_url !== undefined) updateData.scanUrl = b.scan_url;
     const [updated] = await db.update(driverDocuments).set(updateData).where(eq(driverDocuments.id, params.docId)).returning();
     const d = (x: Date | null | undefined) => (x ? new Date(x).toISOString().slice(0, 10) : null);
     return {
       id: updated!.id,
       doc_type: updated!.docType,
+      country: updated!.country,
       series: updated!.series,
       number: updated!.number,
       issued_by: updated!.issuedBy,
@@ -833,6 +939,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     };
   }, {
     body: t.Object({
+      country: t.Optional(t.Nullable(t.String())),
       series: t.Optional(t.Nullable(t.String())),
       number: t.Optional(t.Nullable(t.String())),
       issued_by: t.Optional(t.Nullable(t.String())),
@@ -841,6 +948,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       place_of_birth: t.Optional(t.Nullable(t.String())),
       residential_address: t.Optional(t.Nullable(t.String())),
       license_categories: t.Optional(t.Nullable(t.String())),
+      allowed_classes: t.Optional(t.Array(t.String())),
       scan_url: t.Optional(t.Nullable(t.String())),
     }),
   })
@@ -892,11 +1000,15 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
     if (!profile) return error(404, 'Driver profile not found');
     const docType = (body as any).doc_type as string;
-    if (!['passport', 'drivers_license'].includes(docType)) return error(400, 'Invalid doc_type');
+    if (!['passport', 'drivers_license', 'visa', 'medical_certificate', 'tachograph_card', 'technical_minimum_cert', 'adr_certificate'].includes(docType)) return error(400, 'Invalid doc_type');
     const b = body as any;
+    const licenseCategories = docType === 'adr_certificate' && Array.isArray(b.allowed_classes)
+      ? b.allowed_classes.filter(Boolean).join(',')
+      : (b.license_categories || null);
     const [doc] = await db.insert(driverDocuments).values({
       carrierId: profile.id,
       docType: docType as any,
+      country: b.country || null,
       series: b.series || null,
       number: b.number || null,
       issuedBy: b.issued_by || null,
@@ -904,7 +1016,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       expiresAt: b.expires_at ? new Date(b.expires_at) : null,
       placeOfBirth: b.place_of_birth || null,
       residentialAddress: b.residential_address || null,
-      licenseCategories: b.license_categories || null,
+      licenseCategories,
       scanUrl: b.scan_url || null,
       status: 'active',
     }).returning();
@@ -912,6 +1024,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     return {
       id: doc!.id,
       doc_type: doc!.docType,
+      country: doc!.country,
       series: doc!.series,
       number: doc!.number,
       issued_by: doc!.issuedBy,
@@ -924,7 +1037,8 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     };
   }, {
     body: t.Object({
-      doc_type: t.Union([t.Literal('passport'), t.Literal('drivers_license')]),
+      doc_type: t.Union([t.Literal('passport'), t.Literal('drivers_license'), t.Literal('visa'), t.Literal('medical_certificate'), t.Literal('tachograph_card'), t.Literal('technical_minimum_cert'), t.Literal('adr_certificate')]),
+      country: t.Optional(t.Nullable(t.String())),
       series: t.Optional(t.Nullable(t.String())),
       number: t.Optional(t.Nullable(t.String())),
       issued_by: t.Optional(t.Nullable(t.String())),
@@ -933,6 +1047,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       place_of_birth: t.Optional(t.Nullable(t.String())),
       residential_address: t.Optional(t.Nullable(t.String())),
       license_categories: t.Optional(t.Nullable(t.String())),
+      allowed_classes: t.Optional(t.Array(t.String())),
       scan_url: t.Optional(t.Nullable(t.String())),
     }),
   });

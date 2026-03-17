@@ -204,13 +204,39 @@
             </template>
           </n-card>
 
-          <!-- 4. Разрешительные документы — только заполненные -->
-          <template v-if="hasPermitsData">
+          <!-- 4. Разрешительные документы (виза, медсправка, техминимум, тахограф, ADR) -->
+          <template v-if="hasPermitsData || visasFromDocuments.length > 0 || medicalCertificatesFromDocuments.length > 0 || tachographCardsFromDocuments.length > 0 || technicalMinimumCertsFromDocuments.length > 0 || adrCertsFromDocuments.length > 0">
             <n-h3 prefix="bar" align-text>4. Разрешительные документы</n-h3>
             <n-card embedded :bordered="false" class="mb-24 view-card">
               <div class="view-grid">
-                <!-- Виза -->
-                <template v-if="hasVisaData">
+                <!-- Визы (из документов) -->
+                <template v-for="(v, vi) in visasFromDocuments" :key="v.id || vi">
+                  <div v-if="vi > 0" class="extra-passport-block extra-passport-block--not-first" />
+                  <div class="view-grid extra-passport-block">
+                    <div v-if="v.country" class="view-row">
+                      <span class="view-label">Виза{{ visasFromDocuments.length > 1 ? ` (${vi + 1})` : '' }} — Страна выдачи:</span>
+                      <span class="view-value">{{ v.country }}</span>
+                    </div>
+                    <div v-if="v.number" class="view-row">
+                      <span class="view-label">Номер визы:</span>
+                      <span class="view-value">{{ v.number }}</span>
+                    </div>
+                    <div v-if="v.issued_at || v.expires_at" class="view-row">
+                      <span class="view-label">Дата начала — Дата окончания:</span>
+                      <span class="view-value">{{ formatDate(v.issued_at) }} — {{ formatDate(v.expires_at) }}</span>
+                    </div>
+                    <div v-if="v.scan_url" class="view-row">
+                      <span class="view-label">Скан визы:</span>
+                      <span class="view-value">
+                        <n-button text type="primary" size="small" @click="openScanModal(v.scan_url, visasFromDocuments.length > 1 ? `Скан визы (${vi + 1})` : 'Скан визы')">
+                          Просмотр скана
+                        </n-button>
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <!-- Legacy виза (если нет visas_from_documents) -->
+                <template v-if="hasVisaData && visasFromDocuments.length === 0">
                   <div v-if="profile.permission_entry_zone" class="view-row">
                     <span class="view-label">Разрешение на въезд (Виза):</span>
                     <span class="view-value">{{ profile.permission_entry_zone }}</span>
@@ -228,8 +254,31 @@
                     </span>
                   </div>
                 </template>
-                <!-- Медсправка -->
-                <template v-if="profile.medical_certificate || profile.last_medical_examination_date || profile.medical_certificate_scan_url">
+                <!-- Медсправки (из документов) -->
+                <template v-for="(m, mi) in medicalCertificatesFromDocuments" :key="m.id || mi">
+                  <div v-if="mi > 0 || visasFromDocuments.length > 0 || hasVisaData" class="extra-passport-block extra-passport-block--not-first" />
+                  <div class="view-grid extra-passport-block">
+                    <div v-if="m.number" class="view-row">
+                      <span class="view-label">Медсправка{{ medicalCertificatesFromDocuments.length > 1 ? ` (${mi + 1})` : '' }} — Номер:</span>
+                      <span class="view-value">{{ m.number }}</span>
+                    </div>
+                    <div v-if="m.issued_at || m.expires_at" class="view-row">
+                      <span class="view-label">Дата выдачи — Дата окончания:</span>
+                      <span class="view-value">{{ formatDate(m.issued_at) }} — {{ formatDate(m.expires_at) }}</span>
+                    </div>
+                    <div v-if="m.scan_url" class="view-row">
+                      <span class="view-label">Скан медсправки:</span>
+                      <span class="view-value">
+                        <n-button text type="primary" size="small" @click="openScanModal(m.scan_url, medicalCertificatesFromDocuments.length > 1 ? `Скан медсправки (${mi + 1})` : 'Скан медсправки')">
+                          Просмотр скана
+                        </n-button>
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <!-- Legacy медсправка (если нет medical_certificates_from_documents) -->
+                <template v-if="hasLegacyMedicalData && medicalCertificatesFromDocuments.length === 0">
+                  <div v-if="visasFromDocuments.length > 0 || hasVisaData" class="extra-passport-block extra-passport-block--not-first" />
                   <div v-if="profile.medical_certificate" class="view-row">
                     <span class="view-label">Медицинская справка:</span>
                     <span class="view-value">{{ profile.medical_certificate }}</span>
@@ -247,16 +296,106 @@
                     </span>
                   </div>
                 </template>
-                <div v-if="profile.technical_minimum_certificate" class="view-row">
-                  <span class="view-label">Техминимум:</span>
-                  <span class="view-value">{{ profile.technical_minimum_certificate }}</span>
-                </div>
-                <div v-if="profile.tachograph_card_number" class="view-row">
-                  <span class="view-label">Карта тахографа:</span>
-                  <span class="view-value">{{ profile.tachograph_card_number }}</span>
-                </div>
+                <!-- Карты тахографа (из документов) -->
+                <template v-for="(t, ti) in tachographCardsFromDocuments" :key="t.id || ti">
+                  <div v-if="ti > 0 || medicalCertificatesFromDocuments.length > 0 || hasLegacyMedicalData" class="extra-passport-block extra-passport-block--not-first" />
+                  <div class="view-grid extra-passport-block">
+                    <div v-if="t.number" class="view-row">
+                      <span class="view-label">Карта тахографа{{ tachographCardsFromDocuments.length > 1 ? ` (${ti + 1})` : '' }} — Номер:</span>
+                      <span class="view-value">{{ t.number }}</span>
+                    </div>
+                    <div v-if="t.country" class="view-row">
+                      <span class="view-label">Страна выдачи:</span>
+                      <span class="view-value">{{ t.country }}</span>
+                    </div>
+                    <div v-if="t.issued_at || t.expires_at" class="view-row">
+                      <span class="view-label">Дата выдачи — Дата окончания:</span>
+                      <span class="view-value">{{ formatDate(t.issued_at) }} — {{ formatDate(t.expires_at) }}</span>
+                    </div>
+                    <div v-if="t.scan_url" class="view-row">
+                      <span class="view-label">Скан:</span>
+                      <span class="view-value">
+                        <n-button text type="primary" size="small" @click="openScanModal(t.scan_url, tachographCardsFromDocuments.length > 1 ? `Скан карты тахографа (${ti + 1})` : 'Скан карты тахографа')">
+                          Просмотр скана
+                        </n-button>
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <!-- Legacy карта тахографа -->
+                <template v-if="profile.tachograph_card_number && tachographCardsFromDocuments.length === 0">
+                  <div v-if="medicalCertificatesFromDocuments.length > 0 || hasLegacyMedicalData" class="extra-passport-block extra-passport-block--not-first" />
+                  <div class="view-row">
+                    <span class="view-label">Карта тахографа:</span>
+                    <span class="view-value">{{ profile.tachograph_card_number }}</span>
+                  </div>
+                </template>
+                <!-- Сертификаты техминимума (из документов) -->
+                <template v-for="(tm, tmi) in technicalMinimumCertsFromDocuments" :key="tm.id || tmi">
+                  <div v-if="tmi > 0 || tachographCardsFromDocuments.length > 0 || profile.tachograph_card_number" class="extra-passport-block extra-passport-block--not-first" />
+                  <div class="view-grid extra-passport-block">
+                    <div v-if="tm.issued_by" class="view-row">
+                      <span class="view-label">Сертификат техминимума{{ technicalMinimumCertsFromDocuments.length > 1 ? ` (${tmi + 1})` : '' }} — Учебное заведение:</span>
+                      <span class="view-value">{{ tm.issued_by }}</span>
+                    </div>
+                    <div v-if="tm.number" class="view-row">
+                      <span class="view-label">Номер сертификата:</span>
+                      <span class="view-value">{{ tm.number }}</span>
+                    </div>
+                    <div v-if="tm.issued_at || tm.expires_at" class="view-row">
+                      <span class="view-label">Дата получения — Дата окончания:</span>
+                      <span class="view-value">{{ formatDate(tm.issued_at) }} — {{ formatDate(tm.expires_at) }}</span>
+                    </div>
+                    <div v-if="tm.scan_url" class="view-row">
+                      <span class="view-label">Скан:</span>
+                      <span class="view-value">
+                        <n-button text type="primary" size="small" @click="openScanModal(tm.scan_url, technicalMinimumCertsFromDocuments.length > 1 ? `Скан сертификата (${tmi + 1})` : 'Скан сертификата техминимума')">
+                          Просмотр скана
+                        </n-button>
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <!-- Legacy сертификат техминимума -->
+                <template v-if="profile.technical_minimum_certificate && technicalMinimumCertsFromDocuments.length === 0">
+                  <div v-if="tachographCardsFromDocuments.length > 0 || profile.tachograph_card_number" class="extra-passport-block extra-passport-block--not-first" />
+                  <div class="view-row">
+                    <span class="view-label">Сертификат техминимума:</span>
+                    <span class="view-value">{{ profile.technical_minimum_certificate }}</span>
+                  </div>
+                </template>
+                <!-- ADR допуски (из документов) -->
+                <template v-for="(a, ai) in adrCertsFromDocuments" :key="a.id || ai">
+                  <div v-if="ai > 0 || technicalMinimumCertsFromDocuments.length > 0 || profile.technical_minimum_certificate" class="extra-passport-block extra-passport-block--not-first" />
+                  <div class="view-grid extra-passport-block">
+                    <div v-if="a.issued_by" class="view-row">
+                      <span class="view-label">ADR допуск{{ adrCertsFromDocuments.length > 1 ? ` (${ai + 1})` : '' }} — Кем выдано:</span>
+                      <span class="view-value">{{ a.issued_by }}</span>
+                    </div>
+                    <div v-if="a.number" class="view-row">
+                      <span class="view-label">Номер свидетельства:</span>
+                      <span class="view-value">{{ a.number }}</span>
+                    </div>
+                    <div class="view-row">
+                      <span class="view-label">Разрешённые классы:</span>
+                      <span class="view-value">{{ formatAdrClasses(a) }}</span>
+                    </div>
+                    <div v-if="a.issued_at || a.expires_at" class="view-row">
+                      <span class="view-label">Дата выдачи — Дата окончания:</span>
+                      <span class="view-value">{{ formatDate(a.issued_at) }} — {{ formatDate(a.expires_at) }}</span>
+                    </div>
+                    <div v-if="a.scan_url" class="view-row">
+                      <span class="view-label">Скан:</span>
+                      <span class="view-value">
+                        <n-button text type="primary" size="small" @click="openScanModal(a.scan_url, adrCertsFromDocuments.length > 1 ? `Скан ADR (${ai + 1})` : 'Скан ADR допуска')">
+                          Просмотр скана
+                        </n-button>
+                      </span>
+                    </div>
+                  </div>
+                </template>
                 <div v-if="profile.other_permits" class="view-row">
-                  <span class="view-label">Прочие документы:</span>
+                  <span class="view-label">ADR пропуск / Прочие документы:</span>
                   <span class="view-value">{{ profile.other_permits }}</span>
                 </div>
                 <div v-if="profile.hire_source" class="view-row">
@@ -481,6 +620,36 @@ const hasMainLicenseData = computed(() => {
 
 const hasLicenseData = computed(() => hasMainLicenseData.value || extraLicenses.value.length > 0)
 
+const visasFromDocuments = computed(() => {
+  const arr = profile.value?.visas_from_documents
+  return Array.isArray(arr) ? arr : []
+})
+
+const medicalCertificatesFromDocuments = computed(() => {
+  const arr = profile.value?.medical_certificates_from_documents
+  return Array.isArray(arr) ? arr : []
+})
+
+const hasLegacyMedicalData = computed(() => {
+  const p = profile.value
+  return p && (p.medical_certificate || p.last_medical_examination_date || p.medical_certificate_scan_url)
+})
+
+const tachographCardsFromDocuments = computed(() => {
+  const arr = profile.value?.tachograph_cards_from_documents
+  return Array.isArray(arr) ? arr : []
+})
+
+const technicalMinimumCertsFromDocuments = computed(() => {
+  const arr = profile.value?.technical_minimum_certs_from_documents
+  return Array.isArray(arr) ? arr : []
+})
+
+const adrCertsFromDocuments = computed(() => {
+  const arr = profile.value?.adr_certs_from_documents
+  return Array.isArray(arr) ? arr : []
+})
+
 const hasVisaData = computed(() => {
   const p = profile.value
   return p && (p.permission_entry_zone || p.permission_issue_date || p.permission_validity_date || p.visa_scan_url)
@@ -503,6 +672,26 @@ const hasPermitsData = computed(() => {
 function formatDate(d: string | null | undefined) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString('ru-RU')
+}
+
+const adrClassLabels: Record<string, string> = {
+  '1': 'Класс 1 — Взрывчатые вещества',
+  '2': 'Класс 2 — Газы',
+  '3': 'Класс 3 — Легковоспламеняющиеся жидкости',
+  '4': 'Класс 4 — Легковоспламеняющиеся твердые в-ва',
+  '5': 'Класс 5 — Окисляющие вещества',
+  '6': 'Класс 6 — Токсичные и инфекционные в-ва',
+  '7': 'Класс 7 — Радиоактивные материалы',
+  '8': 'Класс 8 — Коррозионные (едкие) вещества',
+  '9': 'Класс 9 — Прочие опасные вещества',
+}
+
+function formatAdrClasses(a: { allowed_classes?: string[]; license_categories?: string | null }) {
+  const arr = Array.isArray(a.allowed_classes) && a.allowed_classes.length
+    ? a.allowed_classes
+    : (a.license_categories ? a.license_categories.split(',').map((s) => s.trim()).filter(Boolean) : [])
+  if (!arr.length) return '—'
+  return arr.map((v) => adrClassLabels[v] || `Класс ${v}`).join(', ')
 }
 
 async function loadProfile() {

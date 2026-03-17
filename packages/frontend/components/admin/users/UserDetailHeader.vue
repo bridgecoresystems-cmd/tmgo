@@ -19,6 +19,9 @@
       <n-tag v-else-if="profile?.verification_status === 'suspended'" type="error">Приостановлен</n-tag>
       <n-tag v-else-if="profile?.verification_status === 'not_verified' || profile?.verification_status === 'not_submitted'" type="default">Не верифицирован</n-tag>
       <n-space v-if="user?.role === 'driver' && profile" :size="8">
+        <n-button type="info" quaternary @click="typeof window !== 'undefined' && window.print()">
+          Печать
+        </n-button>
         <n-button v-if="canVerify" type="primary" :loading="verifying" @click="$emit('verify')">
           Верифицировать
         </n-button>

@@ -38,6 +38,9 @@ async function uploadDocScan(carrierId: string, docType: string, file: File): Pr
 
 function formatDoc(doc: typeof driverDocuments.$inferSelect) {
   const d = (x: Date | null | undefined) => x ? new Date(x).toISOString().slice(0, 10) : null;
+  const allowed_classes = doc.docType === 'adr_certificate' && doc.licenseCategories
+    ? doc.licenseCategories.split(',').map((s) => s.trim()).filter(Boolean)
+    : undefined;
   return {
     id: doc.id,
     carrier_id: doc.carrierId,
@@ -51,6 +54,7 @@ function formatDoc(doc: typeof driverDocuments.$inferSelect) {
     place_of_birth: doc.placeOfBirth,
     residential_address: doc.residentialAddress,
     license_categories: doc.licenseCategories,
+    allowed_classes,
     permission_zone: doc.permissionZone,
     notes: doc.notes,
     scan_url: doc.scanUrl,
@@ -143,6 +147,9 @@ export const cabinetDriverDocumentsRoutes = new Elysia({ prefix: '/cabinet/drive
     }
 
     const b = body as any;
+    const licenseCategories = docType === 'adr_certificate' && Array.isArray(b.allowed_classes)
+      ? b.allowed_classes.filter(Boolean).join(',')
+      : (b.license_categories || null);
     const [doc] = await db.insert(driverDocuments).values({
       carrierId: carrierProfile.id,
       docType: docType as any,
@@ -154,7 +161,7 @@ export const cabinetDriverDocumentsRoutes = new Elysia({ prefix: '/cabinet/drive
       expiresAt: b.expires_at ? new Date(b.expires_at) : null,
       placeOfBirth: b.place_of_birth || null,
       residentialAddress: b.residential_address || null,
-      licenseCategories: b.license_categories || null,
+      licenseCategories,
       permissionZone: b.permission_zone || null,
       notes: b.notes || null,
       scanUrl: b.scan_url || null,
@@ -174,6 +181,7 @@ export const cabinetDriverDocumentsRoutes = new Elysia({ prefix: '/cabinet/drive
       place_of_birth: t.Optional(t.Nullable(t.String())),
       residential_address: t.Optional(t.Nullable(t.String())),
       license_categories: t.Optional(t.Nullable(t.String())),
+      allowed_classes: t.Optional(t.Array(t.String())),
       permission_zone: t.Optional(t.Nullable(t.String())),
       notes: t.Optional(t.Nullable(t.String())),
       scan_url: t.Optional(t.Nullable(t.String())),
@@ -223,7 +231,11 @@ export const cabinetDriverDocumentsRoutes = new Elysia({ prefix: '/cabinet/drive
     if (b.expires_at !== undefined) updateData.expiresAt = b.expires_at ? new Date(b.expires_at) : null;
     if (b.place_of_birth !== undefined) updateData.placeOfBirth = b.place_of_birth;
     if (b.residential_address !== undefined) updateData.residentialAddress = b.residential_address;
-    if (b.license_categories !== undefined) updateData.licenseCategories = b.license_categories;
+    if (b.allowed_classes !== undefined) {
+      updateData.licenseCategories = Array.isArray(b.allowed_classes) ? b.allowed_classes.filter(Boolean).join(',') : null;
+    } else if (b.license_categories !== undefined) {
+      updateData.licenseCategories = b.license_categories;
+    }
     if (b.permission_zone !== undefined) updateData.permissionZone = b.permission_zone;
     if (b.notes !== undefined) updateData.notes = b.notes;
     if (b.scan_url !== undefined) updateData.scanUrl = b.scan_url;
@@ -246,6 +258,7 @@ export const cabinetDriverDocumentsRoutes = new Elysia({ prefix: '/cabinet/drive
       place_of_birth: t.Optional(t.Nullable(t.String())),
       residential_address: t.Optional(t.Nullable(t.String())),
       license_categories: t.Optional(t.Nullable(t.String())),
+      allowed_classes: t.Optional(t.Array(t.String())),
       permission_zone: t.Optional(t.Nullable(t.String())),
       notes: t.Optional(t.Nullable(t.String())),
       scan_url: t.Optional(t.Nullable(t.String())),

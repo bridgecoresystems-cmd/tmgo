@@ -91,6 +91,7 @@
         &copy; 2026 BridgeCore Systems | TMGO Admin Panel
       </n-layout-footer>
     </n-layout>
+    <ScrollToTopButton />
   </n-layout>
 </template>
 
