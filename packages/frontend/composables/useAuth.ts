@@ -46,23 +46,43 @@ export const useAuth = () => {
   }
 
   async function signIn(email: string, password: string) {
-    const data = await $fetch<{ user: AuthUser; error?: { message: string } }>(
-      `${API}/api/auth/sign-in/email`,
-      { method: 'POST', body: { email, password }, credentials: 'include' }
-    )
-    if ((data as any).error) throw new Error((data as any).error.message)
-    state.user = data.user
-    return data.user
+    try {
+      const data = await $fetch<{ user: AuthUser; error?: { message: string } }>(
+        `${API}/api/auth/sign-in/email`,
+        { method: 'POST', body: { email, password }, credentials: 'include' }
+      )
+      if ((data as any).error) throw new Error((data as any).error.message)
+      state.user = data.user
+      return data.user
+    } catch (e: any) {
+      const is429 = e?.statusCode === 429 || e?.status === 429 || e?.response?.status === 429
+      if (is429) {
+        const msg = e?.data?.error?.message ?? e?.data?.message ?? 'Слишком много попыток входа. Попробуйте через 15 минут.'
+        const err = new Error(msg) as Error & { isRateLimited?: boolean }
+        err.isRateLimited = true
+        throw err
+      }
+      // 401 и др.: показываем сообщение из ответа бэкенда (русский текст)
+      const bodyMsg = e?.data?.error?.message ?? e?.data?.message
+      if (bodyMsg) throw new Error(bodyMsg)
+      throw e
+    }
   }
 
   async function signUp(email: string, password: string, name?: string, role?: string) {
-    const data = await $fetch<{ user: AuthUser; error?: { message: string } }>(
-      `${API}/api/auth/sign-up/email`,
-      { method: 'POST', body: { email, password, name, role }, credentials: 'include' }
-    )
-    if ((data as any).error) throw new Error((data as any).error.message)
-    state.user = data.user
-    return data.user
+    try {
+      const data = await $fetch<{ user: AuthUser; error?: { message: string } }>(
+        `${API}/api/auth/sign-up/email`,
+        { method: 'POST', body: { email, password, name, role }, credentials: 'include' }
+      )
+      if ((data as any).error) throw new Error((data as any).error.message)
+      state.user = data.user
+      return data.user
+    } catch (e: any) {
+      const bodyMsg = e?.data?.error?.message ?? e?.data?.message
+      if (bodyMsg) throw new Error(bodyMsg)
+      throw e
+    }
   }
 
   async function signOut() {

@@ -116,9 +116,15 @@
     "errors": {
       "serverUnavailable": "Serwer elýeterli däl. Barlag: 1) Telefon kompýuter bilen bir Wi‑Fi-da. 2) Backend işleýärmi (packages/backend-da bun run dev). 3) Telefondaky brauzerde http://<PC-IP>:8000 açyň — \"TMGO API is running\" görünmeli.",
       "serverUnavailableShort": "Serwer elýeterli däl. Telefon kompýuter bilen bir Wi‑Fi-damy? Backend işleýärmi?",
-      "loginFailed": "Giriş amatsyz",
-      "passwordsMismatch": "Parollar gabat gelmeýär",
-      "registerFailed": "Hasaba durmak amatsyz"
+      "loginFailed": "Giriş säwligi",
+      "passwordsMismatch": "Parollar gabat gelenok",
+      "registerFailed": "Hasaba duruş säwligi"
+    },
+    "rateLimited": {
+      "title": "Giriş synanyşyklary köp",
+      "message": "Giriş synanyşyklarynyň çäkini aşdyňyz. Bu parol tapmakdan gorag.",
+      "hint": "15 minutdan soň täzeden synanyşyň.",
+      "back": "Girişe dolan"
     }
   },
   "layout": {

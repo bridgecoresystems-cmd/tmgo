@@ -1,4 +1,4 @@
-import { join } from 'path';
+import { join, basename } from 'path';
 import { readFile } from 'fs/promises';
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
@@ -65,7 +65,7 @@ const app = new Elysia()
       set.status = 403;
       return 'Forbidden';
     }
-    const filepath = join(process.cwd(), 'storage', 'driver-docs', params.carrierId, params.filename);
+    const filepath = join(process.cwd(), 'storage', 'driver-docs', basename(params.carrierId), basename(params.filename));
     try {
       const buf = await readFile(filepath);
       const ext = params.filename.split('.').pop()?.toLowerCase();

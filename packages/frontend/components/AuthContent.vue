@@ -11,6 +11,10 @@
     <div class="signup" :class="{ active: isSignupMode }">
       <form @submit.prevent="handleRegister">
         <label for="chk" class="form-title">Регистрация</label>
+
+        <div v-if="registerError" class="form-error">
+          {{ registerError }}
+        </div>
         
         <div class="form-group">
           <label class="form-label">Email адрес *</label>
@@ -69,6 +73,10 @@
     <div class="login" :class="{ active: !isSignupMode }">
       <form @submit.prevent="handleLogin">
         <label for="chk" class="form-title">Вход</label>
+
+        <div v-if="loginError" class="form-error">
+          {{ loginError }}
+        </div>
         
         <div class="form-group">
           <label class="form-label">Email</label>
@@ -116,6 +124,8 @@ const message = useMessage()
 
 const isSignupMode = ref(false)
 const loading = ref(false)
+const loginError = ref('')
+const registerError = ref('')
 
 const loginForm = reactive({
   email: '',
@@ -130,6 +140,7 @@ const registerForm = reactive({
 })
 
 const handleLogin = async () => {
+  loginError.value = ''
   loading.value = true
   try {
     const user = await signIn(loginForm.email, loginForm.password)
@@ -141,15 +152,20 @@ const handleLogin = async () => {
       router.push('/cabinet/client')
     }
   } catch (e: any) {
-    message.error(e.message || 'Ошибка входа')
+    if (e?.isRateLimited) {
+      router.push('/rate-limited')
+      return
+    }
+    loginError.value = e.message || 'Ошибка входа'
   } finally {
     loading.value = false
   }
 }
 
 const handleRegister = async () => {
+  registerError.value = ''
   if (registerForm.password !== registerForm.passwordConfirm) {
-    message.error('Пароли не совпадают')
+    registerError.value = 'Пароли не совпадают'
     return
   }
 
@@ -169,7 +185,7 @@ const handleRegister = async () => {
       router.push('/cabinet/client')
     }
   } catch (e: any) {
-    message.error(e.message || 'Ошибка регистрации')
+    registerError.value = e.message || 'Ошибка регистрации'
   } finally {
     loading.value = false
   }
@@ -229,6 +245,17 @@ const handleRegister = async () => {
   transform: translateY(-100%);
   opacity: 0;
   z-index: 1;
+}
+
+.form-error {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #b91c1c;
+  font-size: 14px;
+  text-align: center;
 }
 
 .form-title {

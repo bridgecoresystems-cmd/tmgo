@@ -1,4 +1,4 @@
-import { join } from 'path';
+import { join, basename } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
@@ -6,6 +6,27 @@ import { db } from '../db';
 import { users, sessions, accounts } from '../db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 import { getImpersonateToken, getUserFromRequest } from '../lib/auth';
+
+/** In-memory rate limiter для sign-in: 10 попыток / 15 мин на IP */
+const signInAttempts = new Map<string, number[]>();
+const SIGNIN_MAX = 10;
+const SIGNIN_WINDOW_MS = 15 * 60 * 1000;
+
+function getClientIp(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return 'unknown';
+}
+
+function isSignInRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const attempts = signInAttempts.get(ip) ?? [];
+  const recent = attempts.filter((t) => now - t < SIGNIN_WINDOW_MS);
+  if (recent.length >= SIGNIN_MAX) return true;
+  recent.push(now);
+  signInAttempts.set(ip, recent);
+  return false;
+}
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -67,6 +88,11 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
 
   // POST /api/auth/sign-in/email
   .post('/sign-in/email', async ({ body, set, request }) => {
+    const ip = getClientIp(request);
+    if (isSignInRateLimited(ip)) {
+      set.status = 429;
+      return { error: { message: 'Слишком много попыток входа. Попробуйте через 15 минут.' } };
+    }
     const [user] = await db.select().from(users).where(eq(users.email, body.email)).limit(1);
     if (!user) {
       set.status = 401;
@@ -115,7 +141,7 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
       name: body.name || body.email.split('@')[0],
       email: body.email,
       emailVerified: false,
-      role: (body.role?.toLowerCase() as any) || 'client',
+      role: (['client', 'driver'].includes(body.role ?? '') ? body.role : 'client') as 'client' | 'driver',
     });
 
     await db.insert(accounts).values({
@@ -174,6 +200,13 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
     }
     const hashedPassword = await Bun.password.hash(body.newPassword, { algorithm: 'bcrypt', cost: 10 });
     await db.update(accounts).set({ password: hashedPassword }).where(eq(accounts.id, acct.id));
+
+    // Инвалидируем все сессии пользователя (в т.ч. другие устройства)
+    await db.delete(sessions).where(eq(sessions.userId, userId));
+    // Создаём новую сессию для текущего запроса — пользователь остаётся залогинен
+    const token = await createSession(userId, request);
+    set.headers['Set-Cookie'] = `better-auth.session_token=${token}; ${COOKIE_OPTS}`;
+
     return { success: true };
   }, {
     body: t.Object({
@@ -239,7 +272,7 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
 
   // GET /api/auth/avatars/:filename - отдача аватара
   .get('/avatars/:filename', async ({ params, set }) => {
-    const filepath = join(process.cwd(), 'storage', 'avatars', params.filename);
+    const filepath = join(process.cwd(), 'storage', 'avatars', basename(params.filename));
     try {
       const { readFile } = await import('fs/promises');
       const buf = await readFile(filepath);

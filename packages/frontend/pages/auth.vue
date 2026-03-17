@@ -13,6 +13,10 @@
       <div class="signup" :class="{ active: isSignupMode }">
         <form @submit.prevent="handleRegister">
           <label for="chk" class="form-title">{{ $t('auth.signup.title') }}</label>
+
+          <div v-if="registerError" class="form-error">
+            {{ registerError }}
+          </div>
           
           <div class="form-group">
             <label class="form-label">{{ $t('auth.signup.emailLabel') }}</label>
@@ -73,15 +77,20 @@
       <div class="login" :class="{ active: !isSignupMode }">
         <form @submit.prevent="handleLogin">
           <label for="chk" class="form-title">{{ $t('auth.login.title') }}</label>
+
+          <div v-if="loginError" class="form-error">
+            {{ loginError }}
+          </div>
           
           <div class="form-group">
             <label class="form-label">{{ $t('auth.login.emailLabel') }}</label>
-            <input 
-              type="email" 
-              v-model="loginForm.email"
-              :placeholder="$t('auth.login.emailPlaceholder')" 
-              required 
-            >
+          <input 
+            type="email" 
+            v-model="loginForm.email"
+            :placeholder="$t('auth.login.emailPlaceholder')"
+            @input="loginError = ''"
+            required 
+          >
           </div>
 
           <div class="form-group">
@@ -91,6 +100,7 @@
               type="password"
               show-password-on="click"
               :placeholder="$t('auth.login.passwordPlaceholder')"
+              @update:value="loginError = ''"
               required
             />
           </div>
@@ -124,10 +134,15 @@ const message = useMessage()
 const { t } = useI18n()
 
 const isSignupMode = ref(route.query.mode === 'signup')
+const loading = ref(false)
+const loginError = ref('')
+const registerError = ref('')
+
 watch(() => route.query.mode, (mode) => {
   isSignupMode.value = mode === 'signup'
+  loginError.value = ''
+  registerError.value = ''
 }, { immediate: true })
-const loading = ref(false)
 
 const loginForm = reactive({
   email: '',
@@ -142,6 +157,7 @@ const registerForm = reactive({
 })
 
 const handleLogin = async () => {
+  loginError.value = ''
   loading.value = true
   try {
     const user = await signIn(loginForm.email, loginForm.password)
@@ -153,11 +169,19 @@ const handleLogin = async () => {
       await navigateTo('/cabinet/client')
     }
   } catch (e: any) {
+    if (e?.isRateLimited) {
+      await navigateTo('/rate-limited')
+      return
+    }
     const msg = e?.message || ''
+    if (msg.includes('попыток') || msg.includes('15 минут') || msg.toLowerCase().includes('too many')) {
+      await navigateTo('/rate-limited')
+      return
+    }
     if (msg.toLowerCase().includes('failed to fetch') || msg.includes('network')) {
       message.error(t('auth.errors.serverUnavailable'))
     } else {
-      message.error(msg || t('auth.errors.loginFailed'))
+      loginError.value = msg || t('auth.errors.loginFailed')
     }
   } finally {
     loading.value = false
@@ -165,8 +189,9 @@ const handleLogin = async () => {
 }
 
 const handleRegister = async () => {
+  registerError.value = ''
   if (registerForm.password !== registerForm.passwordConfirm) {
-    message.error(t('auth.errors.passwordsMismatch'))
+    registerError.value = t('auth.errors.passwordsMismatch')
     return
   }
 
@@ -191,7 +216,7 @@ const handleRegister = async () => {
     if (msg.toLowerCase().includes('failed to fetch') || msg.includes('network')) {
       message.error(t('auth.errors.serverUnavailableShort'))
     } else {
-      message.error(msg || t('auth.errors.registerFailed'))
+      registerError.value = msg || t('auth.errors.registerFailed')
     }
   } finally {
     loading.value = false
@@ -260,6 +285,17 @@ const handleRegister = async () => {
   transform: translateY(-100%);
   opacity: 0;
   z-index: 1;
+}
+
+.form-error {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #b91c1c;
+  font-size: 14px;
+  text-align: center;
 }
 
 .form-title {

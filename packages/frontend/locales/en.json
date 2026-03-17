@@ -119,6 +119,12 @@
       "loginFailed": "Sign in failed",
       "passwordsMismatch": "Passwords do not match",
       "registerFailed": "Sign up failed"
+    },
+    "rateLimited": {
+      "title": "Too many login attempts",
+      "message": "You have exceeded the login attempt limit. This protects against password guessing.",
+      "hint": "Please try again in 15 minutes.",
+      "back": "Back to sign in"
     }
   },
   "layout": {
