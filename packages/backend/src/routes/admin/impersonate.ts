@@ -4,7 +4,8 @@ import { users, sessions } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import { getUserFromRequest, getImpersonateToken } from '../../lib/auth';
 
-const IMPERSONATE_COOKIE_OPTS = `HttpOnly; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 4}`;
+const isProduction = process.env.NODE_ENV === 'production';
+const IMPERSONATE_COOKIE_OPTS = `HttpOnly; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 4}${isProduction ? '; Secure' : ''}`;
 const IMPERSONATE_COOKIE_CLEAR = `better-auth.impersonate_token=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`;
 
 function generateToken() {

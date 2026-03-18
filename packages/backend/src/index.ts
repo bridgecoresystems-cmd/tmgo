@@ -30,8 +30,15 @@ import { cabinetChatRoutes } from './routes/cabinet/chat';
 import { cabinetProfileRoutes } from './routes/cabinet/profile';
 
 const app = new Elysia()
+  .onAfterHandle(({ set }) => {
+    set.headers['X-Content-Type-Options'] = 'nosniff';
+    set.headers['X-Frame-Options'] = 'DENY';
+    set.headers['X-XSS-Protection'] = '1; mode=block';
+  })
   .use(cors({
-    origin: true,
+    origin: process.env.NODE_ENV === 'production'
+      ? (process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://tmgo.example.com').split(',')
+      : true,
     credentials: true,
     allowedHeaders: true, // Эхо заголовков из preflight — важно для мобильных браузеров
     exposeHeaders: true,

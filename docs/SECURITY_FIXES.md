@@ -1,6 +1,6 @@
 # Security Fixes
 
-Дата: 2026-03-17
+Дата: 2026-03-18
 
 ---
 
@@ -95,7 +95,7 @@ const filepath = join(process.cwd(), 'storage', 'driver-docs', basename(params.c
 
 ### Что стало
 
-- In-memory rate limiter на эндпоинт `POST /api/auth/sign-in/email` (без внешних зависимостей)
+- **elysia-rate-limit** на эндпоинт `POST /api/auth/sign-in/email`
 - **10 попыток** входа за **15 минут** на один IP
 - IP определяется по `X-Forwarded-For` (за прокси) или `unknown`
 - При превышении лимита: **429** с сообщением «Слишком много попыток входа. Попробуйте через 15 минут.»
@@ -132,15 +132,87 @@ const filepath = join(process.cwd(), 'storage', 'driver-docs', basename(params.c
 
 ---
 
-### TODO: elysia-rate-limit
+---
 
-При желании можно установить **elysia-rate-limit** на работе (если сеть не даёт `bun add` дома):
+## 5. Хардкод секретов в коде
 
-```bash
-cd packages/backend && bun add elysia-rate-limit
-```
+**Файлы:**
+- `packages/backend/src/db/index.ts`
+- `packages/backend/src/lib/chat-attachments.ts`
+**Severity:** Серьёзно
 
-Пакет даёт те же параметры (max, duration, generator по IP). Сейчас используется встроенный in-memory реализация.
+### Что было
+
+- `DATABASE_URL` — fallback на `postgresql://tmgo_user:tmgo_pass123@...` даже в production
+- `CHAT_ATTACHMENT_SECRET` — fallback на `tmgo-chat-attachment-secret-change-in-prod` даже в production
+
+### Что стало
+
+В **production** (`NODE_ENV=production`) переменные **обязательны** — приложение падает при старте, если не заданы:
+- `DATABASE_URL`
+- `CHAT_ATTACHMENT_SECRET`
+
+В **development** fallback остаётся для удобства локальной разработки.
+
+Добавлено в `.env.example`: `CHAT_ATTACHMENT_SECRET`.
+
+---
+
+---
+
+## 6. CORS origin: true + валидация email
+
+**Файлы:** `packages/backend/src/index.ts`, `packages/backend/src/routes/auth.ts`
+**Severity:** Менее критично
+
+### CORS
+
+**Было:** `origin: true` — запросы с любого домена.
+
+**Стало:** В production — только разрешённые домены из `CORS_ORIGIN` или `FRONTEND_URL` (через запятую). В development — `true` для LAN/мобильной разработки.
+
+### Email
+
+**Было:** `t.String()` — любая строка.
+
+**Стало:** `t.String({ format: 'email' })` для sign-in и sign-up — проверка формата email на бэкенде.
+
+---
+
+---
+
+## 7. Secure флаг на cookie
+
+**Файлы:** `packages/backend/src/routes/auth.ts`, `packages/backend/src/routes/admin/impersonate.ts`
+
+**Было:** impersonate cookie без Secure в production.
+
+**Стало:** Все cookies (session, impersonate) получают `; Secure` в production — передаются только по HTTPS. В development без Secure для работы по localhost (HTTP).
+
+---
+
+## 8. Защита от доступа к папкам и файлам
+
+**Файлы:** `packages/backend/src/index.ts`, `docs/SECURITY_STORAGE.md`
+
+### Security headers
+
+Добавлены заголовки на все ответы:
+- `X-Content-Type-Options: nosniff` — запрет MIME-sniffing
+- `X-Frame-Options: DENY` — защита от clickjacking
+- `X-XSS-Protection: 1; mode=block` — базовая защита XSS
+
+### Защита storage
+
+- Папка `storage/` не раздаётся статически — доступ только через API
+- Path traversal закрыт через `basename()`
+- Рекомендации по правам, nginx, firewall — в `docs/SECURITY_STORAGE.md`
+
+---
+
+### elysia-rate-limit
+
+Используется **elysia-rate-limit** — те же параметры (10 попыток / 15 мин, generator по IP, skip для не-sign-in).
 
 ---
 
@@ -153,3 +225,7 @@ cd packages/backend && bun add elysia-rate-limit
 | 2 | Path Traversal (документы) | `index.ts` | Исправлено |
 | 3 | Rate limiting на sign-in | `routes/auth.ts` | Исправлено |
 | 4 | Инвалидация сессий при смене пароля | `routes/auth.ts` | Исправлено |
+| 5 | Хардкод секретов | `db/index.ts`, `lib/chat-attachments.ts` | Исправлено |
+| 6 | CORS + валидация email | `index.ts`, `routes/auth.ts` | Исправлено |
+| 7 | Secure флаг на cookie | `routes/auth.ts`, `routes/admin/impersonate.ts` | Исправлено |
+| 8 | Security headers + защита storage | `index.ts`, `docs/SECURITY_STORAGE.md` | Исправлено |

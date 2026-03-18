@@ -2,7 +2,11 @@ import { createHmac } from 'crypto';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
-const SIGN_SECRET = process.env.CHAT_ATTACHMENT_SECRET || 'tmgo-chat-attachment-secret-change-in-prod';
+const SIGN_SECRET =
+  process.env.CHAT_ATTACHMENT_SECRET ??
+  (process.env.NODE_ENV === 'production'
+    ? (() => { throw new Error('CHAT_ATTACHMENT_SECRET is required in production'); })()
+    : 'tmgo-chat-attachment-secret-change-in-prod');
 const TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 export function signAttachmentToken(filename: string): string {

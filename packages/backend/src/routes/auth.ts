@@ -2,31 +2,33 @@ import { join, basename } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
+import { rateLimit } from 'elysia-rate-limit';
 import { db } from '../db';
 import { users, sessions, accounts } from '../db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 import { getImpersonateToken, getUserFromRequest } from '../lib/auth';
 
-/** In-memory rate limiter для sign-in: 10 попыток / 15 мин на IP */
-const signInAttempts = new Map<string, number[]>();
-const SIGNIN_MAX = 10;
-const SIGNIN_WINDOW_MS = 15 * 60 * 1000;
-
-function getClientIp(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0].trim();
-  return 'unknown';
-}
-
-function isSignInRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const attempts = signInAttempts.get(ip) ?? [];
-  const recent = attempts.filter((t) => now - t < SIGNIN_WINDOW_MS);
-  if (recent.length >= SIGNIN_MAX) return true;
-  recent.push(now);
-  signInAttempts.set(ip, recent);
-  return false;
-}
+const signInRateLimit = rateLimit({
+  max: 10,
+  duration: 15 * 60 * 1000,
+  generator: (req, server) => {
+    const forwarded = req.headers.get('x-forwarded-for');
+    const ip = forwarded ? forwarded.split(',')[0].trim() : server?.requestIP?.(req)?.address ?? 'unknown';
+    return `signin:${ip}`;
+  },
+  skip: (req) => {
+    try {
+      const url = new URL(req.url);
+      return !(req.method === 'POST' && url.pathname.endsWith('/sign-in/email'));
+    } catch {
+      return true;
+    }
+  },
+  errorResponse: new Response(
+    JSON.stringify({ error: { message: 'Слишком много попыток входа. Попробуйте через 15 минут.' } }),
+    { status: 429, headers: { 'Content-Type': 'application/json' } }
+  ),
+});
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -71,6 +73,7 @@ async function createSession(userId: string, request: Request) {
 }
 
 export const authRoutes = new Elysia({ prefix: '/api/auth' })
+  .use(signInRateLimit)
 
   // GET /api/auth/get-session
   // При impersonate возвращает целевого пользователя и isImpersonating: true
@@ -88,11 +91,6 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
 
   // POST /api/auth/sign-in/email
   .post('/sign-in/email', async ({ body, set, request }) => {
-    const ip = getClientIp(request);
-    if (isSignInRateLimited(ip)) {
-      set.status = 429;
-      return { error: { message: 'Слишком много попыток входа. Попробуйте через 15 минут.' } };
-    }
     const [user] = await db.select().from(users).where(eq(users.email, body.email)).limit(1);
     if (!user) {
       set.status = 401;
@@ -122,7 +120,7 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
     set.headers['Set-Cookie'] = `better-auth.session_token=${token}; ${COOKIE_OPTS}`;
     return { user };
   }, {
-    body: t.Object({ email: t.String(), password: t.String(), callbackURL: t.Optional(t.String()) }),
+    body: t.Object({ email: t.String({ format: 'email' }), password: t.String(), callbackURL: t.Optional(t.String()) }),
   })
 
   // POST /api/auth/sign-up/email
@@ -159,7 +157,7 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
     return { user };
   }, {
     body: t.Object({
-      email: t.String(),
+      email: t.String({ format: 'email' }),
       password: t.String(),
       name: t.Optional(t.String()),
       role: t.Optional(t.String()),
