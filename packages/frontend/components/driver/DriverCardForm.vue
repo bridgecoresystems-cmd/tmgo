@@ -2,7 +2,7 @@
   <div>
     <n-alert v-if="loadError" type="error" style="margin-bottom: 16px">
       {{ loadError }}
-      <n-button size="small" style="margin-top: 8px" @click="loadProfile">Повторить</n-button>
+      <n-button size="small" style="margin-top: 8px" @click="loadProfile">{{ t('common.retry') }}</n-button>
     </n-alert>
 
     <n-card v-else>
@@ -13,33 +13,33 @@
         :class="{ 'form-sections-mode': layoutMode === 'sections' }"
         @update:value="onTabChange"
       >
-        <n-tab-pane name="main" tab="1. Основная информация">
+        <n-tab-pane name="main" :tab="t('driver.card.section1')">
           <n-form :model="form" label-placement="top" class="form-uniform" style="max-width: 600px; padding-top: 16px;">
-            <n-form-item label="Водитель ID">
-              <n-input :value="form.id" disabled placeholder="Генерируется системой" />
+            <n-form-item :label="t('driver.card.driverId')">
+              <n-input :value="form.id" disabled :placeholder="t('driver.card.generatedBySystem')" />
             </n-form-item>
-            <n-form-item label="Фамилия">
+            <n-form-item :label="t('driver.changeRequests.fieldSurname')">
               <div class="field-with-request">
-                <n-input v-model:value="form.surname" placeholder="Мурадов" :disabled="!isFieldEditable('surname')" />
-                <n-button v-if="showRequestBtn('surname')" quaternary size="small" type="info" :loading="requestingFieldKey === 'surname'" @click="requestChange('surname')">Запрос на изменение</n-button>
-                <n-button v-else-if="showApproveBtn('surname')" size="small" type="success" :loading="approvingFieldKey === 'surname'" @click="approveRequestByField('surname')">Разрешить</n-button>
+                <n-input v-model:value="form.surname" :placeholder="t('driver.card.placeholderSurname')" :disabled="!isFieldEditable('surname')" />
+                <n-button v-if="showRequestBtn('surname')" quaternary size="small" type="info" :loading="requestingFieldKey === 'surname'" @click="requestChange('surname')">{{ t('driver.card.requestChange') }}</n-button>
+                <n-button v-else-if="showApproveBtn('surname')" size="small" type="success" :loading="approvingFieldKey === 'surname'" @click="approveRequestByField('surname')">{{ t('driver.card.allow') }}</n-button>
               </div>
             </n-form-item>
-            <n-form-item label="Имя">
+            <n-form-item :label="t('driver.changeRequests.fieldGivenName')">
               <div class="field-with-request">
-                <n-input v-model:value="form.given_name" placeholder="Азат" :disabled="!isFieldEditable('given_name')" />
-                <n-button v-if="showRequestBtn('given_name')" quaternary size="small" type="info" :loading="requestingFieldKey === 'given_name'" @click="requestChange('given_name')">Запрос на изменение</n-button>
-                <n-button v-else-if="showApproveBtn('given_name')" size="small" type="success" :loading="approvingFieldKey === 'given_name'" @click="approveRequestByField('given_name')">Разрешить</n-button>
+                <n-input v-model:value="form.given_name" :placeholder="t('driver.card.placeholderGivenName')" :disabled="!isFieldEditable('given_name')" />
+                <n-button v-if="showRequestBtn('given_name')" quaternary size="small" type="info" :loading="requestingFieldKey === 'given_name'" @click="requestChange('given_name')">{{ t('driver.card.requestChange') }}</n-button>
+                <n-button v-else-if="showApproveBtn('given_name')" size="small" type="success" :loading="approvingFieldKey === 'given_name'" @click="approveRequestByField('given_name')">{{ t('driver.card.allow') }}</n-button>
               </div>
             </n-form-item>
-            <n-form-item label="Отчество">
+            <n-form-item :label="t('driver.card.patronymic')">
               <div class="field-with-request">
-                <n-input v-model:value="form.patronymic" placeholder="Аманович" :disabled="!isFieldEditable('patronymic')" />
-                <n-button v-if="showRequestBtn('patronymic')" quaternary size="small" type="info" :loading="requestingFieldKey === 'patronymic'" @click="requestChange('patronymic')">Запрос на изменение</n-button>
-                <n-button v-else-if="showApproveBtn('patronymic')" size="small" type="success" :loading="approvingFieldKey === 'patronymic'" @click="approveRequestByField('patronymic')">Разрешить</n-button>
+                <n-input v-model:value="form.patronymic" :placeholder="t('driver.card.placeholderPatronymic')" :disabled="!isFieldEditable('patronymic')" />
+                <n-button v-if="showRequestBtn('patronymic')" quaternary size="small" type="info" :loading="requestingFieldKey === 'patronymic'" @click="requestChange('patronymic')">{{ t('driver.card.requestChange') }}</n-button>
+                <n-button v-else-if="showApproveBtn('patronymic')" size="small" type="success" :loading="approvingFieldKey === 'patronymic'" @click="approveRequestByField('patronymic')">{{ t('driver.card.allow') }}</n-button>
               </div>
             </n-form-item>
-            <n-form-item label="Дата рождения">
+            <n-form-item :label="t('driver.card.dateOfBirth')">
               <div class="field-with-request">
               <n-date-picker
                 :value="form.date_of_birth ? new Date(form.date_of_birth).getTime() : null"
@@ -49,11 +49,11 @@
                 :disabled="!isFieldEditable('date_of_birth')"
                 @update:value="(v: number | null) => { form.date_of_birth = v ? new Date(v).toISOString().slice(0, 10) : null }"
               />
-                <n-button v-if="showRequestBtn('date_of_birth')" quaternary size="small" type="info" :loading="requestingFieldKey === 'date_of_birth'" @click="requestChange('date_of_birth')">Запрос на изменение</n-button>
-                <n-button v-else-if="showApproveBtn('date_of_birth')" size="small" type="success" :loading="approvingFieldKey === 'date_of_birth'" @click="approveRequestByField('date_of_birth')">Разрешить</n-button>
+                <n-button v-if="showRequestBtn('date_of_birth')" quaternary size="small" type="info" :loading="requestingFieldKey === 'date_of_birth'" @click="requestChange('date_of_birth')">{{ t('driver.card.requestChange') }}</n-button>
+                <n-button v-else-if="showApproveBtn('date_of_birth')" size="small" type="success" :loading="approvingFieldKey === 'date_of_birth'" @click="approveRequestByField('date_of_birth')">{{ t('driver.card.allow') }}</n-button>
               </div>
             </n-form-item>
-            <n-form-item label="Гражданство">
+            <n-form-item :label="t('driver.card.citizenship')">
               <div class="field-with-request">
               <div class="multi-field">
                 <div v-for="(item, i) in form.citizenships" :key="'c-' + i" class="multi-field-row multi-field-row-with-btn">
@@ -63,154 +63,154 @@
                     :options="citizenshipOptions"
                     filterable
                     tag
-                    placeholder="Выберите или введите"
+                    :placeholder="t('driver.card.selectOrEnter')"
                     clearable
                     style="flex: 1; margin-bottom: 8px"
                   />
                   <n-popconfirm
                     v-if="i > 0"
-                    positive-text="Удалить"
-                    negative-text="Отмена"
+                    :positive-text="t('common.delete')"
+                    :negative-text="t('common.cancel')"
                     @positive-click="form.citizenships.splice(i, 1)"
                   >
                     <template #trigger>
                       <n-button quaternary size="small" type="error" class="remove-btn" :disabled="!isFieldEditable('citizenship', i)">×</n-button>
                     </template>
-                    Вы действительно хотите удалить это поле?
+                    {{ t('driver.card.confirmDelete') }}
                   </n-popconfirm>
-                  <n-button v-if="showRequestBtn('citizenship', i)" quaternary size="small" type="info" :loading="requestingFieldKey === 'citizenship_' + i" @click="requestChange('citizenship_' + i)">Запрос</n-button>
-                  <n-button v-else-if="showApproveBtn('citizenship', i)" size="small" type="success" :loading="approvingFieldKey === 'citizenship_' + i" @click="approveRequestByField('citizenship_' + i)">Разрешить</n-button>
+                  <n-button v-if="showRequestBtn('citizenship', i)" quaternary size="small" type="info" :loading="requestingFieldKey === 'citizenship_' + i" @click="requestChange('citizenship_' + i)">{{ t('driver.card.request') }}</n-button>
+                  <n-button v-else-if="showApproveBtn('citizenship', i)" size="small" type="success" :loading="approvingFieldKey === 'citizenship_' + i" @click="approveRequestByField('citizenship_' + i)">{{ t('driver.card.allow') }}</n-button>
                 </div>
                 <div class="add-row">
-                  <n-button quaternary size="small" type="primary" @click="addCitizenship" :disabled="!isAddEditable('citizenship')">+ Добавить</n-button>
-                  <n-button v-if="showRequestBtnForAdd('citizenship')" quaternary size="small" type="info" :loading="requestingFieldKey === 'citizenship_add'" @click="openAddRequestModal('citizenship_add')">Запрос</n-button>
-                  <n-button v-else-if="showApproveBtnForAdd('citizenship')" size="small" type="success" :loading="approvingFieldKey === 'citizenship_add'" @click="approveRequestByField('citizenship_add')">Разрешить</n-button>
+                  <n-button quaternary size="small" type="primary" @click="addCitizenship" :disabled="!isAddEditable('citizenship')">{{ t('driver.card.addCitizenship') }}</n-button>
+                  <n-button v-if="showRequestBtnForAdd('citizenship')" quaternary size="small" type="info" :loading="requestingFieldKey === 'citizenship_add'" @click="openAddRequestModal('citizenship_add')">{{ t('driver.card.request') }}</n-button>
+                  <n-button v-else-if="showApproveBtnForAdd('citizenship')" size="small" type="success" :loading="approvingFieldKey === 'citizenship_add'" @click="approveRequestByField('citizenship_add')">{{ t('driver.card.allow') }}</n-button>
                 </div>
               </div>
               </div>
             </n-form-item>
-            <n-form-item label="Пол">
+            <n-form-item :label="t('driver.card.gender')">
               <div class="field-with-request">
                 <n-select
                   v-model:value="form.gender"
                   :options="genderOptions"
-                  placeholder="Выберите"
+                  :placeholder="t('driver.card.selectOrEnter')"
                   clearable
                   :disabled="!isFieldEditable('gender')"
                 />
-                <n-button v-if="showRequestBtn('gender')" quaternary size="small" type="info" :loading="requestingFieldKey === 'gender'" @click="requestChange('gender')">Запрос на изменение</n-button>
-                <n-button v-else-if="showApproveBtn('gender')" size="small" type="success" :loading="approvingFieldKey === 'gender'" @click="approveRequestByField('gender')">Разрешить</n-button>
+                <n-button v-if="showRequestBtn('gender')" quaternary size="small" type="info" :loading="requestingFieldKey === 'gender'" @click="requestChange('gender')">{{ t('driver.card.requestChange') }}</n-button>
+                <n-button v-else-if="showApproveBtn('gender')" size="small" type="success" :loading="approvingFieldKey === 'gender'" @click="approveRequestByField('gender')">{{ t('driver.card.allow') }}</n-button>
               </div>
             </n-form-item>
-            <n-form-item label="Контактный телефон">
+            <n-form-item :label="t('driver.card.contactPhone')">
               <div class="field-with-request">
               <div class="multi-field">
                 <div v-for="(item, i) in form.phones" :key="'p-' + i" class="multi-field-row multi-field-row-with-btn">
                   <n-input
                     v-model:value="form.phones[i]"
-                    placeholder="+993 65 12 34 56"
+                    :placeholder="t('driver.card.placeholderPhone')"
                     style="flex: 1; margin-bottom: 8px"
                     :disabled="!isFieldEditable('phone', i)"
                   />
                   <n-popconfirm
                     v-if="i > 0"
-                    positive-text="Удалить"
-                    negative-text="Отмена"
+                    :positive-text="t('common.delete')"
+                    :negative-text="t('common.cancel')"
                     @positive-click="form.phones.splice(i, 1)"
                   >
                     <template #trigger>
                       <n-button quaternary size="small" type="error" class="remove-btn" :disabled="!isFieldEditable('phone', i)">×</n-button>
                     </template>
-                    Вы действительно хотите удалить это поле?
+                    {{ t('driver.card.confirmDelete') }}
                   </n-popconfirm>
-                  <n-button v-if="showRequestBtn('phone', i)" quaternary size="small" type="info" :loading="requestingFieldKey === 'phone_' + i" @click="requestChange('phone_' + i)">Запрос</n-button>
-                  <n-button v-else-if="showApproveBtn('phone', i)" size="small" type="success" :loading="approvingFieldKey === 'phone_' + i" @click="approveRequestByField('phone_' + i)">Разрешить</n-button>
+                  <n-button v-if="showRequestBtn('phone', i)" quaternary size="small" type="info" :loading="requestingFieldKey === 'phone_' + i" @click="requestChange('phone_' + i)">{{ t('driver.card.request') }}</n-button>
+                  <n-button v-else-if="showApproveBtn('phone', i)" size="small" type="success" :loading="approvingFieldKey === 'phone_' + i" @click="approveRequestByField('phone_' + i)">{{ t('driver.card.allow') }}</n-button>
                 </div>
                 <div class="add-row">
-                  <n-button quaternary size="small" type="primary" @click="addPhone" :disabled="!isAddEditable('phone')">+ Добавить</n-button>
-                  <n-button v-if="showRequestBtnForAdd('phone')" quaternary size="small" type="info" :loading="requestingFieldKey === 'phone_add'" @click="openAddRequestModal('phone_add')">Запрос</n-button>
-                  <n-button v-else-if="showApproveBtnForAdd('phone')" size="small" type="success" :loading="approvingFieldKey === 'phone_add'" @click="approveRequestByField('phone_add')">Разрешить</n-button>
+                  <n-button quaternary size="small" type="primary" @click="addPhone" :disabled="!isAddEditable('phone')">{{ t('driver.card.addPhone') }}</n-button>
+                  <n-button v-if="showRequestBtnForAdd('phone')" quaternary size="small" type="info" :loading="requestingFieldKey === 'phone_add'" @click="openAddRequestModal('phone_add')">{{ t('driver.card.request') }}</n-button>
+                  <n-button v-else-if="showApproveBtnForAdd('phone')" size="small" type="success" :loading="approvingFieldKey === 'phone_add'" @click="approveRequestByField('phone_add')">{{ t('driver.card.allow') }}</n-button>
                 </div>
               </div>
               </div>
             </n-form-item>
-            <n-form-item label="Email">
+            <n-form-item :label="t('common.email')">
               <div class="field-with-request">
               <div class="multi-field">
                 <div class="multi-field-row">
-                  <n-input :value="form.email" disabled placeholder="Из учётной записи" style="flex: 1; margin-bottom: 8px" />
+                  <n-input :value="form.email" disabled :placeholder="t('driver.card.fromAccountRecord')" style="flex: 1; margin-bottom: 8px" />
                 </div>
                 <div v-for="(item, i) in form.extra_emails" :key="'e-' + i" class="multi-field-row multi-field-row-with-btn">
                   <n-input
                     v-model:value="form.extra_emails[i]"
-                    placeholder="Доп. email"
+                    :placeholder="t('driver.card.extraEmail')"
                     style="flex: 1; margin-bottom: 8px"
                     :disabled="!isFieldEditable('additional_emails', i)"
                   />
                   <n-popconfirm
-                    positive-text="Удалить"
-                    negative-text="Отмена"
+                    :positive-text="t('common.delete')"
+                    :negative-text="t('common.cancel')"
                     @positive-click="form.extra_emails.splice(i, 1)"
                   >
                     <template #trigger>
                       <n-button quaternary size="small" type="error" class="remove-btn" :disabled="!isFieldEditable('additional_emails', i)">×</n-button>
                     </template>
-                    Вы действительно хотите удалить это поле?
+                    {{ t('driver.card.confirmDelete') }}
                   </n-popconfirm>
-                  <n-button v-if="showRequestBtn('additional_emails', i)" quaternary size="small" type="info" :loading="requestingFieldKey === 'additional_emails_' + i" @click="requestChange('additional_emails_' + i)">Запрос</n-button>
-                  <n-button v-else-if="showApproveBtn('additional_emails', i)" size="small" type="success" :loading="approvingFieldKey === 'additional_emails_' + i" @click="approveRequestByField('additional_emails_' + i)">Разрешить</n-button>
+                  <n-button v-if="showRequestBtn('additional_emails', i)" quaternary size="small" type="info" :loading="requestingFieldKey === 'additional_emails_' + i" @click="requestChange('additional_emails_' + i)">{{ t('driver.card.request') }}</n-button>
+                  <n-button v-else-if="showApproveBtn('additional_emails', i)" size="small" type="success" :loading="approvingFieldKey === 'additional_emails_' + i" @click="approveRequestByField('additional_emails_' + i)">{{ t('driver.card.allow') }}</n-button>
                 </div>
                 <div class="add-row">
-                  <n-button quaternary size="small" type="primary" @click="addEmail" :disabled="!isAddEditable('additional_emails')">+ Добавить</n-button>
-                  <n-button v-if="showRequestBtnForAdd('additional_emails')" quaternary size="small" type="info" :loading="requestingFieldKey === 'additional_emails_add'" @click="openAddRequestModal('additional_emails_add')">Запрос</n-button>
-                  <n-button v-else-if="showApproveBtnForAdd('additional_emails')" size="small" type="success" :loading="approvingFieldKey === 'additional_emails_add'" @click="approveRequestByField('additional_emails_add')">Разрешить</n-button>
+                  <n-button quaternary size="small" type="primary" @click="addEmail" :disabled="!isAddEditable('additional_emails')">{{ t('driver.card.addEmail') }}</n-button>
+                  <n-button v-if="showRequestBtnForAdd('additional_emails')" quaternary size="small" type="info" :loading="requestingFieldKey === 'additional_emails_add'" @click="openAddRequestModal('additional_emails_add')">{{ t('driver.card.request') }}</n-button>
+                  <n-button v-else-if="showApproveBtnForAdd('additional_emails')" size="small" type="success" :loading="approvingFieldKey === 'additional_emails_add'" @click="approveRequestByField('additional_emails_add')">{{ t('driver.card.allow') }}</n-button>
                 </div>
               </div>
               </div>
             </n-form-item>
-            <n-form-item label="Статус">
+            <n-form-item :label="t('common.status')">
               <div class="field-with-request">
                 <n-select
                   v-model:value="form.status"
                   :options="statusOptions"
-                  placeholder="Выберите"
+                  :placeholder="t('driver.card.selectOrEnter')"
                   clearable
                   :disabled="!isFieldEditable('status')"
                 />
-                <n-button v-if="showRequestBtn('status')" quaternary size="small" type="info" :loading="requestingFieldKey === 'status'" @click="requestChange('status')">Запрос на изменение</n-button>
-                <n-button v-else-if="showApproveBtn('status')" size="small" type="success" :loading="approvingFieldKey === 'status'" @click="approveRequestByField('status')">Разрешить</n-button>
+                <n-button v-if="showRequestBtn('status')" quaternary size="small" type="info" :loading="requestingFieldKey === 'status'" @click="requestChange('status')">{{ t('driver.card.requestChange') }}</n-button>
+                <n-button v-else-if="showApproveBtn('status')" size="small" type="success" :loading="approvingFieldKey === 'status'" @click="approveRequestByField('status')">{{ t('driver.card.allow') }}</n-button>
               </div>
             </n-form-item>
-            <n-form-item label="Категория занятости">
+            <n-form-item :label="t('driver.card.employmentCategory')">
               <div class="field-with-request">
                 <n-select
                   v-model:value="form.employment_category"
                   :options="employmentOptions"
-                  placeholder="Выберите"
+                  :placeholder="t('driver.card.selectOrEnter')"
                   clearable
                   :disabled="!isFieldEditable('employment_category')"
                 />
-                <n-button v-if="showRequestBtn('employment_category')" quaternary size="small" type="info" :loading="requestingFieldKey === 'employment_category'" @click="requestChange('employment_category')">Запрос на изменение</n-button>
-                <n-button v-else-if="showApproveBtn('employment_category')" size="small" type="success" :loading="approvingFieldKey === 'employment_category'" @click="approveRequestByField('employment_category')">Разрешить</n-button>
+                <n-button v-if="showRequestBtn('employment_category')" quaternary size="small" type="info" :loading="requestingFieldKey === 'employment_category'" @click="requestChange('employment_category')">{{ t('driver.card.requestChange') }}</n-button>
+                <n-button v-else-if="showApproveBtn('employment_category')" size="small" type="success" :loading="approvingFieldKey === 'employment_category'" @click="approveRequestByField('employment_category')">{{ t('driver.card.allow') }}</n-button>
               </div>
             </n-form-item>
             <n-space v-if="isDriverContext">
-              <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+              <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
               <n-button type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
-                Отправить на верификацию
+                {{ t('driver.card.submitForVerification') }}
               </n-button>
             </n-space>
-            <n-button v-else type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+            <n-button v-else type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
           </n-form>
         </n-tab-pane>
 
-        <n-tab-pane name="passport" tab="2. Паспортные данные">
+        <n-tab-pane name="passport" :tab="t('driver.card.section2')">
           <n-form :model="form" label-placement="left" label-width="180" class="form-uniform form-passport-inline" style="max-width: 700px; padding-top: 16px;">
-            <!-- Паспорт 1: сворачиваемый, когда есть паспорт 2 -->
+            <!-- Passport 1: collapsible when passport 2 exists -->
             <n-collapse v-if="hasPassport2" class="passport-collapse">
-              <n-collapse-item :title="`Паспорт (1) ${form.passport_series || ''} ${form.passport_number || ''}`.trim() || 'Паспорт (1)'" name="p1" default-expanded>
+              <n-collapse-item :title="`${t('driver.card.passport2')} (1) ${form.passport_series || ''} ${form.passport_number || ''}`.trim() || `${t('driver.card.passport2')} (1)`" name="p1" default-expanded>
                 <div class="passport-block-inner">
-                  <n-form-item label="Серия / Номер паспорта">
+                  <n-form-item :label="t('driver.card.passportSeriesNumber')">
                     <div class="passport-series-number-row">
                       <div class="passport-series-wrap">
                         <n-input v-model:value="form.passport_series" placeholder="AB" maxlength="6" :disabled="isDriverContext" />
@@ -221,13 +221,13 @@
                       </div>
                     </div>
                   </n-form-item>
-                  <n-form-item v-if="!isDriverContext" label="Статус паспорта">
+                  <n-form-item v-if="!isDriverContext" :label="t('driver.card.passportStatus')">
                     <n-switch v-model:value="form.passport_is_active">
-                      <template #checked>Активен</template>
-                      <template #unchecked>Неактивен</template>
+                      <template #checked>{{ t('driver.card.passportActive') }}</template>
+                      <template #unchecked>{{ t('driver.card.passportInactive') }}</template>
                     </n-switch>
                   </n-form-item>
-                  <n-form-item label="Дата выдачи">
+                  <n-form-item :label="t('driver.card.passportIssueDate')">
                     <n-date-picker
                       v-if="!isDriverContext"
                       :value="form.passport_issue_date ? new Date(form.passport_issue_date).getTime() : null"
@@ -238,7 +238,7 @@
                     />
                     <n-input v-else :value="form.passport_issue_date" disabled />
                   </n-form-item>
-                  <n-form-item label="Дата окончания">
+                  <n-form-item :label="t('driver.card.passportExpiryDate')">
                     <n-date-picker
                       v-if="!isDriverContext"
                       :value="form.passport_expiry_date ? new Date(form.passport_expiry_date).getTime() : null"
@@ -249,16 +249,16 @@
                     />
                     <n-input v-else :value="form.passport_expiry_date" disabled />
                   </n-form-item>
-                  <n-form-item label="Кем выдан">
-                    <n-input v-model:value="form.passport_issued_by" placeholder="МВД Туркменистана" :disabled="isDriverContext" />
+                  <n-form-item :label="t('driver.card.passportIssuedBy')">
+                    <n-input v-model:value="form.passport_issued_by" :placeholder="t('driver.card.placeholderIssuedBy')" :disabled="isDriverContext" />
                   </n-form-item>
-                  <n-form-item label="Место рождения">
-                    <n-input v-model:value="form.place_of_birth" placeholder="Ашхабад" :disabled="isDriverContext" />
+                  <n-form-item :label="t('driver.card.placeOfBirth')">
+                    <n-input v-model:value="form.place_of_birth" :placeholder="t('driver.card.placeholderPlaceOfBirth')" :disabled="isDriverContext" />
                   </n-form-item>
-                  <n-form-item label="Адрес проживания">
-                    <n-input v-model:value="form.residential_address" type="textarea" placeholder="Ашхабад, ул. Гарашсызлык, д. 45" :rows="2" :disabled="isDriverContext" />
+                  <n-form-item :label="t('driver.card.residentialAddress')">
+                    <n-input v-model:value="form.residential_address" type="textarea" :placeholder="t('driver.card.placeholderAddress')" :rows="2" :disabled="isDriverContext" />
                   </n-form-item>
-                  <n-form-item label="Скан паспорта (PDF/JPG)">
+                  <n-form-item :label="t('driver.card.passportScan')">
                     <div class="passport-scan-block">
                       <div class="passport-scan-upload">
                         <n-upload
@@ -268,16 +268,16 @@
                           accept=".pdf,.jpg,.jpeg,.png"
                           :custom-request="handlePassportUpload"
                         >
-                          <n-button>Загрузить PDF или JPG</n-button>
+                          <n-button>{{ t('driver.card.uploadPdfOrJpg') }}</n-button>
                         </n-upload>
                       </div>
                       <div v-if="form.passport_scan_url" class="scan-preview-row">
-                        <div class="scan-preview" @click="openScanModal(form.passport_scan_url, 'Скан паспорта (1)')">
-                          <img v-if="isImageUrl(form.passport_scan_url)" :src="scanFullUrl(form.passport_scan_url)" alt="Паспорт" class="scan-thumb" />
+                        <div class="scan-preview" @click="openScanModal(form.passport_scan_url, `${t('driver.card.passportScan')} (1)`)">
+                          <img v-if="isImageUrl(form.passport_scan_url)" :src="scanFullUrl(form.passport_scan_url)" :alt="t('driver.card.scanPassportShort')" class="scan-thumb" />
                           <div v-else class="scan-thumb scan-thumb-pdf"><span>PDF</span></div>
-                          <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                          <n-text depth="3" style="font-size: 12px;">{{ t('driver.card.viewScan') }}</n-text>
                         </div>
-                        <n-text depth="3" style="font-size: 12px;">{{ isDriverContext ? 'Файл загружен.' : 'Файл загружен. Сохраните форму.' }}</n-text>
+                        <n-text depth="3" style="font-size: 12px;">{{ isDriverContext ? t('driver.card.fileUploaded') : t('driver.card.fileUploadedSave') }}</n-text>
                       </div>
                     </div>
                   </n-form-item>
@@ -285,7 +285,7 @@
               </n-collapse-item>
             </n-collapse>
             <template v-else>
-            <n-form-item label="Серия / Номер паспорта">
+            <n-form-item :label="t('driver.card.passportSeriesNumber')">
               <div class="passport-series-number-row">
                 <div class="passport-series-wrap">
                   <n-input v-model:value="form.passport_series" placeholder="AB" maxlength="6" :disabled="!isFieldEditable('passport_series')" />
@@ -296,13 +296,13 @@
                 </div>
               </div>
             </n-form-item>
-            <n-form-item v-if="!isDriverContext" label="Статус паспорта">
+            <n-form-item v-if="!isDriverContext" :label="t('driver.card.passportStatus')">
               <n-switch v-model:value="form.passport_is_active">
-                <template #checked>Активен</template>
-                <template #unchecked>Неактивен</template>
+<template #checked>{{ t('driver.card.passportActive') }}</template>
+                    <template #unchecked>{{ t('driver.card.passportInactive') }}</template>
               </n-switch>
             </n-form-item>
-            <n-form-item label="Дата выдачи">
+            <n-form-item :label="t('driver.card.passportIssueDate')">
               <n-date-picker
                 :value="form.passport_issue_date ? new Date(form.passport_issue_date).getTime() : null"
                 type="date"
@@ -312,7 +312,7 @@
                 @update:value="(v: number | null) => { form.passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
               />
             </n-form-item>
-            <n-form-item label="Дата окончания">
+            <n-form-item :label="t('driver.card.passportExpiryDate')">
               <n-date-picker
                 :value="form.passport_expiry_date ? new Date(form.passport_expiry_date).getTime() : null"
                 type="date"
@@ -322,16 +322,16 @@
                 @update:value="(v: number | null) => { form.passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
               />
             </n-form-item>
-            <n-form-item label="Кем выдан">
-              <n-input v-model:value="form.passport_issued_by" placeholder="МВД Туркменистана" :disabled="!isFieldEditable('passport_issued_by')" />
+            <n-form-item :label="t('driver.card.passportIssuedBy')">
+              <n-input v-model:value="form.passport_issued_by" :placeholder="t('driver.card.placeholderIssuedBy')" :disabled="!isFieldEditable('passport_issued_by')" />
             </n-form-item>
-            <n-form-item label="Место рождения">
-              <n-input v-model:value="form.place_of_birth" placeholder="Ашхабад" :disabled="!isFieldEditable('place_of_birth')" />
+            <n-form-item :label="t('driver.card.placeOfBirth')">
+              <n-input v-model:value="form.place_of_birth" :placeholder="t('driver.card.placeholderPlaceOfBirth')" :disabled="!isFieldEditable('place_of_birth')" />
             </n-form-item>
-            <n-form-item label="Адрес проживания">
-              <n-input v-model:value="form.residential_address" type="textarea" placeholder="Ашхабад, ул. Гарашсызлык, д. 45" :rows="2" :disabled="!isFieldEditable('residential_address')" />
+            <n-form-item :label="t('driver.card.residentialAddress')">
+              <n-input v-model:value="form.residential_address" type="textarea" :placeholder="t('driver.card.placeholderAddress')" :rows="2" :disabled="!isFieldEditable('residential_address')" />
             </n-form-item>
-            <n-form-item label="Скан паспорта (PDF/JPG)">
+            <n-form-item :label="t('driver.card.passportScan')">
               <div class="passport-scan-block">
                 <div class="passport-scan-upload">
                   <n-upload
@@ -341,27 +341,27 @@
                     :custom-request="handlePassportUpload"
                     :disabled="!isFieldEditable('passport_scan_url')"
                   >
-                    <n-button :disabled="!isFieldEditable('passport_scan_url')">Загрузить PDF или JPG</n-button>
+                    <n-button :disabled="!isFieldEditable('passport_scan_url')">{{ t('driver.card.uploadPdfOrJpg') }}</n-button>
                   </n-upload>
                 </div>
                 <div v-if="form.passport_scan_url" class="scan-preview-row">
-                  <div class="scan-preview" @click="openScanModal(form.passport_scan_url, 'Скан паспорта')">
-                    <img v-if="isImageUrl(form.passport_scan_url)" :src="scanFullUrl(form.passport_scan_url)" alt="Паспорт" class="scan-thumb" />
+                  <div class="scan-preview" @click="openScanModal(form.passport_scan_url, t('driver.card.passportScan'))">
+                    <img v-if="isImageUrl(form.passport_scan_url)" :src="scanFullUrl(form.passport_scan_url)" :alt="t('driver.card.scanPassportShort')" class="scan-thumb" />
                     <div v-else class="scan-thumb scan-thumb-pdf">
                       <span>PDF</span>
                     </div>
-                    <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                    <n-text depth="3" style="font-size: 12px;">{{ t('driver.card.viewScan') }}</n-text>
                   </div>
-                  <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму, чтобы закрепить.</n-text>
+                  <n-text depth="3" style="font-size: 12px;">{{ t('driver.card.fileUploadedSaveHint') }}</n-text>
                 </div>
               </div>
             </n-form-item>
             </template>
 
-            <!-- Паспорт 2 (после одобрения passport_add) -->
+            <!-- Passport 2 (after passport_add approval) -->
             <template v-if="hasPassport2">
-              <n-divider style="margin: 24px 0 16px;">Паспорт (2)</n-divider>
-              <n-form-item label="Серия / Номер паспорта">
+              <n-divider style="margin: 24px 0 16px;">{{ t('driver.card.passport2') }}</n-divider>
+              <n-form-item :label="t('driver.card.passportSeriesNumber')">
                 <div class="passport-series-number-row">
                   <div class="passport-series-wrap">
                     <n-input v-model:value="form.extra_passports[0].passport_series" placeholder="AB" maxlength="6" :disabled="isPassport2Locked" />
@@ -372,13 +372,13 @@
                   </div>
                 </div>
               </n-form-item>
-              <n-form-item v-if="!isDriverContext" label="Статус паспорта">
+              <n-form-item v-if="!isDriverContext" :label="t('driver.card.passportStatus')">
                 <n-switch v-model:value="form.extra_passports[0].is_active">
-                  <template #checked>Активен</template>
-                  <template #unchecked>Неактивен</template>
+<template #checked>{{ t('driver.card.passportActive') }}</template>
+                    <template #unchecked>{{ t('driver.card.passportInactive') }}</template>
                 </n-switch>
               </n-form-item>
-              <n-form-item label="Дата выдачи">
+              <n-form-item :label="t('driver.card.passportIssueDate')">
                 <n-date-picker
                   :value="form.extra_passports[0].passport_issue_date ? new Date(form.extra_passports[0].passport_issue_date).getTime() : null"
                   type="date"
@@ -388,7 +388,7 @@
                   @update:value="(v: number | null) => { form.extra_passports[0].passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
                 />
               </n-form-item>
-              <n-form-item label="Дата окончания">
+              <n-form-item :label="t('driver.card.passportExpiryDate')">
                 <n-date-picker
                   :value="form.extra_passports[0].passport_expiry_date ? new Date(form.extra_passports[0].passport_expiry_date).getTime() : null"
                   type="date"
@@ -398,16 +398,16 @@
                   @update:value="(v: number | null) => { form.extra_passports[0].passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
                 />
               </n-form-item>
-              <n-form-item label="Кем выдан">
-                <n-input v-model:value="form.extra_passports[0].passport_issued_by" placeholder="МВД Туркменистана" :disabled="isPassport2Locked" />
+              <n-form-item :label="t('driver.card.passportIssuedBy')">
+                <n-input v-model:value="form.extra_passports[0].passport_issued_by" :placeholder="t('driver.card.placeholderIssuedBy')" :disabled="isPassport2Locked" />
               </n-form-item>
-              <n-form-item label="Место рождения">
-                <n-input v-model:value="form.extra_passports[0].place_of_birth" placeholder="Ашхабад" :disabled="isPassport2Locked" />
+              <n-form-item :label="t('driver.card.placeOfBirth')">
+                <n-input v-model:value="form.extra_passports[0].place_of_birth" :placeholder="t('driver.card.placeholderPlaceOfBirth')" :disabled="isPassport2Locked" />
               </n-form-item>
-              <n-form-item label="Адрес проживания">
-                <n-input v-model:value="form.extra_passports[0].residential_address" type="textarea" placeholder="Ашхабад, ул. Гарашсызлык, д. 45" :rows="2" :disabled="isPassport2Locked" />
+              <n-form-item :label="t('driver.card.residentialAddress')">
+                <n-input v-model:value="form.extra_passports[0].residential_address" type="textarea" :placeholder="t('driver.card.placeholderAddress')" :rows="2" :disabled="isPassport2Locked" />
               </n-form-item>
-              <n-form-item label="Скан паспорта (PDF/JPG)">
+              <n-form-item :label="t('driver.card.passportScan')">
                 <div class="passport-scan-block">
                   <div class="passport-scan-upload">
                     <n-upload
@@ -417,18 +417,18 @@
                       :custom-request="handleExtraPassportUpload"
                       :disabled="isPassport2Locked"
                     >
-                      <n-button :disabled="isPassport2Locked">Загрузить PDF или JPG</n-button>
+                      <n-button :disabled="isPassport2Locked">{{ t('driver.card.uploadPdfOrJpg') }}</n-button>
                     </n-upload>
                   </div>
                   <div v-if="form.extra_passports[0]?.passport_scan_url" class="scan-preview-row">
                     <div class="scan-preview" @click.stop="openScanModalPassport2">
-                      <img v-if="isImageUrl(form.extra_passports[0].passport_scan_url!)" :src="scanFullUrl(form.extra_passports[0].passport_scan_url!)" alt="Паспорт 2" class="scan-thumb" />
+                      <img v-if="isImageUrl(form.extra_passports[0].passport_scan_url!)" :src="scanFullUrl(form.extra_passports[0].passport_scan_url!)" :alt="t('driver.card.scanPassport2Short')" class="scan-thumb" />
                       <div v-else class="scan-thumb scan-thumb-pdf">
                         <span>PDF</span>
                       </div>
-                      <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                      <n-text depth="3" style="font-size: 12px;">{{ t('driver.card.viewScan') }}</n-text>
                     </div>
-                    <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму, чтобы закрепить.</n-text>
+                    <n-text depth="3" style="font-size: 12px;">{{ t('driver.card.fileUploadedSaveHint') }}</n-text>
                   </div>
                 </div>
               </n-form-item>
@@ -438,39 +438,39 @@
               <template v-if="isDriverContext">
                 <n-space>
                   <n-button v-if="isPassportAddEditable && !hasPassport2" quaternary type="primary" size="small" @click="onAddPassport">
-                    + Добавить паспорт
+                    {{ t('driver.card.addPassport') }}
                   </n-button>
                   <n-button v-if="showRequestBtnForPassportAdd" quaternary size="small" type="info" :loading="requestingFieldKey === 'passport_add'" @click="requestChange('passport_add')">
-                    Запрос
+                    {{ t('driver.card.request') }}
                   </n-button>
                   <n-button v-else-if="showApproveBtnForPassportAdd" size="small" type="success" :loading="approvingFieldKey === 'passport_add'" @click="approveRequestByField('passport_add')">
-                    Разрешить
+                    {{ t('driver.card.allow') }}
                   </n-button>
                 </n-space>
               </template>
               <n-space>
-                <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+                <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
                 <n-button v-if="isDriverContext" type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
-                  Отправить на верификацию
+                  {{ t('driver.card.submitForVerification') }}
                 </n-button>
               </n-space>
             </div>
           </n-form>
         </n-tab-pane>
 
-        <n-tab-pane name="license" tab="3. Водительское удостоверение">
+        <n-tab-pane name="license" :tab="t('driver.card.section3')">
           <n-form :model="form" label-placement="top" class="form-uniform" style="max-width: 600px; padding-top: 16px;">
-            <n-form-item label="Номер водительского удостоверения">
+            <n-form-item :label="t('driver.card.licenseNumber')">
               <n-input v-model:value="form.license_number" placeholder="TM-123456" />
             </n-form-item>
-            <n-form-item label="Категории прав">
+            <n-form-item :label="t('driver.card.licenseCategories')">
               <n-checkbox-group v-model:value="form.license_categories_arr">
                 <n-space>
                   <n-checkbox v-for="c in licenseCategories" :key="c.value" :value="c.value" :label="c.label" />
                 </n-space>
               </n-checkbox-group>
             </n-form-item>
-            <n-form-item label="Дата выдачи">
+            <n-form-item :label="t('driver.card.passportIssueDate')">
               <n-date-picker
                 :value="form.license_issue_date ? new Date(form.license_issue_date).getTime() : null"
                 type="date"
@@ -479,7 +479,7 @@
                 @update:value="(v: number | null) => { form.license_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
               />
             </n-form-item>
-            <n-form-item label="Дата окончания">
+            <n-form-item :label="t('driver.card.passportExpiryDate')">
               <n-date-picker
                 :value="form.license_expiry ? new Date(form.license_expiry).getTime() : null"
                 type="date"
@@ -488,44 +488,44 @@
                 @update:value="(v: number | null) => { form.license_expiry = v ? new Date(v).toISOString().slice(0, 10) : null }"
               />
             </n-form-item>
-            <n-form-item label="Кем выдано">
-              <n-input v-model:value="form.license_issued_by" placeholder="МВД Туркменистана" />
+            <n-form-item :label="t('driver.card.adrIssuedBy')">
+              <n-input v-model:value="form.license_issued_by" :placeholder="t('driver.card.placeholderIssuedBy')" />
             </n-form-item>
-            <n-form-item label="Скан водительских прав (PDF/JPG)">
+            <n-form-item :label="t('driver.card.licenseScan')">
               <n-upload
                 :default-file-list="licenseFileList"
                 :max="1"
                 accept=".pdf,.jpg,.jpeg,.png"
                 :custom-request="handleLicenseUpload"
               >
-                <n-button>Загрузить PDF или JPG</n-button>
+                <n-button>{{ t('driver.card.uploadPdfOrJpg') }}</n-button>
               </n-upload>
               <div v-if="form.license_scan_url" class="scan-preview-row">
-                <div class="scan-preview" @click="openScanModal(form.license_scan_url, 'Скан водительских прав')">
-                  <img v-if="isImageUrl(form.license_scan_url)" :src="scanFullUrl(form.license_scan_url)" alt="Права" class="scan-thumb" />
+                <div class="scan-preview" @click="openScanModal(form.license_scan_url, t('driver.card.licenseScan'))">
+                  <img v-if="isImageUrl(form.license_scan_url)" :src="scanFullUrl(form.license_scan_url)" :alt="t('driver.card.scanLicenseShort')" class="scan-thumb" />
                   <div v-else class="scan-thumb scan-thumb-pdf">
                     <span>PDF</span>
                   </div>
-                  <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                  <n-text depth="3" style="font-size: 12px;">{{ t('driver.card.viewScan') }}</n-text>
                 </div>
-                <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму.</n-text>
+                <n-text depth="3" style="font-size: 12px;">{{ t('driver.card.fileUploadedSave') }}</n-text>
               </div>
             </n-form-item>
-            <n-form-item label="Наличие международных прав">
+            <n-form-item :label="t('driver.card.internationalLicense')">
               <n-select
                 v-model:value="form.has_international_license"
                 :options="yesNoOptions"
-                placeholder="Да / Нет"
+                :placeholder="`${t('common.yes')} / ${t('common.no')}`"
                 clearable
               />
             </n-form-item>
-            <n-form-item label="Номер международного удостоверения">
+            <n-form-item :label="t('driver.card.intlLicenseNumber')">
               <n-input v-model:value="form.international_license_number" placeholder="INT-789456" />
             </n-form-item>
-            <n-form-item label="Срок действия международного удостоверения">
+            <n-form-item :label="t('driver.card.intlLicenseValidity')">
               <n-input v-model:value="form.international_license_validity" placeholder="2022-2027" />
             </n-form-item>
-            <n-form-item label="Дата последнего медосмотра">
+            <n-form-item :label="t('driver.documents.validUntil')">
               <n-date-picker
                 :value="form.last_medical_examination_date ? new Date(form.last_medical_examination_date).getTime() : null"
                 type="date"
@@ -534,36 +534,36 @@
                 @update:value="(v: number | null) => { form.last_medical_examination_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
               />
             </n-form-item>
-            <n-form-item label="Источник найма">
+            <n-form-item :label="t('driver.card.hireSource')">
               <n-select
                 v-model:value="form.hire_source"
                 :options="hireSourceOptions"
-                placeholder="Выберите"
+                :placeholder="t('driver.card.selectOrEnter')"
                 clearable
               />
             </n-form-item>
-            <n-form-item label="Прикреплённые документы">
-              <n-input v-model:value="form.attached_documents" type="textarea" placeholder="Паспорт, права, медсправка, страховка, лицензии" :rows="2" />
+            <n-form-item :label="t('admin.attachedDocuments')">
+              <n-input v-model:value="form.attached_documents" type="textarea" :placeholder="t('driver.card.placeholderAttachedDocs')" :rows="2" />
             </n-form-item>
-            <n-form-item label="Дата последнего обновления">
-              <n-input :value="form.updated_at" disabled placeholder="Автоматически системой" />
+            <n-form-item :label="t('admin.lastUpdateDate')">
+              <n-input :value="form.updated_at" disabled :placeholder="t('admin.autoBySystem')" />
             </n-form-item>
             <n-space v-if="isDriverContext">
-              <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+              <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
               <n-button type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
-                Отправить на верификацию
+                {{ t('driver.card.submitForVerification') }}
               </n-button>
             </n-space>
-            <n-button v-else type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+            <n-button v-else type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
           </n-form>
         </n-tab-pane>
 
-        <n-tab-pane name="permits" tab="4. Разрешительные документы">
+        <n-tab-pane name="permits" :tab="t('driver.card.section4')">
           <n-form :model="form" label-placement="top" class="form-uniform" style="max-width: 600px; padding-top: 16px;">
-            <n-form-item label="Разрешение на въезд в зону / страну">
-              <n-input v-model:value="form.permission_entry_zone" type="textarea" placeholder="Например: Разрешение на въезд в РФ, Казахстан" :rows="2" />
+            <n-form-item :label="t('driver.card.entryPermitVisa')">
+              <n-input v-model:value="form.permission_entry_zone" type="textarea" :placeholder="t('driver.card.placeholderEntryPermit')" :rows="2" />
             </n-form-item>
-            <n-form-item label="Дата выдачи разрешения">
+            <n-form-item :label="t('driver.documents.issueDate')">
               <n-date-picker
                 :value="form.permission_issue_date ? new Date(form.permission_issue_date).getTime() : null"
                 type="date"
@@ -572,7 +572,7 @@
                 @update:value="(v: number | null) => { form.permission_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
               />
             </n-form-item>
-            <n-form-item label="Срок действия">
+            <n-form-item :label="t('driver.card.intlLicenseValidity')">
               <n-date-picker
                 :value="form.permission_validity_date ? new Date(form.permission_validity_date).getTime() : null"
                 type="date"
@@ -581,73 +581,73 @@
                 @update:value="(v: number | null) => { form.permission_validity_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
               />
             </n-form-item>
-            <n-form-item label="Медицинская справка">
-              <n-input v-model:value="form.medical_certificate" placeholder="Nº MC-2025-0123, действует до 01.06.2026" />
+            <n-form-item :label="t('driver.card.medicalCertificate')">
+              <n-input v-model:value="form.medical_certificate" :placeholder="t('driver.card.placeholderMedical')" />
             </n-form-item>
-            <n-form-item label="Скан мед. справки (PDF/JPG)">
+            <n-form-item :label="t('driver.card.scanMedical')">
               <n-upload
                 :default-file-list="medicalFileList"
                 :max="1"
                 accept=".pdf,.jpg,.jpeg,.png"
                 :custom-request="handleMedicalUpload"
               >
-                <n-button>Загрузить PDF или JPG</n-button>
+                <n-button>{{ t('driver.card.uploadPdfOrJpg') }}</n-button>
               </n-upload>
               <div v-if="form.medical_certificate_scan_url" class="scan-preview-row">
-                <div class="scan-preview" @click="openScanModal(form.medical_certificate_scan_url, 'Скан мед. справки')">
-                  <img v-if="isImageUrl(form.medical_certificate_scan_url)" :src="scanFullUrl(form.medical_certificate_scan_url)" alt="Мед. справка" class="scan-thumb" />
+                <div class="scan-preview" @click="openScanModal(form.medical_certificate_scan_url, t('driver.card.scanMedical'))">
+                  <img v-if="isImageUrl(form.medical_certificate_scan_url)" :src="scanFullUrl(form.medical_certificate_scan_url)" :alt="t('driver.card.scanMedicalShort')" class="scan-thumb" />
                   <div v-else class="scan-thumb scan-thumb-pdf">
                     <span>PDF</span>
                   </div>
-                  <n-text depth="3" style="font-size: 12px;">Просмотр</n-text>
+                  <n-text depth="3" style="font-size: 12px;">{{ t('driver.card.viewScan') }}</n-text>
                 </div>
-                <n-text depth="3" style="font-size: 12px;">Файл загружен. Сохраните форму.</n-text>
+                <n-text depth="3" style="font-size: 12px;">{{ t('driver.card.fileUploadedSave') }}</n-text>
               </div>
             </n-form-item>
-            <n-form-item label="Сертификат прохождения техминимума">
+            <n-form-item :label="t('driver.card.techMinCert')">
               <n-input v-model:value="form.technical_minimum_certificate" placeholder="Nº TM-2025-0098" />
             </n-form-item>
-            <n-form-item label="Карта тахографа / водительская карта">
+            <n-form-item :label="t('driver.card.tachographCard')">
               <n-input v-model:value="form.tachograph_card_number" placeholder="Nº TK-567890" />
             </n-form-item>
-            <n-form-item label="Прочие разрешения / документы">
-              <n-input v-model:value="form.other_permits" type="textarea" placeholder="Страховка, пропуск, допуск ADR и т. д." :rows="2" />
+            <n-form-item :label="t('driver.card.otherPermits')">
+              <n-input v-model:value="form.other_permits" type="textarea" :placeholder="t('driver.card.placeholderOtherPermits')" :rows="2" />
             </n-form-item>
             <template v-if="isDriverContext">
-            <n-form-item label="Название компании">
-              <n-input v-model:value="form.company_name" placeholder="ООО «Транспорт»" />
+            <n-form-item :label="t('admin.company')">
+              <n-input v-model:value="form.company_name" :placeholder="t('driver.card.placeholderCompany')" />
             </n-form-item>
-            <n-form-item label="ИНН">
-              <n-input v-model:value="form.inn" placeholder="ИНН организации или ИП" />
+            <n-form-item :label="t('admin.inn')">
+              <n-input v-model:value="form.inn" :placeholder="t('driver.card.placeholderInn')" />
             </n-form-item>
-            <n-form-item label="Юридический адрес">
-              <n-input v-model:value="form.address" type="textarea" placeholder="Юридический адрес" :rows="2" />
+            <n-form-item :label="t('admin.address')">
+              <n-input v-model:value="form.address" type="textarea" :placeholder="t('driver.card.placeholderLegalAddress')" :rows="2" />
             </n-form-item>
             </template>
             <n-space v-if="isDriverContext">
-              <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+              <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
               <n-button type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
-                Отправить на верификацию
+                {{ t('driver.card.submitForVerification') }}
               </n-button>
             </n-space>
-            <n-button v-else type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+            <n-button v-else type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
           </n-form>
         </n-tab-pane>
 
-        <n-tab-pane v-if="!isDriverContext && layoutMode !== 'sections'" name="requests" tab="5. Запросы">
+        <n-tab-pane v-if="!isDriverContext && layoutMode !== 'sections'" name="requests" :tab="t('driver.card.sectionRequests')">
           <div style="padding: 16px 0; max-width: 600px;">
-            <n-empty v-if="editRequests.length === 0" description="Нет запросов на изменение" />
+            <n-empty v-if="editRequests.length === 0" :description="t('driver.changeRequests.noItems')" />
             <n-space v-else vertical>
               <div v-for="r in editRequests" :key="r.id" class="edit-request-row">
                 <div>
                   <n-text strong>{{ fieldLabel(r.field_key) }}</n-text>
-                  <n-tag v-if="r.status === 'pending'" type="warning" size="small" style="margin-left: 8px;">Ожидает</n-tag>
+                  <n-tag v-if="r.status === 'pending'" type="warning" size="small" style="margin-left: 8px;">{{ t('driver.changeRequests.statusPending') }}</n-tag>
                   <n-tag v-else size="small" style="margin-left: 8px;">{{ r.status }}</n-tag>
                   <n-text v-if="r.field_value" depth="2" style="display: block; font-size: 13px; margin-top: 2px;">{{ r.field_value }}</n-text>
-                  <n-text depth="3" style="display: block; font-size: 12px;">{{ r.driver_comment || 'Без комментария' }} · {{ formatDate(r.requested_at) }}</n-text>
+                  <n-text depth="3" style="display: block; font-size: 12px;">{{ r.driver_comment || t('driver.card.noComment') }} · {{ formatDate(r.requested_at) }}</n-text>
                 </div>
                 <n-button v-if="r.status === 'pending'" size="small" type="success" :loading="approvingFieldKey === r.field_key" @click="approveRequestByField(r.field_key)">
-                  Разрешить
+                  {{ t('driver.card.allow') }}
                 </n-button>
               </div>
             </n-space>
@@ -657,9 +657,9 @@
       </n-tabs>
     </n-card>
 
-    <n-modal v-model:show="addRequestModal" preset="dialog" title="Запрос на добавление" :loading="requestingFieldKey === addRequestFieldKey" positive-text="Отправить" negative-text="Отмена" @positive-click="submitAddRequest" @negative-click="closeAddRequestModal">
-      <n-form-item :label="`Что хотите добавить? (${addRequestLabel})`">
-        <n-input v-model:value="addRequestValue" :placeholder="addRequestLabel === 'Телефон' ? '+993 65 12 34 56' : addRequestLabel === 'Гражданство' ? 'Россия' : 'email@example.com'" />
+    <n-modal v-model:show="addRequestModal" preset="dialog" :title="t('driver.changeRequests.addRequestModal')" :loading="requestingFieldKey === addRequestFieldKey" :positive-text="t('common.send')" :negative-text="t('common.cancel')" @positive-click="submitAddRequest" @negative-click="closeAddRequestModal">
+      <n-form-item :label="`${t('driver.card.whatToAdd')} (${addRequestLabel})`">
+        <n-input v-model:value="addRequestValue" :placeholder="addRequestPlaceholder" />
       </n-form-item>
     </n-modal>
 
@@ -685,7 +685,7 @@
             </div>
             <div v-if="scanModalUrl" class="scan-modal-body">
               <img v-if="isImageUrl(scanModalUrl)" :src="scanFullUrl(scanModalUrl)" alt="" class="scan-modal-img" />
-              <iframe v-else :src="scanFullUrl(scanModalUrl)" class="scan-modal-iframe" title="Документ" />
+              <iframe v-else :src="scanFullUrl(scanModalUrl)" class="scan-modal-iframe" :title="t('driver.card.documentTitle')" />
             </div>
           </div>
         </div>
@@ -698,6 +698,8 @@
 import { useMessage } from 'naive-ui'
 import { citizenships, licenseCategories } from '@tmgo/shared'
 
+const { t } = useI18n()
+
 const props = withDefaults(
   defineProps<{
     loadUrl: string
@@ -705,11 +707,11 @@ const props = withDefaults(
     saveMethod: 'PATCH'
     apiBase: string
     activeTab?: string
-    /** Режим водителя: блокировка полей при верификации, две кнопки */
+    /** Driver mode: lock fields during verification, two buttons */
     isDriverContext?: boolean
-    /** Когда передан — форма заполняется из него без fetch (для админки) */
+    /** When provided — form is filled from it without fetch (for admin) */
     initialProfile?: Record<string, any> | null
-    /** 'tabs' = вкладки, 'sections' = все 4 раздела в одном скролле как в DriverCardV2 */
+    /** 'tabs' = tabbed layout, 'sections' = all 4 sections in one scroll like DriverCardV2 */
     layoutMode?: 'tabs' | 'sections'
   }>(),
   { activeTab: 'main', isDriverContext: false, layoutMode: 'tabs' }
@@ -734,21 +736,33 @@ const originalPhoneCount = ref(0)
 const originalCitizenshipCount = ref(0)
 const originalEmailCount = ref(0)
 
-const FIELD_LABELS: Record<string, string> = {
-  surname: 'Фамилия', given_name: 'Имя', patronymic: 'Отчество', date_of_birth: 'Дата рождения',
-  citizenship: 'Гражданство', gender: 'Пол', status: 'Статус', employment_category: 'Категория занятости',
-  phone: 'Телефон', additional_emails: 'Доп. email', company_name: 'Компания', license_number: 'Номер прав',
-  passport_series: 'Серия паспорта', passport_number: 'Номер паспорта', passport_series_number: 'Серия и номер паспорта',
-  passport_issue_date: 'Дата выдачи паспорта', passport_expiry_date: 'Срок паспорта', passport_issued_by: 'Кем выдан паспорт',
-  place_of_birth: 'Место рождения', residential_address: 'Адрес проживания',   passport_scan_url: 'Скан паспорта',
-  passport_add: 'Добавить паспорт',
+const FIELD_I18N_KEYS: Record<string, string> = {
+  surname: 'driver.card.fieldLabels.surname', given_name: 'driver.card.fieldLabels.given_name',
+  patronymic: 'driver.card.fieldLabels.patronymic', date_of_birth: 'driver.card.fieldLabels.date_of_birth',
+  citizenship: 'driver.card.fieldLabels.citizenship', gender: 'driver.card.fieldLabels.gender',
+  status: 'driver.card.fieldLabels.status', employment_category: 'driver.card.fieldLabels.employment_category',
+  phone: 'driver.card.fieldLabels.phone', additional_emails: 'driver.card.fieldLabels.additional_emails',
+  company_name: 'driver.card.fieldLabels.company_name', license_number: 'driver.card.fieldLabels.license_number',
+  passport_series: 'driver.card.fieldLabels.passport_series', passport_number: 'driver.card.fieldLabels.passport_number',
+  passport_series_number: 'driver.card.fieldLabels.passport_series_number',
+  passport_issue_date: 'driver.card.fieldLabels.passport_issue_date', passport_expiry_date: 'driver.card.fieldLabels.passport_expiry_date',
+  passport_issued_by: 'driver.card.fieldLabels.passport_issued_by', place_of_birth: 'driver.card.fieldLabels.place_of_birth',
+  residential_address: 'driver.card.fieldLabels.residential_address', passport_scan_url: 'driver.card.fieldLabels.passport_scan_url',
+  passport_add: 'driver.card.fieldLabels.passport_add',
 }
 
 function fieldLabel(key: string) {
   const m = key.match(/^(.+)_(\d+)$/)
-  if (m) return `${FIELD_LABELS[m[1]] || m[1]} (${parseInt(m[2], 10) + 1})`
-  if (key.endsWith('_add')) return `${FIELD_LABELS[key.replace(/_add$/, '')] || key.replace(/_add$/, '')} — добавить`
-  return FIELD_LABELS[key] || key
+  if (m) {
+    const baseKey = FIELD_I18N_KEYS[m[1]] ? t(FIELD_I18N_KEYS[m[1]]) : m[1]
+    return `${baseKey} (${parseInt(m[2], 10) + 1})`
+  }
+  if (key.endsWith('_add')) {
+    const baseKey = key.replace(/_add$/, '')
+    const label = FIELD_I18N_KEYS[baseKey] ? t(FIELD_I18N_KEYS[baseKey]) : baseKey
+    return `${label}${t('driver.card.addToField')}`
+  }
+  return FIELD_I18N_KEYS[key] ? t(FIELD_I18N_KEYS[key]) : key
 }
 
 function formatDate(d: string) {
@@ -775,7 +789,7 @@ const isLocked = computed(() =>
   props.isDriverContext && ['waiting_verification', 'verified', 'request'].includes(verificationStatus.value)
 )
 
-/** Поля второго паспорта недоступны водителю после «Отправить на верификацию». Админ всегда может редактировать. */
+/** Second passport fields are locked for driver after submit for verification. Admin can always edit. */
 const isPassport2Locked = computed(() =>
   props.isDriverContext && isLocked.value
 )
@@ -846,11 +860,11 @@ async function approveRequestByField(fieldKey: string) {
       method: 'POST',
       credentials: 'include',
     })
-    message.success(`Разрешено редактирование: ${fieldLabel(fieldKey)}`)
+    message.success(t('driver.card.approveEditSuccess', { field: fieldLabel(fieldKey) }))
     await loadEditRequests()
     emit('saved')
   } catch (e: any) {
-    message.error(e?.data?.error || e?.message || 'Ошибка')
+    message.error(e?.data?.error || e?.message || t('common.error'))
   } finally {
     approvingFieldKey.value = null
   }
@@ -860,9 +874,16 @@ const addRequestModal = ref(false)
 const addRequestFieldKey = ref('')
 const addRequestValue = ref('')
 const addRequestLabel = computed(() => {
-  if (addRequestFieldKey.value === 'citizenship_add') return 'Гражданство'
-  if (addRequestFieldKey.value === 'phone_add') return 'Телефон'
-  if (addRequestFieldKey.value === 'additional_emails_add') return 'Доп. email'
+  if (addRequestFieldKey.value === 'citizenship_add') return t('driver.card.addRequestCitizenship')
+  if (addRequestFieldKey.value === 'phone_add') return t('driver.card.addRequestPhone')
+  if (addRequestFieldKey.value === 'additional_emails_add') return t('driver.card.addRequestEmail')
+  return ''
+})
+
+const addRequestPlaceholder = computed(() => {
+  if (addRequestFieldKey.value === 'phone_add') return t('driver.card.placeholderPhone')
+  if (addRequestFieldKey.value === 'citizenship_add') return t('driver.card.placeholderCitizenship')
+  if (addRequestFieldKey.value === 'additional_emails_add') return t('driver.card.placeholderEmail')
   return ''
 })
 
@@ -892,7 +913,7 @@ async function requestChange(fieldKey: string, requestedValue?: string) {
     const base = props.apiBase
     const body: { field_key: string; reason: string; requested_value?: string } = {
       field_key: mappedKey,
-      reason: requestedValue?.trim() || 'Запрос на изменение',
+      reason: requestedValue?.trim() || t('driver.card.requestChangeReason'),
     }
     if (requestedValue?.trim()) body.requested_value = requestedValue.trim()
     await $fetch(`${base}/cabinet/driver/change-requests`, {
@@ -900,11 +921,11 @@ async function requestChange(fieldKey: string, requestedValue?: string) {
       credentials: 'include',
       body,
     })
-    message.success('Запрос отправлен. Ожидайте одобрения администратора.')
+    message.success(t('driver.card.requestSent'))
     await loadEditRequests()
     emit('saved')
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка отправки запроса')
+    message.error(e?.data?.error || t('common.requestError'))
   } finally {
     requestingFieldKey.value = null
   }
@@ -932,10 +953,10 @@ async function handleSubmitForVerification() {
     })
     verificationStatus.value = res?.verification_status ?? 'waiting_verification'
     unlockedFields.value = []
-    message.success('Карточка отправлена на верификацию. Данные сохранены.')
+    message.success(t('driver.card.submittedSuccess'))
     emit('saved')
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка отправки')
+    message.error(e?.data?.error || t('common.requestError'))
   } finally {
     submittingForVerification.value = false
   }
@@ -1027,9 +1048,9 @@ function openScanModal(url: string, title: string) {
 function openScanModalPassport2() {
   const url = form.extra_passports[0]?.passport_scan_url
   if (url) {
-    openScanModal(url, 'Скан паспорта (2)')
+    openScanModal(url, t('driver.card.scanPassport2Short'))
   } else {
-    message.warning('Скан второго паспорта не найден')
+    message.warning(t('driver.card.scanSecondPassportNotFound'))
   }
 }
 const loadError = ref<string | null>(null)
@@ -1042,38 +1063,38 @@ const tabNames = ['main', 'passport', 'license', 'permits', 'requests'] as const
 
 const uploadBaseUrl = computed(() => props.loadUrl.replace(/\/$/, ''))
 
-const genderOptions = [
-  { label: 'Мужской', value: 'male' },
-  { label: 'Женский', value: 'female' },
-]
+const genderOptions = computed(() => [
+  { label: t('driver.card.male'), value: 'male' },
+  { label: t('driver.card.female'), value: 'female' },
+])
 
-const statusOptions = [
-  { label: 'Активен', value: 'active' },
-  { label: 'Неактивен', value: 'inactive' },
-  { label: 'В отпуске', value: 'on_leave' },
-  { label: 'Уволен', value: 'fired' },
-]
+const statusOptions = computed(() => [
+  { label: t('driver.card.statusActive'), value: 'active' },
+  { label: t('driver.card.statusInactive'), value: 'inactive' },
+  { label: t('driver.card.statusOnLeave'), value: 'on_leave' },
+  { label: t('driver.card.statusFired'), value: 'fired' },
+])
 
-const employmentOptions = [
-  { label: 'Штатный', value: 'full_time' },
-  { label: 'Внештатный', value: 'freelance' },
-  { label: 'Арендованный транспорт', value: 'leased' },
-]
+const employmentOptions = computed(() => [
+  { label: t('driver.card.employmentFullTime'), value: 'full_time' },
+  { label: t('driver.card.employmentFreelance'), value: 'freelance' },
+  { label: t('driver.card.employmentLeased'), value: 'leased' },
+])
 
-const yesNoOptions = [
-  { label: 'Да', value: true },
-  { label: 'Нет', value: false },
-]
+const yesNoOptions = computed(() => [
+  { label: t('common.yes'), value: true },
+  { label: t('common.no'), value: false },
+])
 
-const hireSourceOptions = [
-  { label: 'По рекомендации', value: 'recommendation' },
-  { label: 'Объявление', value: 'advertisement' },
-  { label: 'Агентство', value: 'agency' },
-]
+const hireSourceOptions = computed(() => [
+  { label: t('driver.card.hireSourceRecommendation'), value: 'recommendation' },
+  { label: t('driver.card.hireSourceAdvertisement'), value: 'advertisement' },
+  { label: t('driver.card.hireSourceAgency'), value: 'agency' },
+])
 
 const passportFileList = computed(() =>
   form.passport_scan_url
-    ? [{ id: '1', name: 'Скан паспорта', status: 'done' as const, url: `${props.apiBase}${form.passport_scan_url}` }]
+    ? [{ id: '1', name: t('driver.card.scanPassportShort'), status: 'done' as const, url: `${props.apiBase}${form.passport_scan_url}` }]
     : [],
 )
 
@@ -1087,10 +1108,10 @@ async function handlePassportUpload({ file, onFinish, onError }: { file: { file:
       body: fd,
     })
     form.passport_scan_url = res.url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
@@ -1099,7 +1120,7 @@ const extraPassportFileList = computed(() => {
   const url = form.extra_passports[0]?.passport_scan_url
   if (!url) return []
   const fullUrl = url.startsWith('http') ? url : `${props.apiBase}${url}`
-  return [{ id: 'extra-1', name: 'Скан паспорта (2)', status: 'done' as const, url: fullUrl }]
+  return [{ id: 'extra-1', name: t('driver.card.scanPassport2Short'), status: 'done' as const, url: fullUrl }]
 })
 
 async function handleExtraPassportUpload({ file, onFinish, onError }: { file: { file: File }; onFinish: () => void; onError: (e: Error) => void }) {
@@ -1120,17 +1141,17 @@ async function handleExtraPassportUpload({ file, onFinish, onError }: { file: { 
     } else {
       form.extra_passports[0] = { ...form.extra_passports[0], passport_scan_url: res.url }
     }
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
 
 const licenseFileList = computed(() =>
   form.license_scan_url
-    ? [{ id: '1', name: 'Скан прав', status: 'done' as const, url: `${props.apiBase}${form.license_scan_url}` }]
+    ? [{ id: '1', name: t('driver.card.scanLicenseShort'), status: 'done' as const, url: `${props.apiBase}${form.license_scan_url}` }]
     : [],
 )
 
@@ -1144,17 +1165,17 @@ async function handleLicenseUpload({ file, onFinish, onError }: { file: { file: 
       body: fd,
     })
     form.license_scan_url = res.url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
 
 const medicalFileList = computed(() =>
   form.medical_certificate_scan_url
-    ? [{ id: '1', name: 'Скан мед. справки', status: 'done' as const, url: `${props.apiBase}${form.medical_certificate_scan_url}` }]
+    ? [{ id: '1', name: t('driver.card.scanMedicalShort'), status: 'done' as const, url: `${props.apiBase}${form.medical_certificate_scan_url}` }]
     : [],
 )
 
@@ -1168,10 +1189,10 @@ async function handleMedicalUpload({ file, onFinish, onError }: { file: { file: 
       body: fd,
     })
     form.medical_certificate_scan_url = res.url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
@@ -1346,7 +1367,7 @@ async function loadProfile(forceFetch = false) {
     applyProfileData(data)
     await loadEditRequests()
   } catch (e: any) {
-    loadError.value = e?.data?.error || 'Ошибка загрузки карточки'
+    loadError.value = e?.data?.error || t('driver.card.loadProfileError')
   }
 }
 
@@ -1419,12 +1440,12 @@ async function handleSave() {
       credentials: 'include',
       body: buildSaveBody(),
     })
-    message.success('Карточка сохранена')
-    // После сохранения перезагружаем данные, чтобы обновить все реактивные ссылки и списки файлов
+    message.success(t('driver.card.cardSaved'))
+    // Reload data after save to refresh reactive refs and file lists
     await loadProfile(true)
     emit('saved')
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка сохранения')
+    message.error(e?.data?.error || t('common.saveError'))
   } finally {
     saving.value = false
   }
@@ -1701,7 +1722,7 @@ defineExpose({
   border-bottom: none;
 }
 
-/* Режим секций: все 4 раздела в одном скролле как в DriverCardV2 */
+/* Sections mode: all 4 sections in one scroll like DriverCardV2 */
 .form-sections-mode :deep(.n-tabs-nav) {
   display: none;
 }

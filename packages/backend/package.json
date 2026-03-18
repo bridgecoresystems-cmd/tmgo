@@ -12,13 +12,15 @@
     "db:studio": "drizzle-kit studio",
     "seed:admin": "bun run scripts/seed-admin.ts",
     "migrate:profiles": "bun run scripts/migrate-profiles.ts",
-    "check:expiry": "bun run scripts/document-expiry-check.ts"
+    "check:expiry": "bun run scripts/document-expiry-check.ts",
+    "worker": "bun run src/workers/start.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/swagger": "^1.2.0",
     "@tmgo/shared": "workspace:*",
     "better-auth": "^1.5.0",
+    "bullmq": "^5.71.0",
     "drizzle-orm": "^0.45.1",
     "elysia": "latest",
     "elysia-rate-limit": "^4.5.1",

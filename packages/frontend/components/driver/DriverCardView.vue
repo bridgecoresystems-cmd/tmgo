@@ -5,123 +5,123 @@
         <n-alert v-if="error" type="error" class="mb-16">
           {{ error }}
           <template #footer>
-            <n-button size="small" @click="loadProfile">Повторить</n-button>
+            <n-button size="small" @click="loadProfile">{{ t('common.retry') }}</n-button>
           </template>
         </n-alert>
 
         <div v-if="!error && profile" class="view-content">
-          <!-- 1. Основная информация -->
-          <n-h3 prefix="bar" align-text>1. Основная информация</n-h3>
+          <!-- 1. Main info -->
+          <n-h3 prefix="bar" align-text>{{ t('driver.card.section1') }}</n-h3>
           <n-card embedded :bordered="false" class="mb-24 view-card">
             <div class="view-grid">
               <template v-if="profile.id && !isHidden('main:driver_id')">
                 <div class="view-row">
-                  <span class="view-label">Водитель ID:</span>
+                  <span class="view-label">{{ t('driver.card.driverId') }}:</span>
                   <span class="view-value">{{ profile.id }} <n-tag size="small" type="info">Auto</n-tag></span>
                 </div>
               </template>
               <div v-if="!isHidden('main:surname') && !isHidden('main:given_name') && !isHidden('main:patronymic')" class="view-row">
-                <span class="view-label">ФИО:</span>
+                <span class="view-label">{{ t('driver.card.fullName') }}</span>
                 <span class="view-value">{{ fullName }}</span>
               </div>
               <div v-if="profile.date_of_birth && !isHidden('main:date_of_birth')" class="view-row">
-                <span class="view-label">Дата рождения:</span>
+                <span class="view-label">{{ t('driver.card.dateOfBirth') }}:</span>
                 <span class="view-value">{{ formatDate(profile.date_of_birth) }}</span>
               </div>
               <div v-if="citizenshipsDisplay && !isHidden('main:citizenships')" class="view-row">
-                <span class="view-label">Гражданство:</span>
+                <span class="view-label">{{ t('driver.card.citizenship') }}:</span>
                 <span class="view-value">{{ citizenshipsDisplay }}</span>
               </div>
               <div v-if="profile.gender && !isHidden('main:gender')" class="view-row">
-                <span class="view-label">Пол:</span>
+                <span class="view-label">{{ t('driver.card.gender') }}:</span>
                 <span class="view-value">{{ genderLabel }}</span>
               </div>
               <div v-if="phonesDisplay && !isHidden('main:phones')" class="view-row">
-                <span class="view-label">Контактный телефон:</span>
+                <span class="view-label">{{ t('driver.card.contactPhone') }}:</span>
                 <span class="view-value">{{ phonesDisplay }}</span>
               </div>
               <div v-if="profile.email && !isHidden('main:emails')" class="view-row">
-                <span class="view-label">Email (Логин):</span>
+                <span class="view-label">{{ t('driver.card.emailLogin') }}:</span>
                 <span class="view-value">{{ profile.email }}</span>
               </div>
               <div v-if="emailsDisplay && !isHidden('main:emails')" class="view-row">
-                <span class="view-label">Доп. email:</span>
+                <span class="view-label">{{ t('driver.card.extraEmail') }}:</span>
                 <span class="view-value">{{ emailsDisplay }}</span>
               </div>
               <div v-if="profile.status && !isHidden('main:status')" class="view-row">
-                <span class="view-label">Статус (Диспетчер):</span>
+                <span class="view-label">{{ t('driver.card.statusDispatcher') }}:</span>
                 <span class="view-value">{{ statusLabel }}</span>
               </div>
               <div v-if="profile.employment_category && !isHidden('main:employment_category')" class="view-row">
-                <span class="view-label">Категория занятости:</span>
+                <span class="view-label">{{ t('driver.card.employmentCategory') }}:</span>
                 <span class="view-value">{{ employmentLabel }}</span>
               </div>
             </div>
           </n-card>
 
-          <!-- 2. Паспортные данные -->
-          <n-h3 prefix="bar" align-text>2. Паспортные данные</n-h3>
+          <!-- 2. Passport data -->
+          <n-h3 prefix="bar" align-text>{{ t('driver.card.section2') }}</n-h3>
           <n-card v-if="hasVisiblePassportData" embedded :bordered="false" class="mb-24 view-card">
             <div v-if="!isHidden('passport:0')" class="view-grid">
               <div v-if="passportSeriesNumber" class="view-row">
-                <span class="view-label">Серия / Номер паспорта:</span>
+                <span class="view-label">{{ t('driver.card.passportSeriesNumber') }}:</span>
                 <span class="view-value">{{ passportSeriesNumber }}</span>
               </div>
               <div v-if="passportDatesDisplay" class="view-row">
-                <span class="view-label">Даты действия:</span>
+                <span class="view-label">{{ t('driver.card.validityDates') }}:</span>
                 <span class="view-value">{{ passportDatesDisplay }}</span>
               </div>
               <div v-if="profile.passport_issued_by" class="view-row">
-                <span class="view-label">Кем выдан:</span>
+                <span class="view-label">{{ t('driver.card.passportIssuedBy') }}:</span>
                 <span class="view-value">{{ profile.passport_issued_by }}</span>
               </div>
               <div v-if="profile.place_of_birth" class="view-row">
-                <span class="view-label">Место рождения:</span>
+                <span class="view-label">{{ t('driver.card.placeOfBirth') }}:</span>
                 <span class="view-value">{{ profile.place_of_birth }}</span>
               </div>
               <div v-if="profile.residential_address" class="view-row">
-                <span class="view-label">Адрес проживания:</span>
+                <span class="view-label">{{ t('driver.card.residentialAddress') }}:</span>
                 <span class="view-value">{{ profile.residential_address }}</span>
               </div>
               <div v-if="profile.passport_scan_url" class="view-row">
-                <span class="view-label">Скан паспорта (PDF/JPG):</span>
+                <span class="view-label">{{ t('driver.card.passportScan') }}:</span>
                 <span class="view-value">
-                  <n-button text type="primary" size="small" @click="openScanModal(profile.passport_scan_url, 'Скан паспорта')">
-                    Просмотр скана
+                  <n-button text type="primary" size="small" @click="openScanModal(profile.passport_scan_url, t('driver.card.passportScan'))">
+                    {{ t('driver.card.viewScan') }}
                   </n-button>
                 </span>
               </div>
             </div>
-            <!-- Дополнительные паспорта (из «Добавить документы») -->
+            <!-- Extra passports (from Add documents) -->
             <template v-for="(ep, idx) in extraPassports" :key="ep.id">
               <template v-if="!isHidden(`passport:${hasMainPassportData ? idx + 1 : idx}`)">
               <n-divider v-if="idx === 0 && hasMainPassportData" style="margin: 16px 0;" />
               <div class="view-grid extra-passport-block" :class="{ 'extra-passport-block--not-first': idx > 0 }">
                 <div v-if="ep.series || ep.number" class="view-row">
-                  <span class="view-label">Серия / Номер паспорта{{ hasMainPassportData ? ` (${idx + 2})` : ` ${idx + 1}` }}:</span>
+                  <span class="view-label">{{ t('driver.card.passportSeriesNumber') }}{{ hasMainPassportData ? ` (${idx + 2})` : ` ${idx + 1}` }}:</span>
                   <span class="view-value">{{ [ep.series, ep.number].filter(Boolean).join(' ') || '—' }}</span>
                 </div>
                 <div v-if="ep.issued_at || ep.expires_at" class="view-row">
-                  <span class="view-label">Даты действия:</span>
+                  <span class="view-label">{{ t('driver.card.validityDates') }}:</span>
                   <span class="view-value">{{ formatDate(ep.issued_at) }} — {{ formatDate(ep.expires_at) }}</span>
                 </div>
                 <div v-if="ep.issued_by" class="view-row">
-                  <span class="view-label">Кем выдан:</span>
+                  <span class="view-label">{{ t('driver.card.passportIssuedBy') }}:</span>
                   <span class="view-value">{{ ep.issued_by }}</span>
                 </div>
                 <div v-if="ep.place_of_birth" class="view-row">
-                  <span class="view-label">Место рождения:</span>
+                  <span class="view-label">{{ t('driver.card.placeOfBirth') }}:</span>
                   <span class="view-value">{{ ep.place_of_birth }}</span>
                 </div>
                 <div v-if="ep.residential_address" class="view-row">
-                  <span class="view-label">Адрес проживания:</span>
+                  <span class="view-label">{{ t('driver.card.residentialAddress') }}:</span>
                   <span class="view-value">{{ ep.residential_address }}</span>
                 </div>
                 <div v-if="ep.scan_url" class="view-row">
-                  <span class="view-label">Скан паспорта (PDF/JPG):</span>
+                  <span class="view-label">{{ t('driver.card.passportScan') }}:</span>
                   <span class="view-value">
-                    <n-button text type="primary" size="small" @click="openScanModal(ep.scan_url, hasMainPassportData ? `Скан паспорта (${idx + 2})` : `Скан паспорта ${idx + 1}`)">
-                      Просмотр скана
+                    <n-button text type="primary" size="small" @click="openScanModal(ep.scan_url, hasMainPassportData ? `${t('driver.card.passportScan')} (${idx + 2})` : `${t('driver.card.passportScan')} ${idx + 1}`)">
+                      {{ t('driver.card.viewScan') }}
                     </n-button>
                   </span>
                 </div>
@@ -130,76 +130,76 @@
             </template>
           </n-card>
 
-          <!-- 3. Водительское удостоверение -->
-          <n-h3 prefix="bar" align-text>3. Водительское удостоверение</n-h3>
+          <!-- 3. Driver license -->
+          <n-h3 prefix="bar" align-text>{{ t('driver.card.section3') }}</n-h3>
           <n-card v-if="hasVisibleLicenseData" embedded :bordered="false" class="mb-24 view-card">
             <div v-if="!isHidden('license:0')" class="view-grid">
               <div v-if="profile.license_number" class="view-row">
-                <span class="view-label">Номер ВУ:</span>
+                <span class="view-label">{{ t('driver.card.licenseNumber') }}:</span>
                 <span class="view-value">{{ profile.license_number }}</span>
               </div>
               <div v-if="licenseCategoriesDisplay" class="view-row">
-                <span class="view-label">Категории прав:</span>
+                <span class="view-label">{{ t('driver.card.licenseCategories') }}:</span>
                 <span class="view-value">{{ licenseCategoriesDisplay }}</span>
               </div>
               <div v-if="licenseDatesDisplay" class="view-row">
-                <span class="view-label">Даты действия ВУ:</span>
+                <span class="view-label">{{ t('driver.card.licenseValidityDates') }}:</span>
                 <span class="view-value">{{ licenseDatesDisplay }}</span>
               </div>
               <div v-if="profile.license_scan_url" class="view-row">
-                <span class="view-label">Скан ВУ (PDF/JPG):</span>
+                <span class="view-label">{{ t('driver.card.licenseScan') }}:</span>
                 <span class="view-value">
-                  <n-button text type="primary" size="small" @click="openScanModal(profile.license_scan_url, 'Скан ВУ')">
-                    Просмотр скана
+                  <n-button text type="primary" size="small" @click="openScanModal(profile.license_scan_url, t('driver.card.licenseScan'))">
+                    {{ t('driver.card.viewScan') }}
                   </n-button>
                 </span>
               </div>
-              <!-- Международные права — только если водитель указал -->
+              <!-- International license — only if driver specified -->
               <template v-if="profile.has_international_license">
                 <div v-if="profile.international_license_number" class="view-row">
-                  <span class="view-label">Номер МВУ:</span>
+                  <span class="view-label">{{ t('driver.card.intlLicenseNumber') }}:</span>
                   <span class="view-value">{{ profile.international_license_number }}</span>
                 </div>
                 <div v-if="profile.international_license_validity" class="view-row">
-                  <span class="view-label">Срок действия МВУ:</span>
+                  <span class="view-label">{{ t('driver.card.intlLicenseValidity') }}:</span>
                   <span class="view-value">{{ profile.international_license_validity }}</span>
                 </div>
                 <div v-if="profile.international_license_scan_url" class="view-row">
-                  <span class="view-label">Скан МВУ:</span>
+                  <span class="view-label">{{ t('driver.card.intlLicenseScan') }}:</span>
                   <span class="view-value">
-                    <n-button text type="primary" size="small" @click="openScanModal(profile.international_license_scan_url!, 'Скан МВУ')">
-                      Просмотр скана
+                    <n-button text type="primary" size="small" @click="openScanModal(profile.international_license_scan_url!, t('driver.card.intlLicenseScan'))">
+                      {{ t('driver.card.viewScan') }}
                     </n-button>
                   </span>
                 </div>
               </template>
             </div>
-            <!-- Дополнительные ВУ (из «Добавить документы») -->
+            <!-- Extra licenses (from Add documents) -->
             <template v-for="(el, idx) in extraLicenses" :key="el.id">
               <template v-if="!isHidden(`license:${hasMainLicenseData ? idx + 1 : idx}`)">
               <n-divider v-if="idx === 0 && hasMainLicenseData" style="margin: 16px 0;" />
               <div class="view-grid extra-passport-block" :class="{ 'extra-passport-block--not-first': idx > 0 }">
                 <div v-if="el.number" class="view-row">
-                  <span class="view-label">Номер ВУ{{ hasMainLicenseData ? ` (${idx + 2})` : ` ${idx + 1}` }}:</span>
+                  <span class="view-label">{{ t('driver.card.licenseNumber') }}{{ hasMainLicenseData ? ` (${idx + 2})` : ` ${idx + 1}` }}:</span>
                   <span class="view-value">{{ el.number }}</span>
                 </div>
                 <div v-if="el.license_categories" class="view-row">
-                  <span class="view-label">Категории прав:</span>
+                  <span class="view-label">{{ t('driver.card.licenseCategories') }}:</span>
                   <span class="view-value">{{ el.license_categories }}</span>
                 </div>
                 <div v-if="el.issued_at || el.expires_at" class="view-row">
-                  <span class="view-label">Даты действия ВУ:</span>
+                  <span class="view-label">{{ t('driver.card.licenseValidityDates') }}:</span>
                   <span class="view-value">{{ formatDate(el.issued_at) }} — {{ formatDate(el.expires_at) }}</span>
                 </div>
                 <div v-if="el.issued_by" class="view-row">
-                  <span class="view-label">Кем выдан:</span>
+                  <span class="view-label">{{ t('driver.card.passportIssuedBy') }}:</span>
                   <span class="view-value">{{ el.issued_by }}</span>
                 </div>
                 <div v-if="el.scan_url" class="view-row">
-                  <span class="view-label">Скан ВУ (PDF/JPG):</span>
+                  <span class="view-label">{{ t('driver.card.licenseScan') }}:</span>
                   <span class="view-value">
-                    <n-button text type="primary" size="small" @click="openScanModal(el.scan_url, hasMainLicenseData ? `Скан ВУ (${idx + 2})` : `Скан ВУ ${idx + 1}`)">
-                      Просмотр скана
+                    <n-button text type="primary" size="small" @click="openScanModal(el.scan_url, hasMainLicenseData ? `${t('driver.card.licenseScan')} (${idx + 2})` : `${t('driver.card.licenseScan')} ${idx + 1}`)">
+                      {{ t('driver.card.viewScan') }}
                     </n-button>
                   </span>
                 </div>
@@ -208,200 +208,200 @@
             </template>
           </n-card>
 
-          <!-- 4. Разрешительные документы (виза, медсправка, техминимум, тахограф, ADR) -->
+          <!-- 4. Permits (visa, medical cert, tech minimum, tachograph, ADR) -->
           <template v-if="hasPermitsData || visasFromDocuments.length > 0 || medicalCertificatesFromDocuments.length > 0 || tachographCardsFromDocuments.length > 0 || technicalMinimumCertsFromDocuments.length > 0 || adrCertsFromDocuments.length > 0">
-            <n-h3 prefix="bar" align-text>4. Разрешительные документы</n-h3>
+            <n-h3 prefix="bar" align-text>{{ t('driver.card.section4') }}</n-h3>
             <n-card embedded :bordered="false" class="mb-24 view-card">
               <div class="view-grid">
-                <!-- Визы (из документов) -->
+                <!-- Visas (from documents) -->
                 <template v-for="(v, vi) in visasFromDocuments" :key="v.id || vi">
                   <template v-if="!isHidden(`visa:${vi}`)">
                   <div v-if="vi > 0" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
                     <div v-if="v.country" class="view-row">
-                      <span class="view-label">Виза{{ visasFromDocuments.length > 1 ? ` (${vi + 1})` : '' }} — Страна выдачи:</span>
+                      <span class="view-label">{{ t('driver.card.visa') }}{{ visasFromDocuments.length > 1 ? ` (${vi + 1})` : '' }} — {{ t('driver.card.visaIssueCountry') }}:</span>
                       <span class="view-value">{{ v.country }}</span>
                     </div>
                     <div v-if="v.number" class="view-row">
-                      <span class="view-label">Номер визы:</span>
+                      <span class="view-label">{{ t('driver.card.visaNumber') }}:</span>
                       <span class="view-value">{{ v.number }}</span>
                     </div>
                     <div v-if="v.issued_at || v.expires_at" class="view-row">
-                      <span class="view-label">Дата начала — Дата окончания:</span>
+                      <span class="view-label">{{ t('driver.card.visaDateRange') }}:</span>
                       <span class="view-value">{{ formatDate(v.issued_at) }} — {{ formatDate(v.expires_at) }}</span>
                     </div>
                     <div v-if="v.scan_url" class="view-row">
-                      <span class="view-label">Скан визы:</span>
+                      <span class="view-label">{{ t('driver.card.scanVisa') }}:</span>
                       <span class="view-value">
-                        <n-button text type="primary" size="small" @click="openScanModal(v.scan_url, visasFromDocuments.length > 1 ? `Скан визы (${vi + 1})` : 'Скан визы')">
-                          Просмотр скана
+                        <n-button text type="primary" size="small" @click="openScanModal(v.scan_url, visasFromDocuments.length > 1 ? `${t('driver.card.scanVisa')} (${vi + 1})` : t('driver.card.scanVisa'))">
+                          {{ t('driver.card.viewScan') }}
                         </n-button>
                       </span>
                     </div>
                   </div>
                   </template>
                 </template>
-                <!-- Legacy виза (если нет visas_from_documents) -->
+                <!-- Legacy visa (if no visas_from_documents) -->
                 <template v-if="hasVisaData && visasFromDocuments.length === 0">
                   <div v-if="profile.permission_entry_zone" class="view-row">
-                    <span class="view-label">Разрешение на въезд (Виза):</span>
+                    <span class="view-label">{{ t('driver.card.entryPermitVisa') }}:</span>
                     <span class="view-value">{{ profile.permission_entry_zone }}</span>
                   </div>
                   <div v-if="visaDatesDisplay" class="view-row">
-                    <span class="view-label">Даты действия визы:</span>
+                    <span class="view-label">{{ t('driver.card.visaValidityDates') }}:</span>
                     <span class="view-value">{{ visaDatesDisplay }}</span>
                   </div>
                   <div v-if="profile.visa_scan_url" class="view-row">
-                    <span class="view-label">Скан визы:</span>
+                    <span class="view-label">{{ t('driver.card.scanVisa') }}:</span>
                     <span class="view-value">
-                      <n-button text type="primary" size="small" @click="openScanModal(profile.visa_scan_url!, 'Скан визы')">
-                        Просмотр скана
+                      <n-button text type="primary" size="small" @click="openScanModal(profile.visa_scan_url!, t('driver.card.scanVisa'))">
+                        {{ t('driver.card.viewScan') }}
                       </n-button>
                     </span>
                   </div>
                 </template>
-                <!-- Медсправки (из документов) -->
+                <!-- Medical certificates (from documents) -->
                 <template v-for="(m, mi) in medicalCertificatesFromDocuments" :key="m.id || mi">
                   <template v-if="!isHidden(`medical:${mi}`)">
                   <div v-if="mi > 0 || visasFromDocuments.length > 0 || hasVisaData" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
                     <div v-if="m.number" class="view-row">
-                      <span class="view-label">Медсправка{{ medicalCertificatesFromDocuments.length > 1 ? ` (${mi + 1})` : '' }} — Номер:</span>
+                      <span class="view-label">{{ t('driver.card.medicalCertificate') }}{{ medicalCertificatesFromDocuments.length > 1 ? ` (${mi + 1})` : '' }} — {{ t('driver.documents.medicalNum') }}:</span>
                       <span class="view-value">{{ m.number }}</span>
                     </div>
                     <div v-if="m.issued_at || m.expires_at" class="view-row">
-                      <span class="view-label">Дата выдачи — Дата окончания:</span>
+                      <span class="view-label">{{ t('driver.card.issueDateExpiry') }}:</span>
                       <span class="view-value">{{ formatDate(m.issued_at) }} — {{ formatDate(m.expires_at) }}</span>
                     </div>
                     <div v-if="m.scan_url" class="view-row">
-                      <span class="view-label">Скан медсправки:</span>
+                      <span class="view-label">{{ t('driver.card.scanMedical') }}:</span>
                       <span class="view-value">
-                        <n-button text type="primary" size="small" @click="openScanModal(m.scan_url, medicalCertificatesFromDocuments.length > 1 ? `Скан медсправки (${mi + 1})` : 'Скан медсправки')">
-                          Просмотр скана
+                        <n-button text type="primary" size="small" @click="openScanModal(m.scan_url, medicalCertificatesFromDocuments.length > 1 ? `${t('driver.card.scanMedical')} (${mi + 1})` : t('driver.card.scanMedical'))">
+                          {{ t('driver.card.viewScan') }}
                         </n-button>
                       </span>
                     </div>
                   </div>
                   </template>
                 </template>
-                <!-- Legacy медсправка (если нет medical_certificates_from_documents) -->
+                <!-- Legacy medical cert (if no medical_certificates_from_documents) -->
                 <template v-if="hasLegacyMedicalData && medicalCertificatesFromDocuments.length === 0">
                   <div v-if="visasFromDocuments.length > 0 || hasVisaData" class="extra-passport-block extra-passport-block--not-first" />
                   <div v-if="profile.medical_certificate" class="view-row">
-                    <span class="view-label">Медицинская справка:</span>
+                    <span class="view-label">{{ t('driver.card.medicalCertificate') }}:</span>
                     <span class="view-value">{{ profile.medical_certificate }}</span>
                   </div>
                   <div v-if="profile.last_medical_examination_date" class="view-row">
-                    <span class="view-label">Действует до:</span>
+                    <span class="view-label">{{ t('driver.documents.validUntil') }}:</span>
                     <span class="view-value">{{ formatDate(profile.last_medical_examination_date) }}</span>
                   </div>
                   <div v-if="profile.medical_certificate_scan_url" class="view-row">
-                    <span class="view-label">Скан медсправки:</span>
+                    <span class="view-label">{{ t('driver.card.scanMedical') }}:</span>
                     <span class="view-value">
-                      <n-button text type="primary" size="small" @click="openScanModal(profile.medical_certificate_scan_url!, 'Скан медсправки')">
-                        Просмотр скана
+                      <n-button text type="primary" size="small" @click="openScanModal(profile.medical_certificate_scan_url!, t('driver.card.scanMedical'))">
+                        {{ t('driver.card.viewScan') }}
                       </n-button>
                     </span>
                   </div>
                 </template>
-                <!-- Карты тахографа (из документов) -->
-                <template v-for="(t, ti) in tachographCardsFromDocuments" :key="t.id || ti">
+                <!-- Tachograph cards (from documents) -->
+                <template v-for="(tc, ti) in tachographCardsFromDocuments" :key="tc.id || ti">
                   <template v-if="!isHidden(`tachograph:${ti}`)">
                   <div v-if="ti > 0 || medicalCertificatesFromDocuments.length > 0 || hasLegacyMedicalData" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
-                    <div v-if="t.number" class="view-row">
-                      <span class="view-label">Карта тахографа{{ tachographCardsFromDocuments.length > 1 ? ` (${ti + 1})` : '' }} — Номер:</span>
-                      <span class="view-value">{{ t.number }}</span>
+                    <div v-if="tc.number" class="view-row">
+                      <span class="view-label">{{ t('driver.card.tachographCard') }}{{ tachographCardsFromDocuments.length > 1 ? ` (${ti + 1})` : '' }} — {{ t('driver.card.tachographNumber') }}:</span>
+                      <span class="view-value">{{ tc.number }}</span>
                     </div>
-                    <div v-if="t.country" class="view-row">
-                      <span class="view-label">Страна выдачи:</span>
-                      <span class="view-value">{{ t.country }}</span>
+                    <div v-if="tc.country" class="view-row">
+                      <span class="view-label">{{ t('driver.card.visaIssueCountry') }}:</span>
+                      <span class="view-value">{{ tc.country }}</span>
                     </div>
-                    <div v-if="t.issued_at || t.expires_at" class="view-row">
-                      <span class="view-label">Дата выдачи — Дата окончания:</span>
-                      <span class="view-value">{{ formatDate(t.issued_at) }} — {{ formatDate(t.expires_at) }}</span>
+                    <div v-if="tc.issued_at || tc.expires_at" class="view-row">
+                      <span class="view-label">{{ t('driver.card.issueDateExpiry') }}:</span>
+                      <span class="view-value">{{ formatDate(tc.issued_at) }} — {{ formatDate(tc.expires_at) }}</span>
                     </div>
-                    <div v-if="t.scan_url" class="view-row">
-                      <span class="view-label">Скан:</span>
+                    <div v-if="tc.scan_url" class="view-row">
+                      <span class="view-label">{{ t('driver.documents.docScan') }}:</span>
                       <span class="view-value">
-                        <n-button text type="primary" size="small" @click="openScanModal(t.scan_url, tachographCardsFromDocuments.length > 1 ? `Скан карты тахографа (${ti + 1})` : 'Скан карты тахографа')">
-                          Просмотр скана
+                        <n-button text type="primary" size="small" @click="openScanModal(tc.scan_url, tachographCardsFromDocuments.length > 1 ? `${t('driver.card.scanTachograph')} (${ti + 1})` : t('driver.card.scanTachograph'))">
+                          {{ t('driver.card.viewScan') }}
                         </n-button>
                       </span>
                     </div>
                   </div>
                   </template>
                 </template>
-                <!-- Legacy карта тахографа -->
+                <!-- Legacy tachograph card -->
                 <template v-if="profile.tachograph_card_number && tachographCardsFromDocuments.length === 0">
                   <div v-if="medicalCertificatesFromDocuments.length > 0 || hasLegacyMedicalData" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-row">
-                    <span class="view-label">Карта тахографа:</span>
+                    <span class="view-label">{{ t('driver.card.tachographCard') }}:</span>
                     <span class="view-value">{{ profile.tachograph_card_number }}</span>
                   </div>
                 </template>
-                <!-- Сертификаты техминимума (из документов) -->
+                <!-- Technical minimum certs (from documents) -->
                 <template v-for="(tm, tmi) in technicalMinimumCertsFromDocuments" :key="tm.id || tmi">
                   <template v-if="!isHidden(`tech_min:${tmi}`)">
                   <div v-if="tmi > 0 || tachographCardsFromDocuments.length > 0 || profile.tachograph_card_number" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
                     <div v-if="tm.issued_by" class="view-row">
-                      <span class="view-label">Сертификат техминимума{{ technicalMinimumCertsFromDocuments.length > 1 ? ` (${tmi + 1})` : '' }} — Учебное заведение:</span>
+                      <span class="view-label">{{ t('driver.card.techMinCert') }}{{ technicalMinimumCertsFromDocuments.length > 1 ? ` (${tmi + 1})` : '' }} — {{ t('driver.documents.techMinInstitution') }}:</span>
                       <span class="view-value">{{ tm.issued_by }}</span>
                     </div>
                     <div v-if="tm.number" class="view-row">
-                      <span class="view-label">Номер сертификата:</span>
+                      <span class="view-label">{{ t('driver.card.certNumber') }}:</span>
                       <span class="view-value">{{ tm.number }}</span>
                     </div>
                     <div v-if="tm.issued_at || tm.expires_at" class="view-row">
-                      <span class="view-label">Дата получения — Дата окончания:</span>
+                      <span class="view-label">{{ t('driver.card.receiptDateExpiry') }}:</span>
                       <span class="view-value">{{ formatDate(tm.issued_at) }} — {{ formatDate(tm.expires_at) }}</span>
                     </div>
                     <div v-if="tm.scan_url" class="view-row">
-                      <span class="view-label">Скан:</span>
+                      <span class="view-label">{{ t('driver.documents.docScan') }}:</span>
                       <span class="view-value">
-                        <n-button text type="primary" size="small" @click="openScanModal(tm.scan_url, technicalMinimumCertsFromDocuments.length > 1 ? `Скан сертификата (${tmi + 1})` : 'Скан сертификата техминимума')">
-                          Просмотр скана
+                        <n-button text type="primary" size="small" @click="openScanModal(tm.scan_url, technicalMinimumCertsFromDocuments.length > 1 ? `${t('driver.card.scanTechMin')} (${tmi + 1})` : t('driver.card.scanTechMin'))">
+                          {{ t('driver.card.viewScan') }}
                         </n-button>
                       </span>
                     </div>
                   </div>
                   </template>
                 </template>
-                <!-- Legacy сертификат техминимума -->
+                <!-- Legacy technical minimum cert -->
                 <template v-if="profile.technical_minimum_certificate && technicalMinimumCertsFromDocuments.length === 0">
                   <div v-if="tachographCardsFromDocuments.length > 0 || profile.tachograph_card_number" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-row">
-                    <span class="view-label">Сертификат техминимума:</span>
+                    <span class="view-label">{{ t('driver.card.techMinCert') }}:</span>
                     <span class="view-value">{{ profile.technical_minimum_certificate }}</span>
                   </div>
                 </template>
-                <!-- ADR допуски (из документов) -->
+                <!-- ADR permits (from documents) -->
                 <template v-for="(a, ai) in adrCertsFromDocuments" :key="a.id || ai">
                   <template v-if="!isHidden(`adr:${ai}`)">
                   <div v-if="ai > 0 || technicalMinimumCertsFromDocuments.length > 0 || profile.technical_minimum_certificate" class="extra-passport-block extra-passport-block--not-first" />
                   <div class="view-grid extra-passport-block">
                     <div v-if="a.issued_by" class="view-row">
-                      <span class="view-label">ADR допуск{{ adrCertsFromDocuments.length > 1 ? ` (${ai + 1})` : '' }} — Кем выдано:</span>
+                      <span class="view-label">{{ t('driver.card.adrCertificate') }}{{ adrCertsFromDocuments.length > 1 ? ` (${ai + 1})` : '' }} — {{ t('driver.card.adrIssuedBy') }}:</span>
                       <span class="view-value">{{ a.issued_by }}</span>
                     </div>
                     <div v-if="a.number" class="view-row">
-                      <span class="view-label">Номер свидетельства:</span>
+                      <span class="view-label">{{ t('driver.card.adrCertNumber') }}:</span>
                       <span class="view-value">{{ a.number }}</span>
                     </div>
                     <div class="view-row">
-                      <span class="view-label">Разрешённые классы:</span>
+                      <span class="view-label">{{ t('driver.card.adrAllowedClasses') }}:</span>
                       <span class="view-value">{{ formatAdrClasses(a) }}</span>
                     </div>
                     <div v-if="a.issued_at || a.expires_at" class="view-row">
-                      <span class="view-label">Дата выдачи — Дата окончания:</span>
+                      <span class="view-label">{{ t('driver.card.issueDateExpiry') }}:</span>
                       <span class="view-value">{{ formatDate(a.issued_at) }} — {{ formatDate(a.expires_at) }}</span>
                     </div>
                     <div v-if="a.scan_url" class="view-row">
-                      <span class="view-label">Скан:</span>
+                      <span class="view-label">{{ t('driver.documents.docScan') }}:</span>
                       <span class="view-value">
-                        <n-button text type="primary" size="small" @click="openScanModal(a.scan_url, adrCertsFromDocuments.length > 1 ? `Скан ADR (${ai + 1})` : 'Скан ADR допуска')">
-                          Просмотр скана
+                        <n-button text type="primary" size="small" @click="openScanModal(a.scan_url, adrCertsFromDocuments.length > 1 ? `${t('driver.card.scanAdr')} (${ai + 1})` : t('driver.card.scanAdr'))">
+                          {{ t('driver.card.viewScan') }}
                         </n-button>
                       </span>
                     </div>
@@ -409,11 +409,11 @@
                   </template>
                 </template>
                 <div v-if="profile.other_permits" class="view-row">
-                  <span class="view-label">ADR пропуск / Прочие документы:</span>
+                  <span class="view-label">{{ t('driver.card.otherPermits') }}:</span>
                   <span class="view-value">{{ profile.other_permits }}</span>
                 </div>
                 <div v-if="profile.hire_source" class="view-row">
-                  <span class="view-label">Источник найма:</span>
+                  <span class="view-label">{{ t('driver.card.hireSource') }}:</span>
                   <span class="view-value">{{ profile.hire_source }}</span>
                 </div>
               </div>
@@ -443,7 +443,7 @@
             </div>
             <div v-if="scanModalUrl" class="scan-modal-body">
               <img v-if="isImageUrl(scanModalUrl)" :src="scanFullUrl(scanModalUrl)" alt="" class="scan-modal-img" />
-              <iframe v-else :src="scanFullUrl(scanModalUrl)" class="scan-modal-iframe" title="Документ" />
+              <iframe v-else :src="scanFullUrl(scanModalUrl)" class="scan-modal-iframe" :title="t('driver.card.documentTitle')" />
             </div>
           </div>
         </div>
@@ -453,11 +453,13 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
+
 const props = withDefaults(
   defineProps<{
-    /** Режим водителя: загрузка своего профиля */
+    /** Driver mode: load own profile */
     isDriverContext?: boolean
-    /** Готовый профиль (для админки / заказчика) — не делать fetch */
+    /** Pre-loaded profile (for admin/client) — skip fetch */
     initialProfile?: Record<string, any> | null
   }>(),
   { isDriverContext: true, initialProfile: null }
@@ -482,15 +484,15 @@ const modalPos = ref({ x: 0, y: 0 })
 let dragStart = { x: 0, y: 0, posX: 0, posY: 0 }
 
 const statusLabels: Record<string, string> = {
-  active: 'Активен',
-  inactive: 'Неактивен',
-  on_leave: 'В отпуске',
-  fired: 'Уволен',
+  active: () => t('driver.card.statusActive'),
+  inactive: () => t('driver.card.statusInactive'),
+  on_leave: () => t('driver.card.statusOnLeave'),
+  fired: () => t('driver.card.statusFired'),
 }
-const employmentLabels: Record<string, string> = {
-  full_time: 'Штатный',
-  freelance: 'Внештатный',
-  leased: 'Аренда',
+const employmentLabels: Record<string, () => string> = {
+  full_time: () => t('driver.card.employmentFullTime'),
+  freelance: () => t('driver.card.employmentFreelance'),
+  leased: () => t('driver.card.employmentLeased'),
 }
 
 const fullName = computed(() => {
@@ -523,11 +525,17 @@ const emailsDisplay = computed(() => {
 
 const genderLabel = computed(() => {
   const g = profile.value?.gender
-  return g === 'female' ? 'Женский' : g === 'male' ? 'Мужской' : g || '—'
+  return g === 'female' ? t('driver.card.female') : g === 'male' ? t('driver.card.male') : g || '—'
 })
 
-const statusLabel = computed(() => statusLabels[profile.value?.status] ?? profile.value?.status ?? '—')
-const employmentLabel = computed(() => employmentLabels[profile.value?.employment_category] ?? profile.value?.employment_category ?? '—')
+const statusLabel = computed(() => {
+  const fn = statusLabels[profile.value?.status]
+  return fn ? fn() : (profile.value?.status ?? '—')
+})
+const employmentLabel = computed(() => {
+  const fn = employmentLabels[profile.value?.employment_category]
+  return fn ? fn() : (profile.value?.employment_category ?? '—')
+})
 
 const passportSeriesNumber = computed(() => {
   const p = profile.value
@@ -705,24 +713,12 @@ function formatDate(d: string | null | undefined) {
   return new Date(d).toLocaleDateString('ru-RU')
 }
 
-const adrClassLabels: Record<string, string> = {
-  '1': 'Класс 1 — Взрывчатые вещества',
-  '2': 'Класс 2 — Газы',
-  '3': 'Класс 3 — Легковоспламеняющиеся жидкости',
-  '4': 'Класс 4 — Легковоспламеняющиеся твердые в-ва',
-  '5': 'Класс 5 — Окисляющие вещества',
-  '6': 'Класс 6 — Токсичные и инфекционные в-ва',
-  '7': 'Класс 7 — Радиоактивные материалы',
-  '8': 'Класс 8 — Коррозионные (едкие) вещества',
-  '9': 'Класс 9 — Прочие опасные вещества',
-}
-
 function formatAdrClasses(a: { allowed_classes?: string[]; license_categories?: string | null }) {
   const arr = Array.isArray(a.allowed_classes) && a.allowed_classes.length
     ? a.allowed_classes
     : (a.license_categories ? a.license_categories.split(',').map((s) => s.trim()).filter(Boolean) : [])
   if (!arr.length) return '—'
-  return arr.map((v) => adrClassLabels[v] || `Класс ${v}`).join(', ')
+  return arr.map((v) => t(`adrClasses.${v}`) || t('adrClasses.fallback', { v })).join(', ')
 }
 
 async function loadProfile() {
@@ -752,7 +748,7 @@ async function loadProfile() {
     profile.value = mapped
   } catch (e: any) {
     console.error('Error loading profile:', e)
-    error.value = e?.data?.error || 'Ошибка загрузки профиля'
+    error.value = e?.data?.error || t('driver.card.loadProfileError')
   } finally {
     loading.value = false
   }

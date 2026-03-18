@@ -27,10 +27,11 @@
       <ImpersonateBanner />
       <n-layout-header bordered class="cabinet-header">
         <div class="header-left">
-          <n-text strong style="font-size: 16px;">Личный кабинет (Перевозчик)</n-text>
+          <n-text strong style="font-size: 16px;">{{ t('layout.cabinet.title') }} {{ t('layout.cabinet.roleDriver') }}</n-text>
         </div>
         <div class="header-right">
           <n-space align="center" style="gap: 12px">
+            <LanguageSwitcher />
             <DriverOnlineStatusToggle v-if="session?.user?.role === 'driver'" />
             <VerificationBadge v-if="verificationStatus" :status="verificationStatus" />
             <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
@@ -94,6 +95,7 @@ import {
   AlertCircleOutline,
 } from '@vicons/ionicons5'
 
+const { t } = useI18n()
 const { session, signOut } = useAuth()
 const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
 const { chatOpen, chatOrderId, chatTitle } = useOrderChat()
@@ -113,7 +115,7 @@ function renderIcon(Icon: Component) {
 }
 
 function renderAlertsLabel() {
-  const label = h('span', 'Оповещения')
+  const label = h('span', t('layout.cabinet.menuAlerts'))
   if (alertsCount.value > 0) {
     return h('div', { class: 'menu-item-with-badge' }, [
       label,
@@ -138,31 +140,31 @@ watch(
   { immediate: true }
 )
 
-const menuOptions: MenuOption[] = [
-  { label: 'Главная', key: '/cabinet/driver', icon: renderIcon(HomeOutline) },
+const menuOptions = computed<MenuOption[]>(() => [
+  { label: t('layout.cabinet.menuHome'), key: '/cabinet/driver', icon: renderIcon(HomeOutline) },
   {
-    label: 'Карточка водителя',
+    label: t('layout.cabinet.menuDriverCard'),
     key: 'card-driver',
     icon: renderIcon(IdCardOutline),
     children: [
-      { label: 'Моя карточка', key: '/cabinet/driver/my-card' },
-      { label: 'Верификация', key: '/cabinet/driver/card-v2' },
-      { label: 'Добавить документы', key: '/cabinet/driver/add-documents' },
+      { label: t('layout.cabinet.menuMyCard'), key: '/cabinet/driver/my-card' },
+      { label: t('layout.cabinet.menuVerification'), key: '/cabinet/driver/card-v2' },
+      { label: t('layout.cabinet.menuAddDocuments'), key: '/cabinet/driver/add-documents' },
     ],
   },
   { label: () => renderAlertsLabel(), key: '/cabinet/driver/alerts', icon: renderIcon(AlertCircleOutline) },
-  { label: 'Мой транспорт', key: '/cabinet/driver/vehicles', icon: renderIcon(CarOutline) },
-  { label: 'Мои заказы', key: '/cabinet/driver/orders', icon: renderIcon(CubeOutline) },
-  { label: 'Доступные заказы', key: '/cabinet/driver/orders/available', icon: renderIcon(ClipboardOutline) },
-  { label: 'Мои услуги', key: '/cabinet/driver/services', icon: renderIcon(MapOutline) },
-  { label: 'Рассылки', key: '/cabinet/driver/mailing', icon: renderIcon(MailOutline) },
-  { label: 'Профиль', key: '/cabinet/driver/profile', icon: renderIcon(PersonOutline) },
-]
+  { label: t('layout.cabinet.menuMyVehicles'), key: '/cabinet/driver/vehicles', icon: renderIcon(CarOutline) },
+  { label: t('layout.cabinet.menuMyOrders'), key: '/cabinet/driver/orders', icon: renderIcon(CubeOutline) },
+  { label: t('layout.cabinet.menuAvailableOrders'), key: '/cabinet/driver/orders/available', icon: renderIcon(ClipboardOutline) },
+  { label: t('layout.cabinet.menuMyServices'), key: '/cabinet/driver/services', icon: renderIcon(MapOutline) },
+  { label: t('layout.cabinet.menuMailing'), key: '/cabinet/driver/mailing', icon: renderIcon(MailOutline) },
+  { label: t('layout.cabinet.menuProfile'), key: '/cabinet/driver/profile', icon: renderIcon(PersonOutline) },
+])
 
-const userMenuOptions = [
-  { label: 'Главная', key: 'home' },
-  { label: 'Выйти', key: 'logout' },
-]
+const userMenuOptions = computed(() => [
+  { label: t('layout.home'), key: 'home' },
+  { label: t('layout.logout'), key: 'logout' },
+])
 
 function handleMenuSelect(key: string) {
   navigateTo(key)

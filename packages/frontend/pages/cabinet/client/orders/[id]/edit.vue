@@ -1,65 +1,65 @@
 <template>
   <div>
     <n-button text style="margin-bottom: 16px" @click="navigateTo(`/cabinet/client/orders/${route.params.id}`)">
-      ← Назад к заказу
+      {{ t('client.orders.backToOrder') }}
     </n-button>
 
-    <n-card title="Редактировать заказ">
+    <n-card :title="t('client.orders.editOrder')">
       <div v-if="loading" style="padding: 40px; text-align: center">
         <n-spin size="large" />
       </div>
 
       <n-form v-else-if="order" ref="formRef" :model="form" :rules="rules" label-placement="top">
         <n-alert v-if="order.status !== 'PENDING'" type="warning" style="margin-bottom: 16px">
-          Редактирование возможно только для заказов со статусом «Ожидание».
+          {{ t('client.orders.editPendingOnly') }}
         </n-alert>
 
         <n-grid :cols="3" :x-gap="16">
           <n-gi>
-            <n-form-item label="Откуда" path="from_city_id" required>
+            <n-form-item :label="t('common.from')" path="from_city_id" required>
               <n-select
                 v-model:value="form.from_city_id"
                 :options="cityOptions"
-                placeholder="Выберите город"
+                :placeholder="t('client.orders.selectCity')"
                 filterable
                 :disabled="order.status !== 'PENDING'"
               />
             </n-form-item>
           </n-gi>
           <n-gi>
-            <n-form-item label="Куда" path="to_city_id" required>
+            <n-form-item :label="t('common.to')" path="to_city_id" required>
               <n-select
                 v-model:value="form.to_city_id"
                 :options="cityOptions"
-                placeholder="Выберите город"
+                :placeholder="t('client.orders.selectCity')"
                 filterable
                 :disabled="order.status !== 'PENDING'"
               />
             </n-form-item>
           </n-gi>
           <n-gi>
-            <n-form-item label="Цена (TMT)" path="price" required>
+            <n-form-item :label="t('client.orders.priceTmt')" path="price" required>
               <n-input-number v-model:value="form.price" :min="0.01" :precision="2" placeholder="0.00" style="width: 100%" :disabled="order.status !== 'PENDING'" />
             </n-form-item>
           </n-gi>
           <n-gi :span="3">
-            <n-form-item label="Наименование товара" path="cargo_name">
-              <n-input v-model:value="form.cargo_name" placeholder="Например: Мебель офисная" :disabled="order.status !== 'PENDING'" />
+            <n-form-item :label="t('client.orders.cargoName')" path="cargo_name">
+              <n-input v-model:value="form.cargo_name" :placeholder="t('client.orders.cargoNamePlaceholder')" :disabled="order.status !== 'PENDING'" />
             </n-form-item>
           </n-gi>
           <n-gi :span="3">
-            <n-form-item label="Описание товара" path="cargo_description">
-              <n-input v-model:value="form.cargo_description" type="textarea" placeholder="Подробное описание груза" :rows="3" :disabled="order.status !== 'PENDING'" />
+            <n-form-item :label="t('client.orders.cargoDescriptionLabel')" path="cargo_description">
+              <n-input v-model:value="form.cargo_description" type="textarea" :placeholder="t('client.orders.cargoDescriptionPlaceholder')" :rows="3" :disabled="order.status !== 'PENDING'" />
             </n-form-item>
           </n-gi>
         </n-grid>
         <n-space v-if="order.status === 'PENDING'">
-          <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
-          <n-button @click="navigateTo(`/cabinet/client/orders/${route.params.id}`)">Отмена</n-button>
+          <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
+          <n-button @click="navigateTo(`/cabinet/client/orders/${route.params.id}`)">{{ t('common.cancel') }}</n-button>
         </n-space>
       </n-form>
 
-      <n-empty v-else description="Заказ не найден" />
+      <n-empty v-else :description="t('client.orders.orderNotFound')" />
     </n-card>
   </div>
 </template>
@@ -67,6 +67,7 @@
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
 const { apiBase: API } = useApiBase()
@@ -86,11 +87,11 @@ const form = reactive({
   cargo_description: '' as string,
 })
 
-const rules = {
-  from_city_id: { required: true, message: 'Выберите город', trigger: 'blur' },
-  to_city_id: { required: true, message: 'Выберите город', trigger: 'blur' },
-  price: { required: true, type: 'number', min: 0.01, message: 'Введите цену', trigger: 'blur' },
-}
+const rules = computed(() => ({
+  from_city_id: { required: true, message: t('client.orders.selectCityRequired'), trigger: 'blur' },
+  to_city_id: { required: true, message: t('client.orders.selectCityRequired'), trigger: 'blur' },
+  price: { required: true, type: 'number', min: 0.01, message: t('client.orders.enterPrice'), trigger: 'blur' },
+}))
 
 const cityOptions = computed(() =>
   allCities.value.map((c) => ({ label: c.name, value: c.id }))
@@ -100,7 +101,7 @@ async function loadCities() {
   try {
     allCities.value = await $fetch<any[]>(`${API}/cities`)
   } catch {
-    message.error('Ошибка загрузки городов')
+    message.error(t('client.orders.loadCitiesError'))
   }
 }
 
@@ -135,7 +136,7 @@ async function handleSave() {
         cargo_description: form.cargo_description || undefined,
       },
     })
-    message.success('Заказ сохранён')
+    message.success(t('client.orders.orderSaved'))
     navigateTo(`/cabinet/client/orders/${route.params.id}`)
   } catch (e: any) {
     if (e?.data?.error) message.error(e.data.error)

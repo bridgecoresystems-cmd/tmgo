@@ -36,21 +36,8 @@
 </template>
 
 <script setup lang="ts">
-const STORAGE_KEY = 'tmgo_i18n_locale'
-const VALID_LOCALES = ['ru', 'en', 'tk']
-
 const { session, signOut } = useAuth()
 const { locale, setLocale, t } = useI18n()
-
-onMounted(() => {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (stored && VALID_LOCALES.includes(stored) && stored !== locale.value) {
-    setLocale(stored)
-  }
-})
-watch(locale, (v) => {
-  if (import.meta.client) localStorage.setItem(STORAGE_KEY, v)
-}, { immediate: true })
 
 const localeOptions = [
   { label: 'Русский', value: 'ru' },

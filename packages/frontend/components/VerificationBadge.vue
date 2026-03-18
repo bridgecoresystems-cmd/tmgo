@@ -24,25 +24,27 @@ const props = withDefaults(
   { status: 'not_verified' }
 )
 
+const { t } = useI18n()
+
 const config = computed(() => {
   const s = props.status
   switch (s) {
     case 'verified':
-      return { line1: 'VERF', line2: '', tooltip: 'Верифицирован' }
+      return { line1: t('verificationBadge.shortVerf'), line2: '', tooltip: t('verificationBadge.verified') }
     case 'waiting_verification':
     case 'submitted':
-      return { line1: 'WAIT', line2: 'VERF', tooltip: 'Ожидает проверки' }
+      return { line1: t('verificationBadge.shortWait'), line2: t('verificationBadge.shortVerf'), tooltip: t('verificationBadge.waitingVerification') }
     case 'request':
-      return { line1: 'ЗАПР', line2: 'ОС', tooltip: 'Запрос на изменение' }
+      return { line1: t('verificationBadge.shortRequest'), line2: t('verificationBadge.shortRequestLine2'), tooltip: t('verificationBadge.changeRequest') }
     case 'rejected':
-      return { line1: 'ОТКЛ', line2: '', tooltip: 'Отклонён' }
+      return { line1: t('verificationBadge.shortRejected'), line2: '', tooltip: t('verificationBadge.rejected') }
     case 'suspended':
-      return { line1: 'ПРИОСТ', line2: '', tooltip: 'Приостановлен' }
+      return { line1: t('verificationBadge.shortSuspended'), line2: '', tooltip: t('verificationBadge.suspended') }
     case 'draft':
     case 'not_submitted':
-      return { line1: 'ЧЕРН', line2: '', tooltip: 'Черновик' }
+      return { line1: t('verificationBadge.shortDraft'), line2: '', tooltip: t('verificationBadge.draft') }
     default:
-      return { line1: 'NOT', line2: 'VERF', tooltip: 'Не верифицирован' }
+      return { line1: t('verificationBadge.shortNot'), line2: t('verificationBadge.shortVerf'), tooltip: t('verificationBadge.notVerified') }
   }
 })
 
@@ -85,49 +87,49 @@ const tooltip = computed(() => config.value.tooltip)
   opacity: 0.9;
 }
 
-/* not_verified — серый */
+/* not_verified — gray */
 .verification-badge--not_verified {
   background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
   color: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* waiting_verification — бронза */
+/* waiting_verification — bronze */
 .verification-badge--waiting_verification {
   background: linear-gradient(135deg, #d4a574 0%, #b8860b 50%, #8b6914 100%);
   color: #fff;
   box-shadow: 0 1px 4px rgba(139, 105, 20, 0.4);
 }
 
-/* request — синий */
+/* request — blue */
 .verification-badge--request {
   background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
   color: #fff;
   box-shadow: 0 1px 4px rgba(37, 99, 235, 0.4);
 }
 
-/* verified — золото */
+/* verified — gold */
 .verification-badge--verified {
   background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%);
   color: #1f2937;
   box-shadow: 0 1px 4px rgba(217, 119, 6, 0.4);
 }
 
-/* submitted — как waiting */
+/* submitted — same as waiting */
 .verification-badge--submitted {
   background: linear-gradient(135deg, #d4a574 0%, #b8860b 50%, #8b6914 100%);
   color: #fff;
   box-shadow: 0 1px 4px rgba(139, 105, 20, 0.4);
 }
 
-/* rejected — красный */
+/* rejected — red */
 .verification-badge--rejected {
   background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
   color: #fff;
   box-shadow: 0 1px 4px rgba(220, 38, 38, 0.4);
 }
 
-/* suspended — оранжевый */
+/* suspended — orange */
 .verification-badge--suspended {
   background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
   color: #fff;

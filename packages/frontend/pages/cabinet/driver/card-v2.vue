@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="card-header mb-24">
-      <n-h2 style="margin: 0;">Карточка водителя (Новая форма V2)</n-h2>
-      <n-text depth="3">Заполните все разделы для прохождения верификации</n-text>
+      <n-h2 style="margin: 0;">{{ t('driver.card.titleNew') }}</n-h2>
+      <n-text depth="3">{{ t('driver.card.subtitle') }}</n-text>
     </div>
 
     <DriverProfileVerificationStatus />
@@ -14,9 +14,10 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
-useSeoMeta({ title: 'Карточка водителя V2 — BridgeCore Systems' })
+useSeoMeta({ title: t('driver.card.v2PageTitle') })
 
 const { fetchStatus: refreshVerification } = useDriverVerificationStatus()
 const { fetchAlerts } = useDriverAlerts()

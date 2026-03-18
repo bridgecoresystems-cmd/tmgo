@@ -1,7 +1,7 @@
 <template>
   <div>
     <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/client/orders')">
-      ← Назад к списку
+      {{ t('common.backToList') }}
     </n-button>
 
     <div v-if="loading" style="padding: 40px; text-align: center">
@@ -9,24 +9,24 @@
     </div>
 
     <template v-else-if="order">
-      <n-card title="Заказ">
+      <n-card :title="t('client.orders.order')">
         <n-descriptions :column="1" bordered>
-          <n-descriptions-item label="Маршрут">{{ order.from_city }} → {{ order.to_city }}</n-descriptions-item>
-          <n-descriptions-item label="Адреса">{{ order.from_address || order.from_city }} → {{ order.to_address || order.to_city }}</n-descriptions-item>
-          <n-descriptions-item label="Товар">{{ order.cargo_name || '—' }}</n-descriptions-item>
-          <n-descriptions-item label="Описание">{{ order.cargo_description || '—' }}</n-descriptions-item>
-          <n-descriptions-item label="Цена">{{ order.price }} {{ order.currency }}</n-descriptions-item>
-          <n-descriptions-item label="Статус">
+          <n-descriptions-item :label="t('client.orders.route')">{{ order.from_city }} → {{ order.to_city }}</n-descriptions-item>
+          <n-descriptions-item :label="t('client.orders.addresses')">{{ order.from_address || order.from_city }} → {{ order.to_address || order.to_city }}</n-descriptions-item>
+          <n-descriptions-item :label="t('client.orders.cargo')">{{ order.cargo_name || '—' }}</n-descriptions-item>
+          <n-descriptions-item :label="t('client.orders.cargoDescription')">{{ order.cargo_description || '—' }}</n-descriptions-item>
+          <n-descriptions-item :label="t('common.price')">{{ order.price }} {{ order.currency }}</n-descriptions-item>
+          <n-descriptions-item :label="t('common.status')">
             <n-tag :type="statusType">{{ statusLabel }}</n-tag>
           </n-descriptions-item>
         </n-descriptions>
         <n-button v-if="order.status === 'PENDING'" type="primary" style="margin-top: 16px" @click="navigateTo(`/cabinet/client/orders/${order.id}/edit`)">
-          Редактировать
+          {{ t('common.edit') }}
         </n-button>
       </n-card>
 
-      <!-- Откликнувшиеся перевозчики (в ожидании) -->
-      <n-card v-if="order.pending_responses?.length" title="Кто хочет взять заказ" style="margin-top: 20px">
+      <!-- Pending responses -->
+      <n-card v-if="order.pending_responses?.length" :title="t('client.orders.whoWantsToTake')" style="margin-top: 20px">
         <n-space vertical :size="16">
           <div
             v-for="r in order.pending_responses"
@@ -41,16 +41,16 @@
                   {{ (r.driver_name || r.company_name || '?').charAt(0) }}
                 </n-avatar>
                 <div>
-                  <div class="driver-name">{{ r.driver_name || r.company_name || 'Перевозчик' }}</div>
+                  <div class="driver-name">{{ r.driver_name || r.company_name || t('common.transport') }}</div>
                   <div class="driver-details">{{ r.company_name || '' }} · {{ r.vehicle_plate }} ({{ r.vehicle_type || '—' }})</div>
                 </div>
               </div>
               <n-space v-if="hoveredResponse === r.id" class="driver-actions">
                 <n-button size="small" type="primary" :loading="actionLoading === `accept-${r.id}`" @click.stop="acceptResponse(r.id)">
-                  Принять
+                  {{ t('client.orders.accept') }}
                 </n-button>
                 <n-button size="small" type="error" :loading="actionLoading === `reject-${r.id}`" @click.stop="rejectResponse(r.id)">
-                  Отклонить
+                  {{ t('client.orders.reject') }}
                 </n-button>
               </n-space>
             </div>
@@ -58,8 +58,8 @@
         </n-space>
       </n-card>
 
-      <!-- Принятые перевозчики (с кнопкой чата) -->
-      <n-card v-if="order.accepted_responses?.length" title="Принятые перевозчики" style="margin-top: 20px">
+      <!-- Accepted responses -->
+      <n-card v-if="order.accepted_responses?.length" :title="t('client.orders.acceptedDrivers')" style="margin-top: 20px">
         <n-space vertical :size="16">
           <div v-for="r in order.accepted_responses" :key="r.id" class="driver-card accepted">
             <div class="driver-card-inner">
@@ -68,12 +68,12 @@
                   {{ (r.driver_name || r.company_name || '?').charAt(0) }}
                 </n-avatar>
                 <div>
-                  <div class="driver-name">{{ r.driver_name || r.company_name || 'Перевозчик' }}</div>
+                  <div class="driver-name">{{ r.driver_name || r.company_name || t('common.transport') }}</div>
                   <div class="driver-details">{{ r.company_name || '' }} · {{ r.vehicle_plate }} ({{ r.vehicle_type || '—' }})</div>
                 </div>
               </div>
               <n-button size="small" type="info" @click="handleOpenChat(r)">
-                💬 Чат
+                💬 {{ t('client.orders.chat') }}
               </n-button>
             </div>
           </div>
@@ -82,18 +82,19 @@
 
       <n-empty
         v-else-if="!order.pending_responses?.length && !order.accepted_responses?.length && order.status === 'PENDING'"
-        description="Пока никто не откликнулся на заказ"
+        :description="t('client.orders.noResponsesYet')"
         style="margin-top: 20px"
       />
     </template>
 
-    <n-empty v-else description="Заказ не найден" />
+    <n-empty v-else :description="t('client.orders.orderNotFound')" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
 const { apiBase: API } = useApiBase()
@@ -105,13 +106,13 @@ const order = ref<any>(null)
 const hoveredResponse = ref<string | null>(null)
 const actionLoading = ref<string | null>(null)
 
-const statusLabels: Record<string, string> = {
-  PENDING: 'В ожидании',
-  ACCEPTED: 'Принят',
-  IN_TRANSIT: 'В пути',
-  DELIVERED: 'Доставлен',
-  CANCELLED: 'Отменён',
-}
+const statusLabels = computed<Record<string, string>>(() => ({
+  PENDING: t('client.orders.statusPending'),
+  ACCEPTED: t('client.orders.statusAccepted'),
+  IN_TRANSIT: t('client.orders.statusInTransit'),
+  DELIVERED: t('client.orders.statusDelivered'),
+  CANCELLED: t('client.orders.statusCancelled'),
+}))
 
 const statusTypes: Record<string, any> = {
   PENDING: 'warning',
@@ -121,7 +122,7 @@ const statusTypes: Record<string, any> = {
   CANCELLED: 'error',
 }
 
-const statusLabel = computed(() => statusLabels[order.value?.status] || order.value?.status)
+const statusLabel = computed(() => statusLabels.value[order.value?.status] || order.value?.status)
 const statusType = computed(() => statusTypes[order.value?.status] || 'default')
 
 async function loadOrder() {
@@ -142,10 +143,10 @@ async function acceptResponse(responseId: string) {
       method: 'POST',
       credentials: 'include',
     })
-    message.success('Перевозчик принят')
+    message.success(t('client.orders.accepted'))
     await loadOrder()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка')
+    message.error(e?.data?.error || t('common.error'))
   } finally {
     actionLoading.value = null
   }
@@ -158,17 +159,17 @@ async function rejectResponse(responseId: string) {
       method: 'POST',
       credentials: 'include',
     })
-    message.success('Отклик отклонён')
+    message.success(t('client.orders.responseRejected'))
     await loadOrder()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка')
+    message.error(e?.data?.error || t('common.error'))
   } finally {
     actionLoading.value = null
   }
 }
 
 function handleOpenChat(r: any) {
-  openChat(order.value?.id || null, r.driver_name || r.company_name || 'Перевозчик')
+  openChat(order.value?.id || null, r.driver_name || r.company_name || t('common.transport'))
 }
 
 onMounted(loadOrder)

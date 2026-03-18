@@ -28,6 +28,7 @@ import { adminDriversVerifyRoutes } from './routes/admin/drivers-verify';
 import { cabinetClientServicesRoutes } from './routes/cabinet/client-services';
 import { cabinetChatRoutes } from './routes/cabinet/chat';
 import { cabinetProfileRoutes } from './routes/cabinet/profile';
+import { startWorker } from './lib/queues';
 
 const app = new Elysia()
   .onAfterHandle(({ set }) => {
@@ -111,5 +112,9 @@ const app = new Elysia()
   .listen({ port: 8000, hostname: '0.0.0.0' });
 
 console.log(`🚀 Backend is running at http://0.0.0.0:8000 (LAN: http://<your-IP>:8000)`);
+
+startWorker().catch((err) => {
+  console.warn('[BullMQ] Worker failed to start (Redis may be unavailable):', err.message);
+});
 
 export type App = typeof app;

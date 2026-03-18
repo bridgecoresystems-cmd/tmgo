@@ -4,34 +4,34 @@
       <n-alert v-if="error" type="error" style="margin-bottom: 16px">{{ error }}</n-alert>
       <n-space vertical>
         <div class="list-header">
-          <n-button type="primary" size="small" @click="showAddModal = true">Добавить гражданство</n-button>
+          <n-button type="primary" size="small" @click="showAddModal = true">{{ t('driver.citizenships.add') }}</n-button>
         </div>
-        <n-empty v-if="!loading && list.length === 0" description="Нет гражданств" />
+        <n-empty v-if="!loading && list.length === 0" :description="t('driver.citizenships.noItems')" />
         <n-list v-else bordered>
           <n-list-item v-for="c in list" :key="c.id">
             <template #prefix>
               <n-tag :type="c.status === 'active' ? 'success' : 'default'" size="small">
-                {{ c.status === 'active' ? 'Активно' : 'Отказ' }}
+                {{ c.status === 'active' ? t('driver.citizenships.statusActive') : t('driver.citizenships.statusRevoked') }}
               </n-tag>
             </template>
             <n-thing>
-              <template #header>{{ c.country }}</template>
+              <template #header>{{ displayCountry(c.country) }}</template>
               <template #description>
-                <span v-if="c.acquired_at">С {{ c.acquired_at }}</span>
-                <span v-if="c.revoked_at"> · Отказ {{ c.revoked_at }}</span>
+                <span v-if="c.acquired_at">{{ t('driver.citizenships.since') }} {{ c.acquired_at }}</span>
+                <span v-if="c.revoked_at"> · {{ t('driver.citizenships.revokedAt') }} {{ c.revoked_at }}</span>
               </template>
             </n-thing>
             <template #suffix>
               <n-popconfirm
                 v-if="c.status === 'active'"
-                positive-text="Отказаться"
-                negative-text="Отмена"
+                :positive-text="t('driver.citizenships.revoke')"
+                :negative-text="t('common.cancel')"
                 @positive-click="doRevoke(c.id)"
               >
                 <template #trigger>
-                  <n-button quaternary size="small" type="error">Отказаться</n-button>
+                  <n-button quaternary size="small" type="error">{{ t('driver.citizenships.revoke') }}</n-button>
                 </template>
-                Вы уверены, что хотите отказаться от гражданства {{ c.country }}?
+                {{ t('driver.citizenships.revokeConfirm').replace('{country}', displayCountry(c.country)) }}
               </n-popconfirm>
             </template>
           </n-list-item>
@@ -39,18 +39,18 @@
       </n-space>
     </n-spin>
 
-    <n-modal v-model:show="showAddModal" preset="card" title="Добавить гражданство" style="max-width: 400px">
+    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.citizenships.addModal')" style="max-width: 400px">
       <n-form :model="addForm" label-placement="top">
-        <n-form-item label="Страна" required>
+        <n-form-item :label="t('driver.citizenships.country')" required>
           <n-select
             v-model:value="addForm.country"
             :options="citizenshipOptions"
             filterable
-            placeholder="Выберите страну"
+            :placeholder="t('driver.citizenships.specifyCountry')"
             style="width: 100%"
           />
         </n-form-item>
-        <n-form-item label="Дата приобретения">
+        <n-form-item :label="t('driver.citizenships.acquiredAt')">
           <n-date-picker
             :value="addForm.acquired_at ? new Date(addForm.acquired_at).getTime() : null"
             type="date"
@@ -62,8 +62,8 @@
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showAddModal = false">Отмена</n-button>
-          <n-button type="primary" :loading="adding" @click="doAdd">Добавить</n-button>
+          <n-button @click="showAddModal = false">{{ t('common.cancel') }}</n-button>
+          <n-button type="primary" :loading="adding" @click="doAdd">{{ t('common.add') }}</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -74,11 +74,18 @@
 import { useMessage } from 'naive-ui'
 import { citizenships } from '@tmgo/shared'
 
+const { t } = useI18n()
 const { list, loading, error, fetch, add, revoke } = useDriverCitizenships()
 const message = useMessage()
 const showAddModal = ref(false)
 const adding = ref(false)
 const addForm = reactive({ country: '', acquired_at: null as string | null })
+
+function displayCountry(key: string) {
+  // Try to translate — if key is a known i18n key, use it; otherwise show raw
+  const translated = t('citizenships.' + key)
+  return translated !== 'citizenships.' + key ? translated : key
+}
 
 const citizenshipOptions = computed(() => {
   const activeCountries = new Set(
@@ -86,23 +93,23 @@ const citizenshipOptions = computed(() => {
   )
   return citizenships
     .filter((c) => !activeCountries.has(c))
-    .map((c) => ({ label: c, value: c }))
+    .map((c) => ({ label: t('citizenships.' + c), value: c }))
 })
 
 async function doAdd() {
   if (!addForm.country?.trim()) {
-    message.error('Укажите страну')
+    message.error(t('driver.citizenships.specifyCountry'))
     return
   }
   adding.value = true
   try {
     await add({ country: addForm.country.trim(), acquired_at: addForm.acquired_at || undefined })
-    message.success('Гражданство добавлено')
+    message.success(t('driver.citizenships.added'))
     showAddModal.value = false
     addForm.country = ''
     addForm.acquired_at = null
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка')
+    message.error(e?.data?.error || t('common.error'))
   } finally {
     adding.value = false
   }
@@ -111,9 +118,9 @@ async function doAdd() {
 async function doRevoke(id: string) {
   try {
     await revoke(id)
-    message.success('Гражданство отмечено как отказ')
+    message.success(t('driver.citizenships.revokedSuccess'))
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка')
+    message.error(e?.data?.error || t('common.error'))
   }
 }
 

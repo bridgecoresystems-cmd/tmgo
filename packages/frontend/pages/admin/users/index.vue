@@ -3,29 +3,29 @@
     <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
       {{ loadError }}
       <template #footer>
-        <n-button size="small" @click="loadUsers">Повторить</n-button>
+        <n-button size="small" @click="loadUsers">{{ $t('common.retry') }}</n-button>
       </template>
     </n-alert>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-      <n-h3 style="margin: 0;">Пользователи</n-h3>
+      <n-h3 style="margin: 0;">{{ $t('admin.usersIndex.title') }}</n-h3>
       <n-space>
-        <n-button type="primary" @click="showAddModal = true">Добавить пользователя</n-button>
-        <n-button quaternary @click="navigateTo('/admin/settings/deactivated-users')">Удалённые</n-button>
+        <n-button type="primary" @click="showAddModal = true">{{ $t('admin.usersIndex.addUser') }}</n-button>
+        <n-button quaternary @click="navigateTo('/admin/settings/deactivated-users')">{{ $t('admin.usersIndex.deactivated') }}</n-button>
         <n-select
           v-model:value="verificationFilter"
           :options="verificationFilterOptions"
-          placeholder="Верификация"
+          :placeholder="$t('admin.usersIndex.verificationPlaceholder')"
           clearable
           style="width: 180px"
         />
         <n-select
           v-model:value="onlineFilter"
           :options="onlineFilterOptions"
-          placeholder="Онлайн"
+          :placeholder="$t('admin.usersIndex.onlinePlaceholder')"
           clearable
           style="width: 140px"
         />
-        <n-input v-model:value="search" placeholder="Поиск по email / имени" style="width: 280px;" clearable />
+        <n-input v-model:value="search" :placeholder="$t('admin.usersIndex.searchPlaceholder')" style="width: 280px;" clearable />
       </n-space>
     </div>
 
@@ -38,25 +38,25 @@
       striped
     />
 
-    <n-modal v-model:show="showAddModal" preset="card" title="Добавить пользователя" style="max-width: 420px" @after-leave="resetAddForm">
+    <n-modal v-model:show="showAddModal" preset="card" :title="$t('admin.usersIndex.modalTitle')" style="max-width: 420px" @after-leave="resetAddForm">
       <n-form ref="addFormRef" :model="addForm" :rules="addRules" label-placement="top">
-        <n-form-item label="Email" path="email" required>
-          <n-input v-model:value="addForm.email" placeholder="admin@tmgo.com" type="email" />
+        <n-form-item :label="$t('admin.usersIndex.emailLabel')" path="email" required>
+          <n-input v-model:value="addForm.email" :placeholder="$t('admin.usersIndex.emailPlaceholder')" type="email" />
         </n-form-item>
-        <n-form-item label="Имя" path="name">
-          <n-input v-model:value="addForm.name" placeholder="Иван Иванов" />
+        <n-form-item :label="$t('admin.usersIndex.nameLabel')" path="name">
+          <n-input v-model:value="addForm.name" :placeholder="$t('admin.usersIndex.namePlaceholder')" />
         </n-form-item>
-        <n-form-item label="Пароль" path="password" required>
-          <n-input v-model:value="addForm.password" type="password" show-password-on="click" placeholder="Минимум 6 символов" />
+        <n-form-item :label="$t('admin.usersIndex.passwordLabel')" path="password" required>
+          <n-input v-model:value="addForm.password" type="password" show-password-on="click" :placeholder="$t('admin.usersIndex.passwordPlaceholder')" />
         </n-form-item>
-        <n-form-item label="Роль" path="role" required>
-          <n-select v-model:value="addForm.role" :options="addRoleOptions" placeholder="Выберите роль" />
+        <n-form-item :label="$t('admin.usersIndex.roleLabel')" path="role" required>
+          <n-select v-model:value="addForm.role" :options="addRoleOptions" :placeholder="$t('admin.usersIndex.rolePlaceholder')" />
         </n-form-item>
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showAddModal = false">Отмена</n-button>
-          <n-button type="primary" :loading="adding" @click="handleAddUser">Создать</n-button>
+          <n-button @click="showAddModal = false">{{ $t('admin.usersIndex.cancel') }}</n-button>
+          <n-button type="primary" :loading="adding" @click="handleAddUser">{{ $t('admin.usersIndex.create') }}</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -70,6 +70,7 @@ import type { DataTableColumns } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
+const { t } = useI18n()
 const { apiBase } = useApiBase()
 const { session } = useAuth()
 const message = useMessage()
@@ -88,15 +89,15 @@ const addForm = reactive({
   password: '',
   role: 'admin' as 'admin' | 'dispatcher',
 })
-const addRoleOptions = [
-  { label: 'Администратор', value: 'admin' },
-  { label: 'Диспетчер', value: 'dispatcher' },
-]
-const addRules = {
-  email: { required: true, message: 'Введите email', trigger: 'blur' },
-  password: { required: true, message: 'Введите пароль', trigger: 'blur' },
-  role: { required: true, message: 'Выберите роль', trigger: 'change' },
-}
+const addRoleOptions = computed(() => [
+  { label: t('admin.usersIndex.roleAdmin'), value: 'admin' },
+  { label: t('admin.usersIndex.roleDispatcher'), value: 'dispatcher' },
+])
+const addRules = computed(() => ({
+  email: { required: true, message: t('admin.usersIndex.validationEmail'), trigger: 'blur' as const },
+  password: { required: true, message: t('admin.usersIndex.validationPassword'), trigger: 'blur' as const },
+  role: { required: true, message: t('admin.usersIndex.validationRole'), trigger: 'change' as const },
+}))
 const loadError = ref<string | null>(null)
 const users = ref<any[]>([])
 
@@ -107,30 +108,37 @@ const roleColors: Record<string, any> = {
   client: 'default',
 }
 
-const verificationFilterOptions = [
-  { label: 'Не верифицирован', value: 'not_verified' },
-  { label: 'Ожидает проверки', value: 'waiting_verification' },
-  { label: 'Запрос', value: 'request' },
-  { label: 'Верифицирован', value: 'verified' },
-]
+const verificationFilterOptions = computed(() => [
+  { label: t('admin.usersIndex.verificationNotVerified'), value: 'not_verified' },
+  { label: t('admin.usersIndex.verificationWaiting'), value: 'waiting_verification' },
+  { label: t('admin.usersIndex.verificationRequest'), value: 'request' },
+  { label: t('admin.usersIndex.verificationVerified'), value: 'verified' },
+])
 
-const onlineFilterOptions = [
-  { label: 'Онлайн', value: 'online' },
-  { label: 'Оффлайн', value: 'offline' },
-]
+const onlineFilterOptions = computed(() => [
+  { label: t('admin.usersIndex.online'), value: 'online' },
+  { label: t('admin.usersIndex.offline'), value: 'offline' },
+])
 
 const activeAdminCount = ref(0)
 function isLastAdmin(row: { role?: string }) {
   return row.role === 'admin' && activeAdminCount.value <= 1
 }
 
+const roleLabels: Record<string, string> = {
+  admin: 'admin.usersIndex.roleAdmin',
+  dispatcher: 'admin.usersIndex.roleDispatcher',
+  driver: 'admin.usersIndex.roleDriver',
+  client: 'admin.usersIndex.roleClient',
+}
+
 function getVerificationTag(status: string | null) {
   const s = status ?? 'not_verified'
   const labels: Record<string, string> = {
-    not_verified: 'Не верифицирован',
-    waiting_verification: 'Ожидает',
-    request: 'Запрос',
-    verified: 'Верифицирован',
+    not_verified: t('admin.usersIndex.verificationNotVerified'),
+    waiting_verification: t('admin.usersIndex.verificationWaiting'),
+    request: t('admin.usersIndex.verificationRequest'),
+    verified: t('admin.usersIndex.verificationVerified'),
   }
   const types: Record<string, string> = {
     not_verified: 'default',
@@ -141,27 +149,31 @@ function getVerificationTag(status: string | null) {
   return h(NTag, { type: types[s] || 'default', size: 'small' }, { default: () => labels[s] || s })
 }
 
-const columns: DataTableColumns = [
+const columns = computed<DataTableColumns>(() => [
   {
-    title: 'Имя',
+    title: t('admin.usersIndex.columnName'),
     key: 'name',
     ellipsis: true,
     render: (row) => row.driverName || row.name || row.email || '—',
   },
-  { title: 'Email', key: 'email', ellipsis: true },
+  { title: t('admin.usersIndex.columnEmail'), key: 'email', ellipsis: true },
   {
-    title: 'Роль',
+    title: t('admin.usersIndex.columnRole'),
     key: 'role',
-    render: (row) => h(NTag, { type: roleColors[row.role as string] || 'default', size: 'small' }, { default: () => row.role }),
+    render: (row) => {
+      const role = row.role as string
+      const label = roleLabels[role] ? t(roleLabels[role]) : role
+      return h(NTag, { type: roleColors[role] || 'default', size: 'small' }, { default: () => label })
+    },
   },
   {
-    title: 'Верификация',
+    title: t('admin.usersIndex.columnVerification'),
     key: 'verification_status',
     width: 140,
     render: (row) => row.role === 'driver' ? getVerificationTag(row.verification_status) : '—',
   },
   {
-    title: 'Онлайн',
+    title: t('admin.usersIndex.columnOnline'),
     key: 'is_online',
     width: 90,
     render: (row) => {
@@ -170,7 +182,7 @@ const columns: DataTableColumns = [
       return h(NTag, {
         type: online ? 'success' : 'default',
         size: 'small',
-      }, { default: () => online ? 'Онлайн' : 'Оффлайн' })
+      }, { default: () => online ? t('admin.usersIndex.online') : t('admin.usersIndex.offline') })
     },
   },
   {
@@ -193,14 +205,14 @@ const columns: DataTableColumns = [
                   handleImpersonate(row);
                 },
               }, { default: () => '👤' }),
-              default: () => 'Войти под пользователем',
+              default: () => t('admin.usersIndex.impersonateTooltip'),
             })
           : null,
         canDelete
           ? h(NPopconfirm, {
               onPositiveClick: () => handleDeactivate(row),
-              positiveText: 'Да',
-              negativeText: 'Отмена',
+              positiveText: t('common.yes'),
+              negativeText: t('admin.usersIndex.cancel'),
             }, {
               trigger: () => h(NButton, {
                 quaternary: true,
@@ -209,13 +221,13 @@ const columns: DataTableColumns = [
                 circle: true,
                 onClick: (e: Event) => e.stopPropagation(),
               }, { default: () => '×' }),
-              default: () => 'Деактивировать пользователя? Он исчезнет из списка, но данные сохранятся.',
+              default: () => t('admin.usersIndex.deactivateConfirm'),
             })
           : null,
       ].filter(Boolean));
     },
   },
-]
+])
 
 const filteredUsers = computed(() => {
   let list = Array.isArray(users.value) ? users.value : []
@@ -252,9 +264,9 @@ async function loadUsers() {
     users.value = Array.isArray(data) ? data : []
     activeAdminCount.value = users.value.filter((u) => u.role === 'admin').length
   } catch (e: any) {
-    const msg = e?.data?.message || e?.message || 'Ошибка загрузки'
+    const msg = e?.data?.message || e?.message || t('admin.usersIndex.loadError')
     const isNetwork = String(e?.message || '').toLowerCase().includes('fetch') || String(e?.message || '').includes('network')
-    const err = isNetwork ? `${msg}. Проверь: backend запущен? (bun run dev в packages/backend)` : msg
+    const err = isNetwork ? t('admin.usersIndex.loadErrorNetwork', { msg }) : msg
     loadError.value = err
     message.error(loadError.value)
     if (import.meta.dev) console.error('Admin users fetch failed:', e)
@@ -277,7 +289,7 @@ async function handleAddUser() {
     return
   }
   if (addForm.password.length < 6) {
-    message.error('Пароль должен быть не менее 6 символов')
+    message.error(t('admin.usersIndex.passwordMinLength'))
     return
   }
   adding.value = true
@@ -292,11 +304,11 @@ async function handleAddUser() {
         role: addForm.role,
       },
     })
-    message.success('Пользователь создан')
+    message.success(t('admin.usersIndex.userCreated'))
     showAddModal.value = false
     loadUsers()
   } catch (e: any) {
-    message.error(e?.data?.message || e?.message || 'Ошибка создания')
+    message.error(e?.data?.message || e?.message || t('admin.usersIndex.createError'))
   } finally {
     adding.value = false
   }
@@ -308,26 +320,26 @@ async function handleDeactivate(row: { id: string; name?: string; email?: string
       method: 'POST',
       credentials: 'include',
     })
-    message.success('Пользователь деактивирован')
+    message.success(t('admin.usersIndex.userDeactivated'))
     loadUsers()
   } catch (e: any) {
-    message.error(e?.data?.message || e?.message || 'Ошибка')
+    message.error(e?.data?.message || e?.message || t('common.error'))
   }
 }
 
 function handleImpersonate(row: { id: string; name?: string; email?: string; role?: string; driverName?: string }) {
   const name = row.driverName || row.name || row.email || '—'
   dialog.warning({
-    title: 'Войти под пользователем',
-    content: `Вы войдёте под учётной записью ${name} (${row.role}). Чтобы вернуться — нажмите баннер в кабинете.`,
-    positiveText: 'Войти',
-    negativeText: 'Отмена',
+    title: t('admin.usersIndex.impersonateTitle'),
+    content: t('admin.usersIndex.impersonateContent', { name, role: row.role || '' }),
+    positiveText: t('admin.usersIndex.impersonateConfirm'),
+    negativeText: t('admin.usersIndex.cancel'),
     onPositiveClick: async () => {
       try {
         await impersonate(row.id)
-        message.success(`Вход под ${name}`)
+        message.success(t('admin.usersIndex.impersonateSuccess', { name }))
       } catch (e: any) {
-        message.error(e?.message || e?.data?.error || 'Ошибка при входе под пользователем')
+        message.error(e?.message || e?.data?.error || t('admin.usersIndex.impersonateError'))
       }
     },
   })

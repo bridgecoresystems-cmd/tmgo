@@ -8,11 +8,11 @@
           size="medium"
           @update:value="onChange"
         >
-          <template #checked>Онлайн</template>
-          <template #unchecked>Оффлайн</template>
+          <template #checked>{{ t('online.online') }}</template>
+          <template #unchecked>{{ t('online.offline') }}</template>
         </n-switch>
       </template>
-      {{ isOnline ? 'Вы онлайн — доступны для заказов' : 'Вы оффлайн' }}
+      {{ isOnline ? t('online.tooltipOnline') : t('online.tooltipOffline') }}
     </n-tooltip>
   </div>
 </template>
@@ -20,6 +20,7 @@
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+const { t } = useI18n()
 const { isOnline, setOnline, fetchStatus } = useDriverOnlineStatus()
 const message = useMessage()
 const loading = ref(false)
@@ -28,9 +29,9 @@ async function onChange(value: boolean) {
   loading.value = true
   try {
     await setOnline(value)
-    message.success(value ? 'Вы онлайн' : 'Вы оффлайн')
+    message.success(value ? t('online.online') : t('online.offline'))
   } catch (e: any) {
-    message.error(e?.message || 'Ошибка')
+    message.error(e?.message || t('common.error'))
     await fetchStatus()
   } finally {
     loading.value = false

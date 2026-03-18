@@ -3,33 +3,33 @@
     <!-- Уведомление о верификации -->
     <n-alert
       v-if="showOnboardingAlert"
-      title="Пройдите верификацию"
+      :title="t('driver.dashboard.verificationAlert')"
       type="warning"
       class="mb-24"
     >
-      Для того чтобы начать принимать заказы, пройдите верификацию
-      <NuxtLink to="/cabinet/driver/card-v2" class="alert-link">здесь</NuxtLink>.
+      {{ t('driver.dashboard.verificationText') }}
+      <NuxtLink to="/cabinet/driver/card-v2" class="alert-link">{{ t('driver.dashboard.verificationHere') }}</NuxtLink>.
       <template #footer>
         <n-button type="primary" size="small" @click="navigateTo('/cabinet/driver/card-v2')">
-          Пройти верификацию
+          {{ t('driver.dashboard.verificationButton') }}
         </n-button>
       </template>
     </n-alert>
 
-    <n-card title="Добро пожаловать в кабинет перевозчика" class="shadow-sm onboarding-card">
+    <n-card :title="t('driver.dashboard.title')" class="shadow-sm onboarding-card">
       <div class="stats-grid">
         <n-grid :cols="4" :x-gap="12">
           <n-gi>
-            <n-statistic label="Активные заказы" :value="0" />
+            <n-statistic :label="t('driver.dashboard.activeOrders')" :value="0" />
           </n-gi>
           <n-gi>
-            <n-statistic label="Завершено" :value="0" />
+            <n-statistic :label="t('driver.dashboard.completed')" :value="0" />
           </n-gi>
           <n-gi>
-            <n-statistic label="Рейтинг" value="0.00" />
+            <n-statistic :label="t('driver.dashboard.rating')" value="0.00" />
           </n-gi>
           <n-gi>
-            <n-statistic label="Баланс" value="0 TMT" />
+            <n-statistic :label="t('driver.dashboard.balance')" value="0 TMT" />
           </n-gi>
         </n-grid>
       </div>
@@ -38,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
 const { session } = useAuth()

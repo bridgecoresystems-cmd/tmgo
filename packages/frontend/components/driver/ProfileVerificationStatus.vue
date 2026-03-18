@@ -3,11 +3,11 @@
     <template #header>
       <span>{{ title }}</span>
       <n-tag v-if="data.missing_fields?.length" size="small" type="warning" style="margin-left: 8px">
-        Заполните: {{ missingLabels }}
+        {{ t('driver.card.missingFill') }} {{ missingLabels }}
       </n-tag>
     </template>
     <p v-if="data.comment" class="verification-comment">{{ data.comment }}</p>
-    <p v-else-if="data.submitted_at" class="verification-date">Отправлено: {{ formatDate(data.submitted_at) }}</p>
+    <p v-else-if="data.submitted_at" class="verification-date">{{ t('driver.card.submittedAt') }} {{ formatDate(data.submitted_at) }}</p>
     <template #footer>
       <n-space>
         <n-button
@@ -17,7 +17,7 @@
           :loading="submitting"
           @click="submit"
         >
-          Отправить на верификацию
+          {{ t('driver.card.submitForVerification') }}
         </n-button>
         <n-button
           v-if="canResubmit"
@@ -26,7 +26,7 @@
           :loading="submitting"
           @click="resubmit"
         >
-          Отправить повторно
+          {{ t('driver.card.resubmit') }}
         </n-button>
       </n-space>
     </template>
@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+const { t } = useI18n()
 const { data, fetchStatus } = useDriverVerificationStatus()
 const message = useMessage()
 const submitting = ref(false)
@@ -59,20 +60,25 @@ const alertType = computed(() => {
 const title = computed(() => {
   const s = data.value?.status
   switch (s) {
-    case 'verified': return 'Верифицирован'
+    case 'verified': return t('driver.card.verified')
     case 'submitted':
-    case 'waiting_verification': return 'Ожидает проверки'
-    case 'rejected': return 'Отклонён'
-    case 'suspended': return 'Приостановлен'
-    case 'request': return 'Запрос на изменение'
-    default: return 'Статус верификации'
+    case 'waiting_verification': return t('driver.card.waitingVerification')
+    case 'rejected': return t('driver.card.rejected')
+    case 'suspended': return t('driver.card.suspended')
+    case 'request': return t('driver.card.changeRequest')
+    default: return t('driver.card.verificationStatus')
   }
 })
 
 const missingLabels = computed(() => {
   const labels: Record<string, string> = {
-    surname: 'фамилию', given_name: 'имя', date_of_birth: 'дату рождения', gender: 'пол',
-    passport: 'паспорт', drivers_license: 'ВУ', citizenship: 'гражданство',
+    surname: t('driver.changeRequests.fieldSurname').toLowerCase(),
+    given_name: t('driver.changeRequests.fieldGivenName').toLowerCase(),
+    date_of_birth: t('driver.card.dateOfBirth').toLowerCase(),
+    gender: t('driver.card.gender').toLowerCase(),
+    passport: t('driver.documents.docTypePassport').toLowerCase(),
+    drivers_license: t('driver.documents.docTypeDriversLicense').toLowerCase(),
+    citizenship: t('driver.card.citizenship').toLowerCase(),
   }
   return (data.value?.missing_fields ?? []).map((f) => labels[f] || f).join(', ')
 })
@@ -90,10 +96,10 @@ async function submit() {
       credentials: 'include',
       body: {},
     })
-    message.success('Отправлено на верификацию')
+    message.success(t('driver.card.submitForVerification'))
     await fetchStatus()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка')
+    message.error(e?.data?.error || t('common.error'))
   } finally {
     submitting.value = false
   }
@@ -107,10 +113,10 @@ async function resubmit() {
       credentials: 'include',
       body: {},
     })
-    message.success('Отправлено повторно')
+    message.success(t('driver.card.resubmit'))
     await fetchStatus()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка')
+    message.error(e?.data?.error || t('common.error'))
   } finally {
     submitting.value = false
   }

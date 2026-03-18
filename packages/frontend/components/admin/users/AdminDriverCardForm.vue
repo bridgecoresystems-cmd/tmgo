@@ -2,7 +2,7 @@
   <div class="admin-driver-card-form">
     <n-alert v-if="loadError" type="error" class="mb-16">
       {{ loadError }}
-      <n-button size="small" style="margin-top: 8px" @click="loadProfile">Повторить</n-button>
+      <n-button size="small" style="margin-top: 8px" @click="loadProfile">{{ t('common.retry') }}</n-button>
     </n-alert>
 
     <n-spin v-else :show="loading">
@@ -17,7 +17,7 @@
           class="v2-form"
         >
           <!-- 1. Основная информация -->
-          <n-h3 prefix="bar" align-text>1. Основная информация</n-h3>
+          <n-h3 prefix="bar" align-text>{{ t('driver.card.section1') }}</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
               <n-form-item>
@@ -31,12 +31,12 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:driver_id') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:driver_id') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Водитель ID</span>
+                    <span>{{ t('driver.card.driverId') }}</span>
                   </n-space>
                 </template>
-                <n-text depth="3">{{ form.id || 'Генерируется системой' }}</n-text>
+                <n-text depth="3">{{ form.id || t('driver.card.generatedBySystem') }}</n-text>
               </n-form-item>
 
               <n-form-item required path="surname">
@@ -50,12 +50,12 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:surname') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:surname') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Фамилия</span>
+                    <span>{{ t('driver.changeRequests.fieldSurname') }}</span>
                   </n-space>
                 </template>
-                <n-input v-model:value="form.surname" placeholder="Akmuradow" />
+                <n-input v-model:value="form.surname" :placeholder="t('admin.driverCardForm.placeholderSurname')" />
               </n-form-item>
 
               <n-form-item required path="given_name">
@@ -69,12 +69,12 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:given_name') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:given_name') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Имя</span>
+                    <span>{{ t('driver.changeRequests.fieldGivenName') }}</span>
                   </n-space>
                 </template>
-                <n-input v-model:value="form.given_name" placeholder="Batyr" />
+                <n-input v-model:value="form.given_name" :placeholder="t('admin.driverCardForm.placeholderGivenName')" />
               </n-form-item>
 
               <n-form-item path="patronymic">
@@ -88,12 +88,12 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:patronymic') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:patronymic') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Отчество</span>
+                    <span>{{ t('driver.changeRequests.fieldPatronymic') }}</span>
                   </n-space>
                 </template>
-                <n-input v-model:value="form.patronymic" placeholder="Muhamednazarowich" />
+                <n-input v-model:value="form.patronymic" :placeholder="t('admin.driverCardForm.placeholderPatronymic')" />
               </n-form-item>
 
               <n-form-item required path="date_of_birth">
@@ -107,9 +107,9 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:date_of_birth') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:date_of_birth') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Дата рождения</span>
+                    <span>{{ t('driver.changeRequests.fieldDateOfBirth') }}</span>
                   </n-space>
                 </template>
                 <n-date-picker
@@ -131,9 +131,9 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:citizenships') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:citizenships') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Гражданство</span>
+                    <span>{{ t('driver.card.citizenship') }}</span>
                   </n-space>
                 </template>
                 <n-space vertical style="width: 100%">
@@ -147,7 +147,7 @@
                     />
                     <n-button v-if="i > 0" quaternary circle type="error" @click="form.citizenships.splice(i, 1)">×</n-button>
                   </n-space>
-                  <n-button quaternary size="small" type="primary" @click="form.citizenships.push('')">+ Добавить</n-button>
+                  <n-button quaternary size="small" type="primary" @click="form.citizenships.push('')">{{ t('admin.driverCardForm.add') }}</n-button>
                 </n-space>
               </n-form-item>
 
@@ -162,15 +162,15 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:gender') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:gender') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Пол</span>
+                    <span>{{ t('driver.card.gender') }}</span>
                   </n-space>
                 </template>
                 <n-radio-group v-model:value="form.gender">
                   <n-space>
-                    <n-radio value="male">Мужской</n-radio>
-                    <n-radio value="female">Женский</n-radio>
+                    <n-radio value="male">{{ t('driver.card.male') }}</n-radio>
+                    <n-radio value="female">{{ t('driver.card.female') }}</n-radio>
                   </n-space>
                 </n-radio-group>
               </n-form-item>
@@ -186,17 +186,17 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:phones') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:phones') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Контактный телефон</span>
+                    <span>{{ t('driver.card.contactPhone') }}</span>
                   </n-space>
                 </template>
                 <n-space vertical style="width: 100%">
                   <n-space v-for="(p, i) in form.phones" :key="i" align="center">
-                    <n-input v-model:value="form.phones[i]" placeholder="+99364852563" style="width: 200px" />
+                    <n-input v-model:value="form.phones[i]" :placeholder="t('admin.driverCardForm.placeholderPhone')" style="width: 200px" />
                     <n-button v-if="i > 0" quaternary circle type="error" @click="form.phones.splice(i, 1)">×</n-button>
                   </n-space>
-                  <n-button quaternary size="small" type="primary" @click="form.phones.push('')">+ Добавить</n-button>
+                  <n-button quaternary size="small" type="primary" @click="form.phones.push('')">{{ t('admin.driverCardForm.add') }}</n-button>
                 </n-space>
               </n-form-item>
 
@@ -211,18 +211,18 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:emails') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:emails') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Email (Логин)</span>
+                    <span>{{ t('driver.card.emailLogin') }}</span>
                   </n-space>
                 </template>
                 <n-space vertical style="width: 100%">
                   <n-input :value="form.email" disabled style="width: 300px" />
                   <n-space v-for="(e, i) in form.extra_emails" :key="i" align="center">
-                    <n-input v-model:value="form.extra_emails[i]" placeholder="extra@mail.com" style="width: 200px" />
+                    <n-input v-model:value="form.extra_emails[i]" :placeholder="t('admin.driverCardForm.placeholderEmail')" style="width: 200px" />
                     <n-button quaternary circle type="error" @click="form.extra_emails.splice(i, 1)">×</n-button>
                   </n-space>
-                  <n-button quaternary size="small" type="primary" @click="form.extra_emails.push('')">+ Добавить</n-button>
+                  <n-button quaternary size="small" type="primary" @click="form.extra_emails.push('')">{{ t('admin.driverCardForm.add') }}</n-button>
                 </n-space>
               </n-form-item>
 
@@ -237,9 +237,9 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:status') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:status') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Статус (Диспетчер)</span>
+                    <span>{{ t('driver.card.statusDispatcher') }}</span>
                   </n-space>
                 </template>
                 <n-select v-model:value="form.status" :options="statusOptions" style="width: 200px" />
@@ -256,30 +256,30 @@
                           </template>
                         </n-button>
                       </template>
-                      {{ isHidden('main:employment_category') ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                      {{ isHidden('main:employment_category') ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                     </n-tooltip>
-                    <span>Категория занятости</span>
+                    <span>{{ t('driver.card.employmentCategory') }}</span>
                   </n-space>
                 </template>
                 <n-select v-model:value="form.employment_category" :options="employmentOptions" style="width: 200px" />
               </n-form-item>
 
-              <n-form-item label="Компания">
-                <n-input v-model:value="form.company_name" placeholder="ООО Транспорт" />
+              <n-form-item :label="t('admin.company')">
+                <n-input v-model:value="form.company_name" :placeholder="t('admin.driverCardForm.placeholderCompany')" />
               </n-form-item>
 
-              <n-form-item label="ИНН">
-                <n-input v-model:value="form.inn" placeholder="123456789" />
+              <n-form-item :label="t('admin.inn')">
+                <n-input v-model:value="form.inn" :placeholder="t('admin.driverCardForm.placeholderInn')" />
               </n-form-item>
 
-              <n-form-item label="Адрес">
-                <n-input v-model:value="form.address" type="textarea" placeholder="г. Ашхабад, ул. Махтумкули, д. 10" />
+              <n-form-item :label="t('admin.address')">
+                <n-input v-model:value="form.address" type="textarea" :placeholder="t('admin.driverCardForm.placeholderAddress')" />
               </n-form-item>
             </n-space>
           </n-card>
 
           <!-- 2. Паспортные данные -->
-          <n-h3 prefix="bar" align-text>2. Паспортные данные</n-h3>
+          <n-h3 prefix="bar" align-text>{{ t('driver.card.section2') }}</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
               <template v-for="(p, pi) in passportsList" :key="p._key">
@@ -292,60 +292,60 @@
                         </template>
                       </n-button>
                     </template>
-                    {{ isHidden(`passport:${pi}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    {{ isHidden(`passport:${pi}`) ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                   </n-tooltip>
-                  <span>Паспорт {{ pi + 1 }}</span>
+                  <span>{{ t('admin.driverCardForm.passportN', { n: pi + 1 }) }}</span>
                 </div>
-                <n-form-item :label="`Серия / Номер паспорта${pi > 0 ? ` (${pi + 1})` : ''}`" :required="pi === 0">
+                <n-form-item :label="`${t('driver.card.passportSeriesNumber')}${pi > 0 ? ` (${pi + 1})` : ''}`" :required="pi === 0">
                   <n-space align="center">
                     <n-input v-model:value="p.series" placeholder="AB" style="width: 80px" />
                     <n-input v-model:value="p.number" placeholder="123456" style="width: 160px" />
                     <n-button v-if="pi > 0" quaternary circle type="error" @click="removePassport(pi)">×</n-button>
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Даты действия" :required="pi === 0">
+                <n-form-item :label="t('driver.card.validityDates')" :required="pi === 0">
                   <n-space align="center">
                     <n-date-picker
                       :value="p.issued_at ? new Date(p.issued_at).getTime() : null"
                       type="date"
-                      placeholder="Дата выдачи"
+                      :placeholder="t('driver.documents.issueDate')"
                       @update:value="(v) => { p.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
                     />
                     <n-text depth="3">—</n-text>
                     <n-date-picker
                       :value="p.expires_at ? new Date(p.expires_at).getTime() : null"
                       type="date"
-                      placeholder="Дата окончания"
+                      :placeholder="t('driver.documents.expiryDate')"
                       @update:value="(v) => { p.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
                     />
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Кем выдан" :required="pi === 0">
-                  <n-input v-model:value="p.issued_by" placeholder="ОВД г. Ашхабад" />
+                <n-form-item :label="t('driver.card.passportIssuedBy')" :required="pi === 0">
+                  <n-input v-model:value="p.issued_by" :placeholder="t('admin.driverCardForm.placeholderIssuedBy')" />
                 </n-form-item>
-                <n-form-item label="Место рождения" :required="pi === 0">
-                  <n-input v-model:value="p.place_of_birth" placeholder="г. Мары" />
+                <n-form-item :label="t('driver.card.placeOfBirth')" :required="pi === 0">
+                  <n-input v-model:value="p.place_of_birth" :placeholder="t('admin.driverCardForm.placeholderPlaceOfBirth')" />
                 </n-form-item>
-                <n-form-item label="Адрес проживания" :required="pi === 0">
-                  <n-input v-model:value="p.residential_address" placeholder="ул. Махтумкули, д. 10" />
+                <n-form-item :label="t('driver.card.residentialAddress')" :required="pi === 0">
+                  <n-input v-model:value="p.residential_address" :placeholder="t('admin.driverCardForm.placeholderResidentialAddress')" />
                 </n-form-item>
-                <n-form-item label="Скан паспорта (PDF/JPG)" :required="pi === 0">
+                <n-form-item :label="t('driver.card.passportScan')" :required="pi === 0">
                   <n-space align="center">
                     <n-upload :max="1" :custom-request="(o) => handlePassportScanUpload(o, p)" :show-file-list="false">
-                      <n-button size="small">{{ p.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                      <n-button size="small">{{ p.scan_url ? t('admin.driverCardForm.replaceFile') : t('admin.driverCardForm.uploadFile') }}</n-button>
                     </n-upload>
                     <n-button v-if="p.scan_url" text type="primary" size="small" @click="openScan(p.scan_url)">
-                      Просмотр скана
+                      {{ t('admin.driverCardForm.viewScan') }}
                     </n-button>
                   </n-space>
                 </n-form-item>
               </template>
-              <n-button quaternary type="primary" size="small" @click="addPassport">+ Добавить паспорт</n-button>
+              <n-button quaternary type="primary" size="small" @click="addPassport">{{ t('admin.driverCardForm.addPassport') }}</n-button>
             </n-space>
           </n-card>
 
           <!-- 3. Водительское удостоверение -->
-          <n-h3 prefix="bar" align-text>3. Водительское удостоверение</n-h3>
+          <n-h3 prefix="bar" align-text>{{ t('driver.card.section3') }}</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
               <template v-for="(lic, li) in licensesList" :key="lic._key">
@@ -358,70 +358,70 @@
                         </template>
                       </n-button>
                     </template>
-                    {{ isHidden(`license:${li}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    {{ isHidden(`license:${li}`) ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                   </n-tooltip>
-                  <span>Водительское удостоверение {{ li + 1 }}</span>
+                  <span>{{ t('admin.driverCardForm.licenseN', { n: li + 1 }) }}</span>
                 </div>
-                <n-form-item :label="`Номер ВУ${li > 0 ? ` (${li + 1})` : ''}`" :required="li === 0">
+                <n-form-item :label="`${t('driver.card.licenseNumber')}${li > 0 ? ` (${li + 1})` : ''}`" :required="li === 0">
                   <n-space align="center">
                     <n-input v-model:value="lic.number" placeholder="tm-123456" style="width: 240px" />
                     <n-button v-if="li > 0" quaternary circle type="error" @click="removeLicense(li)">×</n-button>
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Категории прав" :required="li === 0">
+                <n-form-item :label="t('driver.card.licenseCategories')" :required="li === 0">
                   <n-checkbox-group v-model:value="lic.license_categories_arr">
                     <n-space>
                       <n-checkbox v-for="c in licenseCategories" :key="c.value" :value="c.value" :label="c.label" />
                     </n-space>
                   </n-checkbox-group>
                 </n-form-item>
-                <n-form-item label="Даты действия ВУ" :required="li === 0">
+                <n-form-item :label="t('driver.card.licenseValidityDates')" :required="li === 0">
                   <n-space align="center">
                     <n-date-picker
                       :value="lic.issued_at ? new Date(lic.issued_at).getTime() : null"
                       type="date"
-                      placeholder="Дата выдачи"
+                      :placeholder="t('driver.documents.issueDate')"
                       @update:value="(v) => { lic.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
                     />
                     <n-text depth="3">—</n-text>
                     <n-date-picker
                       :value="lic.expires_at ? new Date(lic.expires_at).getTime() : null"
                       type="date"
-                      placeholder="Дата окончания"
+                      :placeholder="t('driver.documents.expiryDate')"
                       @update:value="(v) => { lic.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
                     />
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Кем выдано">
-                  <n-input v-model:value="lic.issued_by" placeholder="МВД Туркменистана" />
+                <n-form-item :label="t('driver.card.adrIssuedBy')">
+                  <n-input v-model:value="lic.issued_by" :placeholder="t('admin.driverCardForm.placeholderLicenseIssuedBy')" />
                 </n-form-item>
-                <n-form-item label="Скан ВУ (PDF/JPG)" :required="li === 0">
+                <n-form-item :label="t('driver.card.licenseScan')" :required="li === 0">
                   <n-space align="center">
                     <n-upload :max="1" :custom-request="(o) => handleLicenseScanUpload(o, lic)" :show-file-list="false">
-                      <n-button size="small">{{ lic.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                      <n-button size="small">{{ lic.scan_url ? t('admin.driverCardForm.replaceFile') : t('admin.driverCardForm.uploadFile') }}</n-button>
                     </n-upload>
                     <n-button v-if="lic.scan_url" text type="primary" size="small" @click="openScan(lic.scan_url)">
-                      Просмотр скана
+                      {{ t('admin.driverCardForm.viewScan') }}
                     </n-button>
                   </n-space>
                 </n-form-item>
               </template>
-              <n-button quaternary type="primary" size="small" @click="addLicense">+ Добавить ВУ</n-button>
+              <n-button quaternary type="primary" size="small" @click="addLicense">{{ t('admin.driverCardForm.addLicense') }}</n-button>
 
-              <n-form-item label="Международные права" class="mt-16">
+              <n-form-item :label="t('driver.card.internationalLicense')" class="mt-16">
                 <n-space vertical style="width: 100%">
                   <n-radio-group v-model:value="form.has_international_license">
                     <n-space>
-                      <n-radio :value="true">Да</n-radio>
-                      <n-radio :value="false">Нет</n-radio>
+                      <n-radio :value="true">{{ t('common.yes') }}</n-radio>
+                      <n-radio :value="false">{{ t('common.no') }}</n-radio>
                     </n-space>
                   </n-radio-group>
                   <template v-if="form.has_international_license">
                     <n-space vertical size="small" class="mt-8">
-                      <n-form-item label="Номер МВУ" label-placement="left" label-width="120">
+                      <n-form-item :label="t('driver.card.intlLicenseNumber')" label-placement="left" label-width="120">
                         <n-input v-model:value="form.international_license_number" placeholder="INT-789456" />
                       </n-form-item>
-                      <n-form-item label="Срок действия" label-placement="left" label-width="120">
+                      <n-form-item :label="t('driver.card.intlLicenseValidity')" label-placement="left" label-width="120">
                         <n-input v-model:value="form.international_license_validity" placeholder="2022-2027" />
                       </n-form-item>
                     </n-space>
@@ -432,7 +432,7 @@
           </n-card>
 
           <!-- 4. Разрешительные документы (виза, медсправка, техминимум, тахограф, ADR) -->
-          <n-h3 prefix="bar" align-text>4. Разрешительные документы</n-h3>
+          <n-h3 prefix="bar" align-text>{{ t('driver.card.section4') }}</n-h3>
           <n-card embedded :bordered="false" class="mb-24">
             <n-space vertical size="large">
               <template v-for="(v, vi) in visasList" :key="v._key">
@@ -445,54 +445,54 @@
                         </template>
                       </n-button>
                     </template>
-                    {{ isHidden(`visa:${vi}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    {{ isHidden(`visa:${vi}`) ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                   </n-tooltip>
-                  <span>Виза {{ vi + 1 }}</span>
+                  <span>{{ t('admin.driverCardForm.visaN', { n: vi + 1 }) }}</span>
                 </div>
-                <n-form-item :label="`Страна выдачи${vi > 0 ? ` (${vi + 1})` : ''}`">
+                <n-form-item :label="`${t('driver.card.visaIssueCountry')}${vi > 0 ? ` (${vi + 1})` : ''}`">
                   <n-space align="center">
                     <n-select
                       v-model:value="v.country"
                       :options="visaCountryOptions"
                       filterable
-                      placeholder="Выберите страну"
+                      :placeholder="t('driver.card.selectCountry')"
                       style="width: 240px"
                     />
                     <n-button v-if="vi > 0" quaternary circle type="error" @click="removeVisa(vi)">×</n-button>
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Номер визы">
+                <n-form-item :label="t('driver.card.visaNumber')">
                   <n-input v-model:value="v.number" placeholder="1234567" style="width: 200px" />
                 </n-form-item>
-                <n-form-item label="Дата начала — Дата окончания">
+                <n-form-item :label="t('driver.card.visaDateRange')">
                   <n-space align="center">
                     <n-date-picker
                       :value="v.issued_at ? new Date(v.issued_at).getTime() : null"
                       type="date"
-                      placeholder="Дата начала"
+                      :placeholder="t('driver.documents.startDate')"
                       @update:value="(val) => { v.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                     />
                     <n-text depth="3">—</n-text>
                     <n-date-picker
                       :value="v.expires_at ? new Date(v.expires_at).getTime() : null"
                       type="date"
-                      placeholder="Дата окончания"
+                      :placeholder="t('driver.documents.expiryDate')"
                       @update:value="(val) => { v.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                     />
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Скан визы">
+                <n-form-item :label="t('driver.card.scanVisa')">
                   <n-space align="center">
                     <n-upload :max="1" :custom-request="(o) => handleVisaScanUpload(o, v)" :show-file-list="false">
-                      <n-button size="small">{{ v.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                      <n-button size="small">{{ v.scan_url ? t('admin.driverCardForm.replaceFile') : t('admin.driverCardForm.uploadFile') }}</n-button>
                     </n-upload>
                     <n-button v-if="v.scan_url" text type="primary" size="small" @click="openScan(v.scan_url)">
-                      Просмотр скана
+                      {{ t('admin.driverCardForm.viewScan') }}
                     </n-button>
                   </n-space>
                 </n-form-item>
               </template>
-              <n-button quaternary type="primary" size="small" @click="addVisa">+ Добавить визу</n-button>
+              <n-button quaternary type="primary" size="small" @click="addVisa">{{ t('admin.driverCardForm.addVisa') }}</n-button>
 
               <template v-for="(m, mi) in medicalCertificatesList" :key="m._key">
                 <div class="section-header">
@@ -504,44 +504,44 @@
                         </template>
                       </n-button>
                     </template>
-                    {{ isHidden(`medical:${mi}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    {{ isHidden(`medical:${mi}`) ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                   </n-tooltip>
-                  <span>Медицинская справка {{ mi + 1 }}</span>
+                  <span>{{ t('admin.driverCardForm.medicalCertN', { n: mi + 1 }) }}</span>
                 </div>
-                <n-form-item :label="`Номер медсправки${mi > 0 ? ` (${mi + 1})` : ''}`">
+                <n-form-item :label="`${t('driver.documents.medicalNum')}${mi > 0 ? ` (${mi + 1})` : ''}`">
                   <n-space align="center">
                     <n-input v-model:value="m.number" placeholder="№ 12345" style="width: 200px" />
                     <n-button v-if="mi > 0" quaternary circle type="error" @click="removeMedicalCertificate(mi)">×</n-button>
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Дата выдачи">
+                <n-form-item :label="t('driver.documents.issueDate')">
                   <n-date-picker
                     :value="m.issued_at ? new Date(m.issued_at).getTime() : null"
                     type="date"
-                    placeholder="Дата выдачи"
+                    :placeholder="t('driver.documents.issueDate')"
                     @update:value="(val) => { m.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                 </n-form-item>
-                <n-form-item label="Дата окончания">
+                <n-form-item :label="t('driver.documents.expiryDate')">
                   <n-date-picker
                     :value="m.expires_at ? new Date(m.expires_at).getTime() : null"
                     type="date"
-                    placeholder="Дата окончания"
+                    :placeholder="t('driver.documents.expiryDate')"
                     @update:value="(val) => { m.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                 </n-form-item>
-                <n-form-item label="Скан медсправки">
+                <n-form-item :label="t('driver.card.scanMedical')">
                   <n-space align="center">
                     <n-upload :max="1" :custom-request="(o) => handleMedicalCertificateScanUpload(o, m)" :show-file-list="false">
-                      <n-button size="small">{{ m.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                      <n-button size="small">{{ m.scan_url ? t('admin.driverCardForm.replaceFile') : t('admin.driverCardForm.uploadFile') }}</n-button>
                     </n-upload>
                     <n-button v-if="m.scan_url" text type="primary" size="small" @click="openScan(m.scan_url)">
-                      Просмотр скана
+                      {{ t('admin.driverCardForm.viewScan') }}
                     </n-button>
                   </n-space>
                 </n-form-item>
               </template>
-              <n-button quaternary type="primary" size="small" @click="addMedicalCertificate">+ Добавить медсправку</n-button>
+              <n-button quaternary type="primary" size="small" @click="addMedicalCertificate">{{ t('admin.driverCardForm.addMedicalCert') }}</n-button>
 
               <template v-for="(tm, tmi) in technicalMinimumCertsList" :key="tm._key">
                 <div class="section-header">
@@ -553,49 +553,49 @@
                         </template>
                       </n-button>
                     </template>
-                    {{ isHidden(`tech_min:${tmi}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    {{ isHidden(`tech_min:${tmi}`) ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                   </n-tooltip>
-                  <span>Сертификат техминимума {{ tmi + 1 }}</span>
+                  <span>{{ t('admin.driverCardForm.techMinCertN', { n: tmi + 1 }) }}</span>
                 </div>
-                <n-form-item :label="`Имя учебного заведения${tmi > 0 ? ` (${tmi + 1})` : ''}`">
+                <n-form-item :label="`${t('driver.card.techMinInstitution')}${tmi > 0 ? ` (${tmi + 1})` : ''}`">
                   <n-space align="center">
-                    <n-input v-model:value="tm.issued_by" placeholder="Название учебного центра" style="width: 280px" />
+                    <n-input v-model:value="tm.issued_by" :placeholder="t('driver.documents.techMinInstitution')" style="width: 280px" />
                     <n-button v-if="tmi > 0" quaternary circle type="error" @click="removeTechnicalMinimumCert(tmi)">×</n-button>
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Номер сертификата">
+                <n-form-item :label="t('driver.card.certNumber')">
                   <n-input v-model:value="tm.number" placeholder="№ TM-2025-0098" style="width: 200px" />
                 </n-form-item>
-                <n-form-item label="Дата получения">
+                <n-form-item :label="t('driver.documents.receiptDate')">
                   <n-date-picker
                     :value="tm.issued_at ? new Date(tm.issued_at).getTime() : null"
                     type="date"
-                    placeholder="Дата получения"
+                    :placeholder="t('driver.documents.receiptDate')"
                     @update:value="(val) => { tm.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                 </n-form-item>
-                <n-form-item label="Дата окончания">
+                <n-form-item :label="t('driver.documents.expiryDate')">
                   <n-date-picker
                     :value="tm.expires_at ? new Date(tm.expires_at).getTime() : null"
                     type="date"
-                    placeholder="Дата окончания"
+                    :placeholder="t('driver.documents.expiryDate')"
                     @update:value="(val) => { tm.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                 </n-form-item>
-                <n-form-item label="Скан документа">
+                <n-form-item :label="t('driver.documents.docScan')">
                   <n-space align="center">
                     <n-upload :max="1" :custom-request="(o) => handleTechnicalMinimumCertScanUpload(o, tm)" :show-file-list="false">
-                      <n-button size="small">{{ tm.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                      <n-button size="small">{{ tm.scan_url ? t('admin.driverCardForm.replaceFile') : t('admin.driverCardForm.uploadFile') }}</n-button>
                     </n-upload>
                     <n-button v-if="tm.scan_url" text type="primary" size="small" @click="openScan(tm.scan_url)">
-                      Просмотр скана
+                      {{ t('admin.driverCardForm.viewScan') }}
                     </n-button>
                   </n-space>
                 </n-form-item>
               </template>
-              <n-button quaternary type="primary" size="small" @click="addTechnicalMinimumCert">+ Добавить сертификат техминимума</n-button>
+              <n-button quaternary type="primary" size="small" @click="addTechnicalMinimumCert">{{ t('admin.driverCardForm.addTechMinCert') }}</n-button>
 
-              <template v-for="(t, ti) in tachographCardsList" :key="t._key">
+              <template v-for="(tc, ti) in tachographCardsList" :key="tc._key">
                 <div class="section-header">
                   <n-tooltip>
                     <template #trigger>
@@ -605,47 +605,47 @@
                         </template>
                       </n-button>
                     </template>
-                    {{ isHidden(`tachograph:${ti}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    {{ isHidden(`tachograph:${ti}`) ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                   </n-tooltip>
-                  <span>Карта тахографа {{ ti + 1 }}</span>
+                  <span>{{ t('admin.driverCardForm.tachographCardN', { n: ti + 1 }) }}</span>
                 </div>
-                <n-form-item :label="`Номер карты тахографа${ti > 0 ? ` (${ti + 1})` : ''}`">
+                <n-form-item :label="`${t('driver.card.tachographNumber')}${ti > 0 ? ` (${ti + 1})` : ''}`">
                   <n-space align="center">
-                    <n-input v-model:value="t.number" placeholder="№ TK-567890" style="width: 200px" />
+                    <n-input v-model:value="tc.number" placeholder="№ TK-567890" style="width: 200px" />
                     <n-button v-if="ti > 0" quaternary circle type="error" @click="removeTachographCard(ti)">×</n-button>
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Страна выдачи">
-                  <n-select v-model:value="t.country" :options="visaCountryOptions" filterable placeholder="Выберите страну" style="width: 240px" />
+                <n-form-item :label="t('driver.card.visaIssueCountry')">
+                  <n-select v-model:value="tc.country" :options="visaCountryOptions" filterable :placeholder="t('driver.card.selectCountry')" style="width: 240px" />
                 </n-form-item>
-                <n-form-item label="Дата выдачи">
+                <n-form-item :label="t('driver.documents.issueDate')">
                   <n-date-picker
-                    :value="t.issued_at ? new Date(t.issued_at).getTime() : null"
+                    :value="tc.issued_at ? new Date(tc.issued_at).getTime() : null"
                     type="date"
-                    placeholder="Дата выдачи"
-                    @update:value="(val) => { t.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    :placeholder="t('driver.documents.issueDate')"
+                    @update:value="(val) => { tc.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                 </n-form-item>
-                <n-form-item label="Дата окончания">
+                <n-form-item :label="t('driver.documents.expiryDate')">
                   <n-date-picker
-                    :value="t.expires_at ? new Date(t.expires_at).getTime() : null"
+                    :value="tc.expires_at ? new Date(tc.expires_at).getTime() : null"
                     type="date"
-                    placeholder="Дата окончания"
-                    @update:value="(val) => { t.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    :placeholder="t('driver.documents.expiryDate')"
+                    @update:value="(val) => { tc.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                 </n-form-item>
-                <n-form-item label="Скан документа">
+                <n-form-item :label="t('driver.documents.docScan')">
                   <n-space align="center">
-                    <n-upload :max="1" :custom-request="(o) => handleTachographCardScanUpload(o, t)" :show-file-list="false">
-                      <n-button size="small">{{ t.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                    <n-upload :max="1" :custom-request="(o) => handleTachographCardScanUpload(o, tc)" :show-file-list="false">
+                      <n-button size="small">{{ tc.scan_url ? t('admin.driverCardForm.replaceFile') : t('admin.driverCardForm.uploadFile') }}</n-button>
                     </n-upload>
-                    <n-button v-if="t.scan_url" text type="primary" size="small" @click="openScan(t.scan_url)">
-                      Просмотр скана
+                    <n-button v-if="tc.scan_url" text type="primary" size="small" @click="openScan(tc.scan_url)">
+                      {{ t('admin.driverCardForm.viewScan') }}
                     </n-button>
                   </n-space>
                 </n-form-item>
               </template>
-              <n-button quaternary type="primary" size="small" @click="addTachographCard">+ Добавить карту тахографа</n-button>
+              <n-button quaternary type="primary" size="small" @click="addTachographCard">{{ t('admin.driverCardForm.addTachographCard') }}</n-button>
 
               <template v-for="(a, ai) in adrCertsList" :key="a._key">
                 <div class="section-header">
@@ -657,74 +657,74 @@
                         </template>
                       </n-button>
                     </template>
-                    {{ isHidden(`adr:${ai}`) ? 'Показать в карточке' : 'Скрыть в карточке' }}
+                    {{ isHidden(`adr:${ai}`) ? t('admin.driverCardForm.showInCard') : t('admin.driverCardForm.hideInCard') }}
                   </n-tooltip>
-                  <span>ADR допуск {{ ai + 1 }}</span>
+                  <span>{{ t('admin.driverCardForm.adrCertN', { n: ai + 1 }) }}</span>
                 </div>
-                <n-form-item :label="`Кем выдано${ai > 0 ? ` (${ai + 1})` : ''}`">
+                <n-form-item :label="`${t('driver.card.adrIssuedBy')}${ai > 0 ? ` (${ai + 1})` : ''}`">
                   <n-space align="center">
-                    <n-input v-model:value="a.issued_by" placeholder="Организация, выдавшая допуск" style="width: 280px" />
+                    <n-input v-model:value="a.issued_by" :placeholder="t('admin.driverCardForm.placeholderAdrIssuedBy')" style="width: 280px" />
                     <n-button v-if="ai > 0" quaternary circle type="error" @click="removeAdrCert(ai)">×</n-button>
                   </n-space>
                 </n-form-item>
-                <n-form-item label="Номер свидетельства">
+                <n-form-item :label="t('driver.card.adrCertNumber')">
                   <n-input v-model:value="a.number" placeholder="№ ADR-2025-001" style="width: 200px" />
                 </n-form-item>
-                <n-form-item label="Разрешённые классы">
+                <n-form-item :label="t('driver.card.adrAllowedClasses')">
                   <n-checkbox-group v-model:value="a.allowed_classes">
                     <n-space vertical size="small">
-                      <n-checkbox v-for="c in adrClasses" :key="c.value" :value="c.value" :label="c.label" />
+                      <n-checkbox v-for="c in adrClasses" :key="c.value" :value="c.value" :label="t('adrClasses.' + c.value)" />
                     </n-space>
                   </n-checkbox-group>
                 </n-form-item>
-                <n-form-item label="Дата выдачи">
+                <n-form-item :label="t('driver.documents.issueDate')">
                   <n-date-picker
                     :value="a.issued_at ? new Date(a.issued_at).getTime() : null"
                     type="date"
-                    placeholder="Дата выдачи"
+                    :placeholder="t('driver.documents.issueDate')"
                     @update:value="(val) => { a.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                 </n-form-item>
-                <n-form-item label="Дата окончания">
+                <n-form-item :label="t('driver.documents.expiryDate')">
                   <n-date-picker
                     :value="a.expires_at ? new Date(a.expires_at).getTime() : null"
                     type="date"
-                    placeholder="Дата окончания"
+                    :placeholder="t('driver.documents.expiryDate')"
                     @update:value="(val) => { a.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
                   />
                 </n-form-item>
-                <n-form-item label="Скан документа">
+                <n-form-item :label="t('driver.documents.docScan')">
                   <n-space align="center">
                     <n-upload :max="1" :custom-request="(o) => handleAdrCertScanUpload(o, a)" :show-file-list="false">
-                      <n-button size="small">{{ a.scan_url ? 'Заменить файл' : 'Загрузить файл' }}</n-button>
+                      <n-button size="small">{{ a.scan_url ? t('admin.driverCardForm.replaceFile') : t('admin.driverCardForm.uploadFile') }}</n-button>
                     </n-upload>
                     <n-button v-if="a.scan_url" text type="primary" size="small" @click="openScan(a.scan_url)">
-                      Просмотр скана
+                      {{ t('admin.driverCardForm.viewScan') }}
                     </n-button>
                   </n-space>
                 </n-form-item>
               </template>
-              <n-button quaternary type="primary" size="small" @click="addAdrCert">+ Добавить ADR допуск</n-button>
+              <n-button quaternary type="primary" size="small" @click="addAdrCert">{{ t('admin.driverCardForm.addAdrCert') }}</n-button>
 
-              <n-divider style="margin: 24px 0 16px;">Прочие документы</n-divider>
-              <n-form-item label="ADR пропуск / Прочие документы">
-                <n-input v-model:value="form.other_permits" type="textarea" placeholder="Страховка, пропуск и т. д." />
+              <n-divider style="margin: 24px 0 16px;">{{ t('admin.driverCardForm.otherDocuments') }}</n-divider>
+              <n-form-item :label="t('driver.card.otherPermits')">
+                <n-input v-model:value="form.other_permits" type="textarea" :placeholder="t('admin.driverCardForm.placeholderOtherPermits')" />
               </n-form-item>
 
-              <n-form-item label="Источник найма">
+              <n-form-item :label="t('driver.card.hireSource')">
                 <n-select v-model:value="form.hire_source" :options="hireSourceOptions" style="width: 240px" />
               </n-form-item>
 
-              <n-form-item label="Банковские реквизиты">
+              <n-form-item :label="t('admin.driverCardForm.bankDetails')">
                 <n-space vertical style="width: 100%">
-                  <n-input v-model:value="form.bank_name" placeholder="Банк" />
-                  <n-input v-model:value="form.bank_account" placeholder="Расчётный счёт" />
-                  <n-input v-model:value="form.bank_bik" placeholder="БИК" />
+                  <n-input v-model:value="form.bank_name" :placeholder="t('admin.driverCardForm.bankName')" />
+                  <n-input v-model:value="form.bank_account" :placeholder="t('admin.driverCardForm.bankAccount')" />
+                  <n-input v-model:value="form.bank_bik" :placeholder="t('admin.driverCardForm.bankBik')" />
                 </n-space>
               </n-form-item>
 
-              <n-form-item label="Дата последнего обновления">
-                <n-text depth="3">{{ form.updated_at || 'Автоматически системой' }}</n-text>
+              <n-form-item :label="t('admin.lastUpdateDate')">
+                <n-text depth="3">{{ form.updated_at || t('admin.autoBySystem') }}</n-text>
               </n-form-item>
             </n-space>
           </n-card>
@@ -732,7 +732,7 @@
           <!-- Actions -->
           <div class="form-actions mt-24">
             <n-space justify="end">
-              <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
+              <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
             </n-space>
           </div>
         </n-form>
@@ -747,6 +747,8 @@ import {
   NUpload, NTag, NText, NRadioGroup, NRadio, NCheckboxGroup, NCheckbox,
   NSpin, NH3, NDivider, NSwitch, useMessage, NIcon, NTooltip
 } from 'naive-ui'
+
+const { t } = useI18n()
 import { EyeOutline, EyeOffOutline } from '@vicons/ionicons5'
 import { citizenships, visaCountries, adrClasses, licenseCategories } from '@tmgo/shared'
 
@@ -778,23 +780,23 @@ const visaCountryOptions = computed(() =>
 )
 
 
-const statusOptions = [
-  { label: 'Активен', value: 'active' },
-  { label: 'В отпуске', value: 'on_leave' },
-  { label: 'Уволен', value: 'fired' }
-]
+const statusOptions = computed(() => [
+  { label: t('driver.card.statusActive'), value: 'active' },
+  { label: t('driver.card.statusOnLeave'), value: 'on_leave' },
+  { label: t('driver.card.statusFired'), value: 'fired' }
+])
 
-const employmentOptions = [
-  { label: 'Штатный', value: 'full_time' },
-  { label: 'Внештатный', value: 'freelance' },
-  { label: 'Аренда', value: 'leased' }
-]
+const employmentOptions = computed(() => [
+  { label: t('driver.card.employmentFullTime'), value: 'full_time' },
+  { label: t('driver.card.employmentFreelance'), value: 'freelance' },
+  { label: t('driver.card.employmentLeased'), value: 'leased' }
+])
 
-const hireSourceOptions = [
-  { label: 'По рекомендации', value: 'recommendation' },
-  { label: 'Объявление', value: 'advertisement' },
-  { label: 'Агентство', value: 'agency' }
-]
+const hireSourceOptions = computed(() => [
+  { label: t('driver.card.hireSourceRecommendation'), value: 'recommendation' },
+  { label: t('driver.card.hireSourceAdvertisement'), value: 'advertisement' },
+  { label: t('driver.card.hireSourceAgency'), value: 'agency' }
+])
 
 const uploadBaseUrl = computed(() => props.saveUrl)
 
@@ -987,7 +989,7 @@ async function removePassport(idx: number) {
     try {
       await $fetch(`${documentsBaseUrl.value}/${p._docId}`, { method: 'DELETE', credentials: 'include' })
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка удаления')
+      message.error(e?.data?.error || t('admin.driverCardForm.deleteError'))
       return
     }
   }
@@ -1014,7 +1016,7 @@ async function removeLicense(idx: number) {
     try {
       await $fetch(`${documentsBaseUrl.value}/${lic._docId}`, { method: 'DELETE', credentials: 'include' })
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка удаления')
+      message.error(e?.data?.error || t('admin.driverCardForm.deleteError'))
       return
     }
   }
@@ -1039,7 +1041,7 @@ async function removeVisa(idx: number) {
     try {
       await $fetch(`${documentsBaseUrl.value}/${v._docId}`, { method: 'DELETE', credentials: 'include' })
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка удаления')
+      message.error(e?.data?.error || t('admin.driverCardForm.deleteError'))
       return
     }
   }
@@ -1063,7 +1065,7 @@ async function removeMedicalCertificate(idx: number) {
     try {
       await $fetch(`${documentsBaseUrl.value}/${m._docId}`, { method: 'DELETE', credentials: 'include' })
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка удаления')
+      message.error(e?.data?.error || t('admin.driverCardForm.deleteError'))
       return
     }
   }
@@ -1100,7 +1102,7 @@ async function removeTechnicalMinimumCert(idx: number) {
     try {
       await $fetch(`${documentsBaseUrl.value}/${tm._docId}`, { method: 'DELETE', credentials: 'include' })
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка удаления')
+      message.error(e?.data?.error || t('admin.driverCardForm.deleteError'))
       return
     }
   }
@@ -1126,7 +1128,7 @@ async function removeAdrCert(idx: number) {
     try {
       await $fetch(`${documentsBaseUrl.value}/${a._docId}`, { method: 'DELETE', credentials: 'include' })
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка удаления')
+      message.error(e?.data?.error || t('admin.driverCardForm.deleteError'))
       return
     }
   }
@@ -1139,7 +1141,7 @@ async function removeTachographCard(idx: number) {
     try {
       await $fetch(`${documentsBaseUrl.value}/${t._docId}`, { method: 'DELETE', credentials: 'include' })
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка удаления')
+      message.error(e?.data?.error || t('admin.driverCardForm.deleteError'))
       return
     }
   }
@@ -1417,7 +1419,7 @@ async function loadProfile() {
   }
 
   if (!props.loadUrl) {
-    loadError.value = 'URL не задан'
+    loadError.value = t('admin.driverCardForm.urlNotSet')
     loading.value = false
     return
   }
@@ -1428,7 +1430,7 @@ async function loadProfile() {
     const data = await $fetch<any>(props.loadUrl, { credentials: 'include' })
     applyProfileToForm(data)
   } catch (e: any) {
-    loadError.value = e?.data?.error || 'Ошибка загрузки профиля'
+    loadError.value = e?.data?.error || t('admin.driverCardForm.loadProfileError')
   } finally {
     loading.value = false
   }
@@ -1723,10 +1725,10 @@ async function handleSave() {
       }
     }
 
-    message.success('Профиль сохранён')
+    message.success(t('admin.driverCardForm.profileSaved'))
     emit('saved')
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка сохранения')
+    message.error(e?.data?.error || t('common.saveError'))
   } finally {
     saving.value = false
   }
@@ -1757,10 +1759,10 @@ async function handlePassportScanUpload(
       url = res.url
     }
     p.scan_url = url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
@@ -1790,10 +1792,10 @@ async function handleLicenseScanUpload(
       url = res.url
     }
     lic.scan_url = url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
@@ -1812,17 +1814,17 @@ async function handleVisaScanUpload(
       body: fd
     })
     v.scan_url = res.url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
 
 async function handleTachographCardScanUpload(
   { file, onFinish, onError }: { file: { file: File }; onFinish: () => void; onError: (e: Error) => void },
-  t: TachographCardItem
+  card: TachographCardItem
 ) {
   try {
     const fd = new FormData()
@@ -1833,11 +1835,11 @@ async function handleTachographCardScanUpload(
       credentials: 'include',
       body: fd
     })
-    t.scan_url = res.url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    card.scan_url = res.url
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
@@ -1856,10 +1858,10 @@ async function handleMedicalCertificateScanUpload(
       body: fd
     })
     m.scan_url = res.url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
@@ -1878,10 +1880,10 @@ async function handleTechnicalMinimumCertScanUpload(
       body: fd
     })
     tm.scan_url = res.url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
@@ -1900,10 +1902,10 @@ async function handleAdrCertScanUpload(
       body: fd
     })
     a.scan_url = res.url
-    message.success('Файл загружен. Нажмите «Сохранить».')
+    message.success(t('driver.card.fileUploadedSaveHint'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }

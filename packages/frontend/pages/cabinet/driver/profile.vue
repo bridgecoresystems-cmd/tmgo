@@ -1,7 +1,7 @@
 <template>
   <div class="profile-page">
     <n-grid :cols="3" :x-gap="24" responsive="screen">
-      <!-- Левая колонка: Аватар и основная инфа -->
+      <!-- Left column: Avatar and basic info -->
       <n-gi :span="1">
         <n-card class="shadow-sm text-center">
           <n-space vertical align="center" size="large">
@@ -21,14 +21,14 @@
                 :custom-request="handleAvatarUpload"
                 :show-file-list="false"
               >
-                <n-button quaternary size="small" class="avatar-upload-btn">Изменить фото</n-button>
+                <n-button quaternary size="small" class="avatar-upload-btn">{{ t('driver.profile.changePhoto') }}</n-button>
               </n-upload>
             </div>
             <div>
-              <n-h2 style="margin: 0">{{ displayName || 'Перевозчик' }}</n-h2>
-              <n-text depth="3">Перевозчик</n-text>
+              <n-h2 style="margin: 0">{{ displayName || t('driver.profile.carrier') }}</n-h2>
+              <n-text depth="3">{{ t('driver.profile.carrier') }}</n-text>
             </div>
-            <n-tag type="info" round :bordered="false">Личный кабинет</n-tag>
+            <n-tag type="info" round :bordered="false">{{ t('driver.profile.personalCabinet') }}</n-tag>
 
             <n-divider />
 
@@ -38,7 +38,7 @@
                 <n-text strong>{{ profile?.email || '—' }}</n-text>
               </div>
               <div v-if="phones.length" class="detail-item">
-                <n-text depth="3">Телефоны:</n-text>
+                <n-text depth="3">{{ t('driver.profile.phones') }}</n-text>
                 <div class="phones-list">
                   <n-text v-for="(p, i) in phones" :key="i" strong>{{ p }}</n-text>
                 </div>
@@ -48,37 +48,37 @@
         </n-card>
       </n-gi>
 
-      <!-- Правая колонка: Формы -->
+      <!-- Right column: Forms -->
       <n-gi :span="2">
         <n-tabs type="line" animated>
-          <n-tab-pane name="security" tab="Безопасность">
+          <n-tab-pane name="security" :tab="t('driver.profile.security')">
             <n-form class="mt-20" style="max-width: 400px">
-              <n-form-item label="Текущий пароль">
+              <n-form-item :label="t('driver.profile.currentPassword')">
                 <n-input
                   v-model:value="passwordForm.currentPassword"
                   type="password"
                   show-password-on="click"
-                  placeholder="Введите текущий пароль"
+                  :placeholder="t('driver.profile.currentPasswordPlaceholder')"
                 />
               </n-form-item>
-              <n-form-item label="Новый пароль">
+              <n-form-item :label="t('driver.profile.newPassword')">
                 <n-input
                   v-model:value="passwordForm.newPassword"
                   type="password"
                   show-password-on="click"
-                  placeholder="Минимум 6 символов"
+                  :placeholder="t('driver.profile.newPasswordPlaceholder')"
                 />
               </n-form-item>
-              <n-form-item label="Подтвердите пароль">
+              <n-form-item :label="t('driver.profile.confirmPassword')">
                 <n-input
                   v-model:value="passwordForm.confirmPassword"
                   type="password"
                   show-password-on="click"
-                  placeholder="Повторите новый пароль"
+                  :placeholder="t('driver.profile.confirmPasswordPlaceholder')"
                 />
               </n-form-item>
               <n-button type="primary" :loading="passwordLoading" @click="handleChangePassword">
-                Обновить пароль
+                {{ t('driver.profile.updatePassword') }}
               </n-button>
             </n-form>
           </n-tab-pane>
@@ -91,9 +91,10 @@
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
-useSeoMeta({ title: 'Профиль — BridgeCore Systems' })
+useSeoMeta({ title: t('driver.profile.title') })
 
 const { apiBase } = useApiBase()
 const { fetchSession } = useAuth()
@@ -112,7 +113,7 @@ const profile = ref<{
 const displayName = computed(() => {
   if (!profile.value) return ''
   if (profile.value.role === 'driver') {
-    return [profile.value.surname, profile.value.given_name].filter(Boolean).join(' ') || 'Перевозчик'
+    return [profile.value.surname, profile.value.given_name].filter(Boolean).join(' ') || t('driver.profile.carrier')
   }
   return profile.value.displayName
 })
@@ -157,21 +158,21 @@ async function handleAvatarUpload({
     })
     await fetchSession()
     await loadProfile()
-    message.success('Фото обновлено')
+    message.success(t('driver.profile.photoUpdated'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('driver.profile.uploadError'))
     onError(e)
   }
 }
 
 async function handleChangePassword() {
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    message.error('Пароли не совпадают')
+    message.error(t('driver.profile.passwordsMismatch'))
     return
   }
   if (passwordForm.newPassword.length < 6) {
-    message.error('Пароль должен быть не менее 6 символов')
+    message.error(t('driver.profile.passwordTooShort'))
     return
   }
   passwordLoading.value = true
@@ -184,12 +185,12 @@ async function handleChangePassword() {
         newPassword: passwordForm.newPassword,
       },
     })
-    message.success('Пароль обновлён')
+    message.success(t('driver.profile.passwordUpdated'))
     passwordForm.currentPassword = ''
     passwordForm.newPassword = ''
     passwordForm.confirmPassword = ''
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка смены пароля')
+    message.error(e?.data?.error || t('driver.profile.passwordChangeError'))
   } finally {
     passwordLoading.value = false
   }

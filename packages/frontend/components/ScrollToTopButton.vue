@@ -2,7 +2,7 @@
   <button
     type="button"
     class="scroll-to-top"
-    aria-label="Наверх"
+    :aria-label="t('common.scrollToTop')"
     @click="scrollToTop"
   >
     <component :is="ChevronUpOutline" class="icon" />
@@ -11,6 +11,8 @@
 
 <script setup lang="ts">
 import { ChevronUpOutline } from '@vicons/ionicons5'
+
+const { t } = useI18n()
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })

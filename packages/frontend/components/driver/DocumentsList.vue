@@ -4,11 +4,11 @@
       <n-alert v-if="error" type="error" style="margin-bottom: 16px">{{ error }}</n-alert>
       <n-space vertical>
         <div class="documents-header">
-          <n-checkbox v-model:checked="showHistory">Показать историю</n-checkbox>
-          <n-button type="primary" size="small" @click="fetch()">Обновить</n-button>
-          <n-button type="primary" size="small" @click="showAddModal = true">Добавить документ</n-button>
+          <n-checkbox v-model:checked="showHistory">{{ t('driver.documents.showHistory') }}</n-checkbox>
+          <n-button type="primary" size="small" @click="fetch()">{{ t('driver.documents.refresh') }}</n-button>
+          <n-button type="primary" size="small" @click="showAddModal = true">{{ t('driver.documents.addDocument') }}</n-button>
         </div>
-        <n-empty v-if="!loading && docs.length === 0" description="Нет документов" />
+        <n-empty v-if="!loading && docs.length === 0" :description="t('driver.documents.noDocuments')" />
         <div v-else class="documents-by-type">
           <div v-for="(group, type) in groupedDocs" :key="type" class="doc-type-group">
             <n-h4 style="margin: 0 0 12px 0;">{{ docTypeLabel(type) }}</n-h4>
@@ -21,39 +21,39 @@
                   </n-space>
                 </template>
                 <n-descriptions :column="2" size="small">
-                  <n-descriptions-item v-if="doc.doc_type === 'visa' && doc.country" label="Страна выдачи">{{ doc.country }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'visa' && doc.number" label="Номер визы">{{ doc.number }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'medical_certificate' && doc.number" label="Номер медсправки">{{ doc.number }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'tachograph_card' && doc.country" label="Страна выдачи">{{ doc.country }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'tachograph_card' && doc.number" label="Номер карты">{{ doc.number }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'technical_minimum_cert' && doc.issued_by" label="Учебное заведение">{{ doc.issued_by }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'technical_minimum_cert' && doc.number" label="Номер сертификата">{{ doc.number }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'drivers_license' && doc.number" label="Номер ВУ">{{ doc.number }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'drivers_license' && doc.license_categories" label="Категории прав">{{ doc.license_categories }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'adr_certificate' && doc.issued_by" label="Кем выдано">{{ doc.issued_by }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'adr_certificate' && doc.number" label="Номер свидетельства">{{ doc.number }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'adr_certificate'" label="Разрешённые классы">{{ formatAdrClassesForDoc(doc) }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'passport' && doc.place_of_birth" label="Место рождения">{{ doc.place_of_birth }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.doc_type === 'passport' && doc.residential_address" label="Адрес проживания">{{ doc.residential_address }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.issued_at" :label="doc.doc_type === 'visa' ? 'Дата начала' : doc.doc_type === 'technical_minimum_cert' ? 'Дата получения' : doc.doc_type === 'medical_certificate' || doc.doc_type === 'tachograph_card' || doc.doc_type === 'adr_certificate' || doc.doc_type === 'drivers_license' ? 'Дата выдачи' : 'Выдан'">{{ doc.issued_at }}</n-descriptions-item>
-                  <n-descriptions-item v-if="doc.expires_at" :label="doc.doc_type === 'visa' ? 'Дата окончания' : doc.doc_type === 'medical_certificate' || doc.doc_type === 'tachograph_card' || doc.doc_type === 'technical_minimum_cert' || doc.doc_type === 'adr_certificate' || doc.doc_type === 'drivers_license' ? 'Дата окончания' : 'Действует до'">{{ doc.expires_at }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'visa' && doc.country" :label="t('driver.documents.issueCountry')">{{ displayCountry(doc.country) }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'visa' && doc.number" :label="t('driver.documents.visaNum')">{{ doc.number }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'medical_certificate' && doc.number" :label="t('driver.documents.medicalNum')">{{ doc.number }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'tachograph_card' && doc.country" :label="t('driver.documents.issueCountry')">{{ displayCountry(doc.country) }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'tachograph_card' && doc.number" :label="t('driver.documents.tachographNum')">{{ doc.number }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'technical_minimum_cert' && doc.issued_by" :label="t('driver.documents.techMinInstitution')">{{ doc.issued_by }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'technical_minimum_cert' && doc.number" :label="t('driver.documents.techMinCertNum')">{{ doc.number }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'drivers_license' && doc.number" :label="t('driver.documents.licenseNum')">{{ doc.number }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'drivers_license' && doc.license_categories" :label="t('driver.documents.licenseCategories')">{{ doc.license_categories }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'adr_certificate' && doc.issued_by" :label="t('driver.documents.adrIssuedBy')">{{ doc.issued_by }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'adr_certificate' && doc.number" :label="t('driver.documents.adrCertNum')">{{ doc.number }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'adr_certificate'" :label="t('driver.documents.allowedClasses')">{{ formatAdrClassesForDoc(doc) }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'passport' && doc.place_of_birth" :label="t('driver.documents.placeOfBirth')">{{ doc.place_of_birth }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.doc_type === 'passport' && doc.residential_address" :label="t('driver.documents.residentialAddress')">{{ doc.residential_address }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.issued_at" :label="issuedAtLabel(doc.doc_type)">{{ doc.issued_at }}</n-descriptions-item>
+                  <n-descriptions-item v-if="doc.expires_at" :label="expiresAtLabel(doc.doc_type)">{{ doc.expires_at }}</n-descriptions-item>
                 </n-descriptions>
                 <div v-if="doc.scan_url" class="scan-link">
                   <n-button text type="primary" size="small" @click="openScan(doc.scan_url)">
-                    Просмотр скана
+                    {{ t('driver.card.viewScan') }}
                   </n-button>
                 </div>
                 <div class="doc-actions">
                   <n-popconfirm
                     v-if="canDelete(doc)"
-                    positive-text="Удалить"
-                    negative-text="Отмена"
+                    :positive-text="t('common.delete')"
+                    :negative-text="t('common.cancel')"
                     @positive-click="doRemove(doc.id)"
                   >
                     <template #trigger>
-                      <n-button quaternary size="small" type="error">Удалить</n-button>
+                      <n-button quaternary size="small" type="error">{{ t('common.delete') }}</n-button>
                     </template>
-                    Удалить документ?
+                    {{ t('driver.documents.deleteDocument') }}
                   </n-popconfirm>
                 </div>
               </n-card>
@@ -63,18 +63,18 @@
       </n-space>
     </n-spin>
 
-    <n-modal v-model:show="showAddModal" preset="card" title="Добавить документ" style="max-width: 500px">
+    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.documents.addDocumentModal')" style="max-width: 500px">
       <n-form ref="addFormRef" :model="addForm" label-placement="top">
-        <n-form-item label="Тип документа" required>
-          <n-select v-model:value="addForm.doc_type" :options="docTypeOptions" placeholder="Выберите" />
+        <n-form-item :label="t('driver.documents.docType')" required>
+          <n-select v-model:value="addForm.doc_type" :options="docTypeOptions" :placeholder="t('driver.documents.select')" />
         </n-form-item>
 
-        <!-- Медсправка: номер, дата выдачи, дата окончания, скан -->
+        <!-- Medical certificate -->
         <template v-if="isMedicalForm">
-          <n-form-item label="Номер медсправки">
-            <n-input v-model:value="addForm.number" placeholder="№ 12345" />
+          <n-form-item :label="t('driver.documents.medicalNum')">
+            <n-input v-model:value="addForm.number" :placeholder="t('driver.documents.placeholderMedicalNum')" />
           </n-form-item>
-          <n-form-item label="Дата выдачи">
+          <n-form-item :label="t('driver.documents.issueDate')">
             <n-date-picker
               :value="addForm.issued_at ? new Date(addForm.issued_at).getTime() : null"
               type="date"
@@ -83,7 +83,7 @@
               @update:value="(v: number | null) => { addForm.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Дата окончания">
+          <n-form-item :label="t('driver.documents.expiryDate')">
             <n-date-picker
               :value="addForm.expires_at ? new Date(addForm.expires_at).getTime() : null"
               type="date"
@@ -92,22 +92,22 @@
               @update:value="(v: number | null) => { addForm.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Скан медсправки">
+          <n-form-item :label="t('driver.documents.medicalScan')">
             <n-upload :max="1" :custom-request="handleUpload" :show-file-list="false">
-              <n-button size="small">{{ addForm.scan_url ? 'Загружено' : 'Загрузить файл' }}</n-button>
+              <n-button size="small">{{ addForm.scan_url ? t('driver.card.uploaded') : t('driver.card.uploadFile') }}</n-button>
             </n-upload>
           </n-form-item>
         </template>
 
-        <!-- Сертификат техминимума: учебное заведение, номер, дата получения, дата окончания, скан -->
+        <!-- Tech minimum cert -->
         <template v-else-if="isTechMinForm">
-          <n-form-item label="Имя учебного заведения">
-            <n-input v-model:value="addForm.issued_by" placeholder="Название учебного центра" />
+          <n-form-item :label="t('driver.documents.techMinInstitution')">
+            <n-input v-model:value="addForm.issued_by" :placeholder="t('driver.documents.placeholderTechMinInstitution')" />
           </n-form-item>
-          <n-form-item label="Номер сертификата">
-            <n-input v-model:value="addForm.number" placeholder="№ TM-2025-0098" />
+          <n-form-item :label="t('driver.documents.techMinCertNum')">
+            <n-input v-model:value="addForm.number" :placeholder="t('driver.documents.placeholderTechMinNum')" />
           </n-form-item>
-          <n-form-item label="Дата получения">
+          <n-form-item :label="t('driver.documents.receiptDate')">
             <n-date-picker
               :value="addForm.issued_at ? new Date(addForm.issued_at).getTime() : null"
               type="date"
@@ -116,7 +116,7 @@
               @update:value="(v: number | null) => { addForm.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Дата окончания">
+          <n-form-item :label="t('driver.documents.expiryDate')">
             <n-date-picker
               :value="addForm.expires_at ? new Date(addForm.expires_at).getTime() : null"
               type="date"
@@ -125,22 +125,22 @@
               @update:value="(v: number | null) => { addForm.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Скан документа">
+          <n-form-item :label="t('driver.documents.docScan')">
             <n-upload :max="1" :custom-request="handleUpload" :show-file-list="false">
-              <n-button size="small">{{ addForm.scan_url ? 'Загружено' : 'Загрузить файл' }}</n-button>
+              <n-button size="small">{{ addForm.scan_url ? t('driver.card.uploaded') : t('driver.card.uploadFile') }}</n-button>
             </n-upload>
           </n-form-item>
         </template>
 
-        <!-- Карта тахографа: номер, страна выдачи, дата выдачи, дата окончания -->
+        <!-- Tachograph card -->
         <template v-else-if="isTachographForm">
-          <n-form-item label="Номер карты тахографа">
-            <n-input v-model:value="addForm.number" placeholder="№ TK-567890" />
+          <n-form-item :label="t('driver.documents.tachographNum')">
+            <n-input v-model:value="addForm.number" :placeholder="t('driver.documents.placeholderTachographNum')" />
           </n-form-item>
-          <n-form-item label="Страна выдачи">
-            <n-select v-model:value="addForm.country" :options="visaCountryOptions" placeholder="Выберите страну" filterable />
+          <n-form-item :label="t('driver.documents.issueCountry')">
+            <n-select v-model:value="addForm.country" :options="visaCountryOptions" :placeholder="t('common.selectCity')" filterable />
           </n-form-item>
-          <n-form-item label="Дата выдачи">
+          <n-form-item :label="t('driver.documents.issueDate')">
             <n-date-picker
               :value="addForm.issued_at ? new Date(addForm.issued_at).getTime() : null"
               type="date"
@@ -149,7 +149,7 @@
               @update:value="(v: number | null) => { addForm.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Дата окончания">
+          <n-form-item :label="t('driver.documents.expiryDate')">
             <n-date-picker
               :value="addForm.expires_at ? new Date(addForm.expires_at).getTime() : null"
               type="date"
@@ -158,29 +158,29 @@
               @update:value="(v: number | null) => { addForm.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Скан документа">
+          <n-form-item :label="t('driver.documents.docScan')">
             <n-upload :max="1" :custom-request="handleUpload" :show-file-list="false">
-              <n-button size="small">{{ addForm.scan_url ? 'Загружено' : 'Загрузить файл' }}</n-button>
+              <n-button size="small">{{ addForm.scan_url ? t('driver.card.uploaded') : t('driver.card.uploadFile') }}</n-button>
             </n-upload>
           </n-form-item>
         </template>
 
-        <!-- ADR допуск: кем выдано, номер, классы, даты, скан -->
+        <!-- ADR certificate -->
         <template v-else-if="isAdrForm">
-          <n-form-item label="Кем выдано">
-            <n-input v-model:value="addForm.issued_by" placeholder="Организация, выдавшая допуск" />
+          <n-form-item :label="t('driver.documents.adrIssuedBy')">
+            <n-input v-model:value="addForm.issued_by" :placeholder="t('driver.documents.placeholderAdrIssuedBy')" />
           </n-form-item>
-          <n-form-item label="Номер свидетельства">
-            <n-input v-model:value="addForm.number" placeholder="№ ADR-2025-001" />
+          <n-form-item :label="t('driver.documents.adrCertNum')">
+            <n-input v-model:value="addForm.number" :placeholder="t('driver.documents.placeholderAdrNum')" />
           </n-form-item>
-          <n-form-item label="Разрешённые классы">
+          <n-form-item :label="t('driver.documents.allowedClasses')">
             <n-checkbox-group v-model:value="addForm.allowed_classes">
               <n-space vertical size="small">
-                <n-checkbox v-for="c in adrClasses" :key="c.value" :value="c.value" :label="c.label" />
+                <n-checkbox v-for="c in adrClasses" :key="c.value" :value="c.value" :label="t('adrClasses.' + c.value)" />
               </n-space>
             </n-checkbox-group>
           </n-form-item>
-          <n-form-item label="Дата выдачи">
+          <n-form-item :label="t('driver.documents.issueDate')">
             <n-date-picker
               :value="addForm.issued_at ? new Date(addForm.issued_at).getTime() : null"
               type="date"
@@ -189,7 +189,7 @@
               @update:value="(v: number | null) => { addForm.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Дата окончания">
+          <n-form-item :label="t('driver.documents.expiryDate')">
             <n-date-picker
               :value="addForm.expires_at ? new Date(addForm.expires_at).getTime() : null"
               type="date"
@@ -198,26 +198,26 @@
               @update:value="(v: number | null) => { addForm.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Скан документа">
+          <n-form-item :label="t('driver.documents.docScan')">
             <n-upload :max="1" :custom-request="handleUpload" :show-file-list="false">
-              <n-button size="small">{{ addForm.scan_url ? 'Загружено' : 'Загрузить файл' }}</n-button>
+              <n-button size="small">{{ addForm.scan_url ? t('driver.card.uploaded') : t('driver.card.uploadFile') }}</n-button>
             </n-upload>
           </n-form-item>
         </template>
 
-        <!-- Водительское удостоверение: номер, категории (чекбоксы), даты, скан -->
+        <!-- Driver's license -->
         <template v-else-if="isDriversLicenseForm">
-          <n-form-item label="Номер ВУ" required>
-            <n-input v-model:value="addForm.number" placeholder="tm-123456" />
+          <n-form-item :label="t('driver.documents.licenseNum')" required>
+            <n-input v-model:value="addForm.number" :placeholder="t('driver.documents.placeholderLicenseNum')" />
           </n-form-item>
-          <n-form-item label="Категории прав">
+          <n-form-item :label="t('driver.documents.licenseCategories')">
             <n-checkbox-group v-model:value="addForm.license_categories_arr">
               <n-space>
                 <n-checkbox v-for="c in licenseCategories" :key="c.value" :value="c.value" :label="c.label" />
               </n-space>
             </n-checkbox-group>
           </n-form-item>
-          <n-form-item label="Дата выдачи">
+          <n-form-item :label="t('driver.documents.issueDate')">
             <n-date-picker
               :value="addForm.issued_at ? new Date(addForm.issued_at).getTime() : null"
               type="date"
@@ -226,7 +226,7 @@
               @update:value="(v: number | null) => { addForm.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Дата окончания">
+          <n-form-item :label="t('driver.documents.expiryDate')">
             <n-date-picker
               :value="addForm.expires_at ? new Date(addForm.expires_at).getTime() : null"
               type="date"
@@ -235,22 +235,22 @@
               @update:value="(v: number | null) => { addForm.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Скан ВУ">
+          <n-form-item :label="t('driver.documents.licenseScan')">
             <n-upload :max="1" :custom-request="handleUpload" :show-file-list="false">
-              <n-button size="small">{{ addForm.scan_url ? 'Загружено' : 'Загрузить файл' }}</n-button>
+              <n-button size="small">{{ addForm.scan_url ? t('driver.card.uploaded') : t('driver.card.uploadFile') }}</n-button>
             </n-upload>
           </n-form-item>
         </template>
 
-        <!-- Виза: поля визы -->
+        <!-- Visa -->
         <template v-else-if="isVisaForm">
-          <n-form-item label="Страна выдачи" required>
-            <n-select v-model:value="addForm.country" :options="visaCountryOptions" placeholder="Выберите страну" filterable />
+          <n-form-item :label="t('driver.documents.issueCountry')" required>
+            <n-select v-model:value="addForm.country" :options="visaCountryOptions" :placeholder="t('driver.documents.selectVisaCountry')" filterable />
           </n-form-item>
-          <n-form-item label="Номер визы" required>
-            <n-input v-model:value="addForm.number" placeholder="1234567" />
+          <n-form-item :label="t('driver.documents.visaNum')" required>
+            <n-input v-model:value="addForm.number" :placeholder="t('driver.documents.placeholderNumber')" />
           </n-form-item>
-          <n-form-item label="Дата начала">
+          <n-form-item :label="t('driver.documents.startDate')">
             <n-date-picker
               :value="addForm.issued_at ? new Date(addForm.issued_at).getTime() : null"
               type="date"
@@ -259,7 +259,7 @@
               @update:value="(v: number | null) => { addForm.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Дата окончания">
+          <n-form-item :label="t('driver.documents.expiryDate')">
             <n-date-picker
               :value="addForm.expires_at ? new Date(addForm.expires_at).getTime() : null"
               type="date"
@@ -268,31 +268,31 @@
               @update:value="(v: number | null) => { addForm.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Скан документа">
+          <n-form-item :label="t('driver.documents.docScan')">
             <n-upload :max="1" :custom-request="handleUpload" :show-file-list="false">
-              <n-button size="small">{{ addForm.scan_url ? 'Загружено' : 'Загрузить файл' }}</n-button>
+              <n-button size="small">{{ addForm.scan_url ? t('driver.card.uploaded') : t('driver.card.uploadFile') }}</n-button>
             </n-upload>
           </n-form-item>
         </template>
 
-        <!-- Паспорт: серия, номер, кем выдан, место рождения, адрес проживания, даты, скан -->
+        <!-- Passport -->
         <template v-else-if="isPassportForm">
-          <n-form-item label="Серия">
-            <n-input v-model:value="addForm.series" placeholder="AB" />
+          <n-form-item :label="t('driver.documents.series')">
+            <n-input v-model:value="addForm.series" :placeholder="t('driver.documents.placeholderSeries')" />
           </n-form-item>
-          <n-form-item label="Номер">
-            <n-input v-model:value="addForm.number" placeholder="1234567" />
+          <n-form-item :label="t('driver.documents.number')">
+            <n-input v-model:value="addForm.number" :placeholder="t('driver.documents.placeholderNumber')" />
           </n-form-item>
-          <n-form-item label="Кем выдан">
-            <n-input v-model:value="addForm.issued_by" placeholder="ОВД" />
+          <n-form-item :label="t('driver.documents.issuedBy')">
+            <n-input v-model:value="addForm.issued_by" :placeholder="t('driver.documents.placeholderOvd')" />
           </n-form-item>
-          <n-form-item label="Место рождения">
-            <n-input v-model:value="addForm.place_of_birth" placeholder="г. Ашхабад" />
+          <n-form-item :label="t('driver.documents.placeOfBirth')">
+            <n-input v-model:value="addForm.place_of_birth" :placeholder="t('driver.documents.placeholderCity')" />
           </n-form-item>
-          <n-form-item label="Адрес проживания">
-            <n-input v-model:value="addForm.residential_address" placeholder="ул. Махтумкули, д. 10" />
+          <n-form-item :label="t('driver.documents.residentialAddress')">
+            <n-input v-model:value="addForm.residential_address" :placeholder="t('driver.documents.placeholderAddress')" />
           </n-form-item>
-          <n-form-item label="Дата выдачи">
+          <n-form-item :label="t('driver.documents.issueDate')">
             <n-date-picker
               :value="addForm.issued_at ? new Date(addForm.issued_at).getTime() : null"
               type="date"
@@ -301,7 +301,7 @@
               @update:value="(v: number | null) => { addForm.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Действует до">
+          <n-form-item :label="t('driver.documents.validUntil')">
             <n-date-picker
               :value="addForm.expires_at ? new Date(addForm.expires_at).getTime() : null"
               type="date"
@@ -310,25 +310,25 @@
               @update:value="(v: number | null) => { addForm.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Скан документа">
+          <n-form-item :label="t('driver.documents.passportScan')">
             <n-upload :max="1" :custom-request="handleUpload" :show-file-list="false">
-              <n-button size="small">{{ addForm.scan_url ? 'Загружено' : 'Загрузить файл' }}</n-button>
+              <n-button size="small">{{ addForm.scan_url ? t('driver.card.uploaded') : t('driver.card.uploadFile') }}</n-button>
             </n-upload>
           </n-form-item>
         </template>
 
-        <!-- Остальные типы: общие поля -->
+        <!-- Generic fallback -->
         <template v-else>
-          <n-form-item label="Серия">
-            <n-input v-model:value="addForm.series" placeholder="AB" />
+          <n-form-item :label="t('driver.documents.series')">
+            <n-input v-model:value="addForm.series" :placeholder="t('driver.documents.placeholderSeries')" />
           </n-form-item>
-          <n-form-item label="Номер">
-            <n-input v-model:value="addForm.number" placeholder="1234567" />
+          <n-form-item :label="t('driver.documents.number')">
+            <n-input v-model:value="addForm.number" :placeholder="t('driver.documents.placeholderNumber')" />
           </n-form-item>
-          <n-form-item label="Кем выдан">
-            <n-input v-model:value="addForm.issued_by" placeholder="ОВД" />
+          <n-form-item :label="t('driver.documents.issuedBy')">
+            <n-input v-model:value="addForm.issued_by" :placeholder="t('driver.documents.placeholderOvd')" />
           </n-form-item>
-          <n-form-item label="Дата выдачи">
+          <n-form-item :label="t('driver.documents.issueDate')">
             <n-date-picker
               :value="addForm.issued_at ? new Date(addForm.issued_at).getTime() : null"
               type="date"
@@ -337,7 +337,7 @@
               @update:value="(v: number | null) => { addForm.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Действует до">
+          <n-form-item :label="t('driver.documents.validUntil')">
             <n-date-picker
               :value="addForm.expires_at ? new Date(addForm.expires_at).getTime() : null"
               type="date"
@@ -346,20 +346,20 @@
               @update:value="(v: number | null) => { addForm.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
             />
           </n-form-item>
-          <n-form-item label="Скан документа">
+          <n-form-item :label="t('driver.documents.docScan')">
             <n-upload :max="1" :custom-request="handleUpload" :show-file-list="false">
-              <n-button size="small">{{ addForm.scan_url ? 'Загружено' : 'Загрузить файл' }}</n-button>
+              <n-button size="small">{{ addForm.scan_url ? t('driver.card.uploaded') : t('driver.card.uploadFile') }}</n-button>
             </n-upload>
           </n-form-item>
-          <n-form-item label="Примечание">
-            <n-input v-model:value="addForm.notes" type="textarea" placeholder="Опционально" />
+          <n-form-item :label="t('driver.documents.notes')">
+            <n-input v-model:value="addForm.notes" type="textarea" :placeholder="t('driver.documents.optional')" />
           </n-form-item>
         </template>
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showAddModal = false">Отмена</n-button>
-          <n-button type="primary" :loading="adding" @click="doAdd">Добавить</n-button>
+          <n-button @click="showAddModal = false">{{ t('common.cancel') }}</n-button>
+          <n-button type="primary" :loading="adding" @click="doAdd">{{ t('common.add') }}</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -370,6 +370,7 @@
 import { useMessage } from 'naive-ui'
 import { visaCountries, adrClasses, licenseCategories } from '@tmgo/shared'
 
+const { t } = useI18n()
 const { apiBase } = useApiBase()
 const { docs, loading, error, fetch, upload, create, remove } = useDriverDocuments()
 const message = useMessage()
@@ -395,7 +396,7 @@ const addForm = reactive({
 })
 
 const visaCountryOptions = computed(() =>
-  visaCountries.map((c) => ({ label: c, value: c }))
+  visaCountries.map((c) => ({ label: t('visaCountries.' + c), value: c }))
 )
 
 const isVisaForm = computed(() => addForm.doc_type === 'visa')
@@ -406,47 +407,46 @@ const isAdrForm = computed(() => addForm.doc_type === 'adr_certificate')
 const isDriversLicenseForm = computed(() => addForm.doc_type === 'drivers_license')
 const isPassportForm = computed(() => addForm.doc_type === 'passport')
 
+const docTypeOptions = computed(() => [
+  { label: t('driver.documents.docTypeMedical'), value: 'medical_certificate' },
+  { label: t('driver.documents.docTypeInsurance'), value: 'insurance' },
+  { label: t('driver.documents.docTypeVisa'), value: 'visa' },
+  { label: t('driver.documents.docTypePassport'), value: 'passport' },
+  { label: t('driver.documents.docTypeDriversLicense'), value: 'drivers_license' },
+  { label: t('driver.documents.docTypeIntlLicense'), value: 'international_drivers_license' },
+  { label: t('driver.documents.docTypeTachograph'), value: 'tachograph_card' },
+  { label: t('driver.documents.docTypeTechMin'), value: 'technical_minimum_cert' },
+  { label: t('driver.documents.docTypeAdr'), value: 'adr_certificate' },
+])
 
-const docTypeOptions = [
-  { label: 'Медицинская справка', value: 'medical_certificate' },
-  { label: 'Страховка', value: 'insurance' },
-  { label: 'Виза', value: 'visa' },
-  { label: 'Паспорт', value: 'passport' },
-  { label: 'Водительское удостоверение', value: 'drivers_license' },
-  { label: 'Международное ВУ', value: 'international_drivers_license' },
-  { label: 'Карта тахографа', value: 'tachograph_card' },
-  { label: 'Сертификат техминимума', value: 'technical_minimum_cert' },
-  { label: 'ADR допуск', value: 'adr_certificate' },
-]
-
-const DOC_TYPE_LABELS: Record<string, string> = {
-  passport: 'Паспорт',
-  drivers_license: 'Водительское удостоверение',
-  medical_certificate: 'Медицинская справка',
-  insurance: 'Страховка',
-  visa: 'Виза',
-  tachograph_card: 'Карта тахографа',
-  technical_minimum_cert: 'Сертификат техминимума',
-  adr_certificate: 'ADR допуск',
-}
+const DOC_TYPE_LABELS = computed((): Record<string, string> => ({
+  passport: t('driver.documents.docTypePassport'),
+  drivers_license: t('driver.documents.docTypeDriversLicense'),
+  medical_certificate: t('driver.documents.docTypeMedical'),
+  insurance: t('driver.documents.docTypeInsurance'),
+  visa: t('driver.documents.docTypeVisa'),
+  tachograph_card: t('driver.documents.docTypeTachograph'),
+  technical_minimum_cert: t('driver.documents.docTypeTechMin'),
+  adr_certificate: t('driver.documents.docTypeAdr'),
+}))
 
 const groupedDocs = computed(() => {
   const byType: Record<string, any[]> = {}
   for (const d of docs.value) {
-    const t = d.doc_type || 'unknown'
-    if (!byType[t]) byType[t] = []
-    byType[t].push(d)
+    const dt = d.doc_type || 'unknown'
+    if (!byType[dt]) byType[dt] = []
+    byType[dt].push(d)
   }
   return byType
 })
 
 function docTypeLabel(type: string) {
-  return DOC_TYPE_LABELS[type] || type
+  return DOC_TYPE_LABELS.value[type] || type
 }
 
-const adrClassLabels: Record<string, string> = {
-  '1': 'Класс 1', '2': 'Класс 2', '3': 'Класс 3', '4': 'Класс 4', '5': 'Класс 5',
-  '6': 'Класс 6', '7': 'Класс 7', '8': 'Класс 8', '9': 'Класс 9',
+function displayCountry(key: string) {
+  const translated = t('visaCountries.' + key)
+  return translated !== 'visaCountries.' + key ? translated : key
 }
 
 function formatAdrClassesForDoc(doc: any) {
@@ -454,19 +454,32 @@ function formatAdrClassesForDoc(doc: any) {
     ? doc.allowed_classes
     : (doc.license_categories ? doc.license_categories.split(',').map((s: string) => s.trim()).filter(Boolean) : [])
   if (!arr.length) return '—'
-  return arr.map((v: string) => adrClassLabels[v] || v).join(', ')
+  return arr.map((v: string) => t('adrClasses.' + v) || v).join(', ')
+}
+
+function issuedAtLabel(docType: string) {
+  if (docType === 'visa') return t('driver.documents.startDate')
+  if (docType === 'technical_minimum_cert') return t('driver.documents.receiptDate')
+  return t('driver.documents.issueDate')
+}
+
+function expiresAtLabel(docType: string) {
+  if (docType === 'passport') return t('driver.documents.validUntil')
+  return t('driver.documents.expiryDate')
 }
 
 function docHeaderText(doc: any) {
   if (doc.doc_type === 'visa') {
-    const parts = [doc.country, doc.number].filter(Boolean)
+    const country = doc.country ? displayCountry(doc.country) : null
+    const parts = [country, doc.number].filter(Boolean)
     return parts.length ? parts.join(' — ') : '—'
   }
   if (doc.doc_type === 'medical_certificate') {
     return doc.number ? `№ ${doc.number}` : '—'
   }
   if (doc.doc_type === 'tachograph_card') {
-    const parts = [doc.country, doc.number].filter(Boolean)
+    const country = doc.country ? displayCountry(doc.country) : null
+    const parts = [country, doc.number].filter(Boolean)
     return parts.length ? parts.join(' — ') : '—'
   }
   if (doc.doc_type === 'technical_minimum_cert') {
@@ -476,7 +489,7 @@ function docHeaderText(doc: any) {
     return doc.number ? `№ ${doc.number}` : doc.issued_by || '—'
   }
   if (doc.doc_type === 'drivers_license') {
-    return doc.number ? `ВУ № ${doc.number}` : '—'
+    return doc.number ? `${t('driver.documents.licenseNum')} № ${doc.number}` : '—'
   }
   const s = doc.series || doc.number ? `${doc.series || ''} ${doc.number || ''}`.trim() : ''
   return s || '—'
@@ -484,12 +497,12 @@ function docHeaderText(doc: any) {
 
 function statusLabel(s: string) {
   const m: Record<string, string> = {
-    active: 'Активен',
-    pending_verification: 'На проверке',
-    expired: 'Истёк',
-    revoked: 'Отозван',
-    superseded: 'Заменён',
-    rejected: 'Отклонён',
+    active: t('driver.documents.statusActive'),
+    pending_verification: t('driver.documents.statusPendingVerification'),
+    expired: t('driver.documents.statusExpired'),
+    revoked: t('driver.documents.statusRevoked'),
+    superseded: t('driver.documents.statusSuperseded'),
+    rejected: t('driver.documents.statusRejected'),
   }
   return m[s] || s
 }
@@ -514,9 +527,9 @@ function canDelete(doc: any) {
 async function doRemove(id: string) {
   try {
     await remove(id)
-    message.success('Документ удалён')
+    message.success(t('driver.documents.documentDeleted'))
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка')
+    message.error(e?.data?.error || t('common.error'))
   }
 }
 
@@ -538,7 +551,7 @@ async function handleUpload({ file, onFinish, onError }: { file: { file?: File }
     addForm.scan_url = res.url
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('driver.profile.uploadError'))
     onError?.()
   }
 }
@@ -562,11 +575,11 @@ function resetAddForm() {
 
 async function doAdd() {
   if (!addForm.doc_type) {
-    message.error('Выберите тип документа')
+    message.error(t('driver.documents.selectDocType'))
     return
   }
   if (isVisaForm.value && !addForm.country) {
-    message.error('Укажите страну выдачи визы')
+    message.error(t('driver.documents.selectVisaCountry'))
     return
   }
   adding.value = true
@@ -591,11 +604,11 @@ async function doAdd() {
       body.allowed_classes = addForm.allowed_classes
     }
     await create(body as any)
-    message.success('Документ добавлен')
+    message.success(t('driver.documents.documentAdded'))
     showAddModal.value = false
     resetAddForm()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка')
+    message.error(e?.data?.error || t('common.error'))
   } finally {
     adding.value = false
   }

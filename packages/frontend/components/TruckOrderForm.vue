@@ -1,31 +1,28 @@
 <template>
   <div class="truck-form-container">
     <div class="truck-svg-wrapper">
-      <!-- SVG Грузовика (упрощенный векторный стиль) -->
+      <!-- SVG Truck (simplified vector style) -->
       <svg viewBox="0 0 1000 400" class="truck-svg">
-        <path d="M20 300 L20 180 L140 180 L140 150 L280 150 L280 300 Z" fill="#FF6B4A" /> <!-- Кабина -->
-        <path d="M290 300 L290 80 L980 80 L980 300 Z" fill="#FF6B4A" /> <!-- Огромный кузов -->
-        <circle cx="100" cy="320" r="35" fill="#333" /> <!-- Переднее -->
-        <circle cx="380" cy="320" r="35" fill="#333" /> <!-- Заднее 1 -->
-        <circle cx="460" cy="320" r="35" fill="#333" /> <!-- Заднее 2 -->
-        <circle cx="820" cy="320" r="35" fill="#333" /> <!-- Прицеп 1 -->
-        <circle cx="900" cy="320" r="35" fill="#333" /> <!-- Прицеп 2 -->
-        
-        <!-- Окно -->
+        <path d="M20 300 L20 180 L140 180 L140 150 L280 150 L280 300 Z" fill="#FF6B4A" />
+        <path d="M290 300 L290 80 L980 80 L980 300 Z" fill="#FF6B4A" />
+        <circle cx="100" cy="320" r="35" fill="#333" />
+        <circle cx="380" cy="320" r="35" fill="#333" />
+        <circle cx="460" cy="320" r="35" fill="#333" />
+        <circle cx="820" cy="320" r="35" fill="#333" />
+        <circle cx="900" cy="320" r="35" fill="#333" />
         <path d="M150 165 L260 165 L260 220 L150 220 Z" fill="rgba(255,255,255,0.4)" />
       </svg>
 
-      <!-- Форма теперь аккуратно вписана ВНУТРЬ кузова -->
       <div class="form-overlay">
         <div class="form-inner">
-          <n-h3 class="form-title">Выберите направление</n-h3>
+          <n-h3 class="form-title">{{ t('form.title') }}</n-h3>
           <n-space vertical size="small">
             <n-grid :cols="2" :x-gap="8">
               <n-gi>
                 <n-select
                   v-model:value="orderForm.fromCity"
                   :options="cityOptions"
-                  placeholder="Откуда"
+                  :placeholder="t('form.fromPlaceholder')"
                   size="small"
                 />
               </n-gi>
@@ -33,13 +30,13 @@
                 <n-select
                   v-model:value="orderForm.toCity"
                   :options="cityOptions"
-                  placeholder="Куда"
+                  :placeholder="t('form.toPlaceholder')"
                   size="small"
                 />
               </n-gi>
             </n-grid>
             <n-button type="primary" block size="medium" class="submit-btn" @click="handleSubmit">
-              Оставить заявку
+              {{ t('form.submit') }}
             </n-button>
           </n-space>
         </div>
@@ -49,12 +46,14 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
+
 const orderForm = reactive({
   fromCity: null,
   toCity: null
 })
 
-// В будущем эти данные будут приходить из API бэкенда (админки)
+// City options will come from backend API in the future
 const cityOptions = [
   { label: 'Ашхабад', value: 'ashgabat' },
   { label: 'Мары', value: 'mary' },
@@ -66,7 +65,6 @@ const cityOptions = [
 
 const handleSubmit = () => {
   if (!orderForm.fromCity || !orderForm.toCity) {
-    // Здесь можно добавить уведомление
     return
   }
   navigateTo('/auth')
@@ -76,7 +74,7 @@ const handleSubmit = () => {
 <style scoped>
 .truck-form-container {
   width: 100%;
-  max-width: 1000px; /* Увеличил контейнер */
+  max-width: 1000px;
   margin: 0 auto;
   position: relative;
 }
@@ -97,10 +95,10 @@ const handleSubmit = () => {
 
 .form-overlay {
   position: absolute;
-  top: 48%; /* Центрируем по вертикали относительно кузова */
-  left: 63%; /* Смещаем в центр кузова */
+  top: 48%;
+  left: 63%;
   transform: translate(-50%, -50%);
-  width: 55%; /* Уменьшил ширину формы относительно грузовика */
+  width: 55%;
   z-index: 10;
 }
 

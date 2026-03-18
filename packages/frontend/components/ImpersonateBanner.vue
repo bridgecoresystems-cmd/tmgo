@@ -3,18 +3,19 @@
     <div class="impersonate-banner__content">
       <span class="impersonate-banner__icon">👤</span>
       <span class="impersonate-banner__text">
-        Вы вошли под учётной записью
+        {{ t('impersonate.loggedInAs') }}
         <strong>{{ session?.user?.name || session?.user?.email }}</strong>
         ({{ session?.user?.role }})
       </span>
     </div>
     <n-button size="small" type="warning" :loading="stopping" @click="handleStop">
-      ← Вернуться в админку
+      {{ t('impersonate.returnToAdmin') }}
     </n-button>
   </div>
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 const { session } = useAuth()
 const { isImpersonating, stopImpersonating } = useImpersonate()
 const stopping = ref(false)

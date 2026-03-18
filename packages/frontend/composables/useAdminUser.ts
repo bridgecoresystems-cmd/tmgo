@@ -4,6 +4,7 @@ import { useMessage, useDialog } from 'naive-ui'
  * Composable для загрузки и действий с пользователем в админке
  */
 export function useAdminUser() {
+  const { t } = useI18n()
   const { apiBase } = useApiBase()
   const route = useRoute()
   const message = useMessage()
@@ -58,7 +59,7 @@ export function useAdminUser() {
         profile.value = null
       }
     } catch (e: any) {
-      loadError.value = e?.data?.message || e?.message || 'Ошибка загрузки'
+      loadError.value = e?.data?.message || e?.message || t('admin.user.loadError')
     } finally {
       loading.value = false
     }
@@ -80,9 +81,9 @@ export function useAdminUser() {
         credentials: 'include',
       })
       user.value = { ...user.value, isActive: true }
-      message.success('Пользователь восстановлен')
+      message.success(t('admin.user.userRestored'))
     } catch (e: any) {
-      message.error(e?.data?.message || e?.message || 'Ошибка')
+      message.error(e?.data?.message || e?.message || t('admin.changeRequests.error'))
     } finally {
       activating.value = false
     }
@@ -93,10 +94,10 @@ export function useAdminUser() {
     deleting.value = true
     try {
       await $fetch(`${apiBase}/admin/users/${user.value.id}`, { method: 'DELETE', credentials: 'include' })
-      message.success('Пользователь удалён навсегда')
+      message.success(t('admin.user.userDeleted'))
       navigateTo('/admin/settings/deactivated-users')
     } catch (e: any) {
-      message.error(e?.data?.message || e?.message || 'Ошибка удаления')
+      message.error(e?.data?.message || e?.message || t('admin.user.deleteError'))
     } finally {
       deleting.value = false
     }
@@ -106,16 +107,16 @@ export function useAdminUser() {
     if (!user.value?.id) return
     const name = user.value?.name || user.value?.email || '—'
     dialog.warning({
-      title: 'Войти под пользователем',
-      content: `Вы войдёте под учётной записью ${name} (${user.value?.role}). Чтобы вернуться — нажмите баннер в кабинете.`,
-      positiveText: 'Войти',
-      negativeText: 'Отмена',
+      title: t('admin.usersIndex.impersonateTitle'),
+      content: t('admin.usersIndex.impersonateContent', { name, role: user.value?.role || '' }),
+      positiveText: t('admin.usersIndex.impersonateConfirm'),
+      negativeText: t('admin.usersIndex.cancel'),
       onPositiveClick: async () => {
         try {
           await impersonate(user.value!.id)
-          message.success(`Вход под ${name}`)
+          message.success(t('admin.usersIndex.impersonateSuccess', { name }))
         } catch (e: any) {
-          message.error(e?.message || e?.data?.error || 'Ошибка при входе под пользователем')
+          message.error(e?.message || e?.data?.error || t('admin.usersIndex.impersonateError'))
         }
       },
     })
@@ -130,9 +131,9 @@ export function useAdminUser() {
         body: {},
       })
       profile.value = { ...profile.value, is_verified: true, verification_status: 'verified' }
-      message.success('Водитель верифицирован')
+      message.success(t('admin.user.driverVerified'))
     } catch (e: any) {
-      message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка верификации')
+      message.error(e?.data?.error || e?.data?.message || e?.message || t('admin.user.verificationError'))
     } finally {
       verifying.value = false
     }
@@ -145,7 +146,7 @@ export function useAdminUser() {
 
   async function submitReject() {
     if (!actionComment.value?.trim()) {
-      message.error('Укажите причину отклонения')
+      message.error(t('admin.user.specifyRejectReason'))
       return
     }
     rejecting.value = true
@@ -156,10 +157,10 @@ export function useAdminUser() {
         body: { comment: actionComment.value.trim() },
       })
       profile.value = { ...profile.value, verification_status: 'rejected' }
-      message.success('Верификация отклонена')
+      message.success(t('admin.user.verificationRejected'))
       rejectModal.value = false
     } catch (e: any) {
-      message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка')
+      message.error(e?.data?.error || e?.data?.message || e?.message || t('admin.changeRequests.error'))
     } finally {
       rejecting.value = false
     }
@@ -172,7 +173,7 @@ export function useAdminUser() {
 
   async function submitSuspend() {
     if (!actionComment.value?.trim()) {
-      message.error('Укажите причину приостановки')
+      message.error(t('admin.user.specifySuspendReason'))
       return
     }
     suspending.value = true
@@ -183,10 +184,10 @@ export function useAdminUser() {
         body: { comment: actionComment.value.trim() },
       })
       profile.value = { ...profile.value, verification_status: 'suspended' }
-      message.success('Водитель приостановлен')
+      message.success(t('admin.user.driverSuspended'))
       suspendModal.value = false
     } catch (e: any) {
-      message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка')
+      message.error(e?.data?.error || e?.data?.message || e?.message || t('admin.changeRequests.error'))
     } finally {
       suspending.value = false
     }
@@ -201,9 +202,9 @@ export function useAdminUser() {
         body: {},
       })
       profile.value = { ...profile.value, verification_status: 'verified' }
-      message.success('Водитель восстановлен')
+      message.success(t('admin.user.driverRestored'))
     } catch (e: any) {
-      message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка')
+      message.error(e?.data?.error || e?.data?.message || e?.message || t('admin.changeRequests.error'))
     } finally {
       restoring.value = false
     }

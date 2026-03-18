@@ -1,34 +1,34 @@
 <template>
   <div>
     <div class="page-header mb-24">
-      <n-h2 style="margin: 0;">Добавить документы</n-h2>
+      <n-h2 style="margin: 0;">{{ t('driver.documents.title') }}</n-h2>
       <n-text depth="3">
-        Добавляйте гражданства, контакты и документы. После одобрения администратором они появятся в вашей карточке.
+        {{ t('driver.documents.subtitle') }}
       </n-text>
     </div>
 
     <n-alert type="info" class="mb-16">
-      Для добавления паспорта или гражданства после верификации нужен одобренный запрос. Создайте запрос во вкладке
-      <strong>«Запросы на изменение»</strong>, дождитесь одобрения администратором, затем добавьте документ.
+      {{ t('driver.documents.alertInfo') }}
+      <strong>{{ t('driver.documents.alertInfoBold') }}</strong>{{ t('driver.documents.alertInfoSuffix') }}
     </n-alert>
 
     <n-tabs v-model:value="activeTab" type="line" animated class="add-docs-tabs">
-      <n-tab-pane name="citizenships" tab="Гражданства">
+      <n-tab-pane name="citizenships" :tab="t('driver.documents.tabCitizenships')">
         <n-card embedded>
           <DriverCitizenshipsList ref="citizenshipsRef" />
         </n-card>
       </n-tab-pane>
-      <n-tab-pane name="contacts" tab="Телефоны и Email">
+      <n-tab-pane name="contacts" :tab="t('driver.documents.tabContacts')">
         <n-card embedded>
           <DriverContactsList ref="contactsRef" />
         </n-card>
       </n-tab-pane>
-      <n-tab-pane name="documents" tab="Документы">
+      <n-tab-pane name="documents" :tab="t('driver.documents.tabDocuments')">
         <n-card embedded>
           <DriverDocumentsList ref="documentsRef" />
         </n-card>
       </n-tab-pane>
-      <n-tab-pane name="change-requests" tab="Запросы на изменение">
+      <n-tab-pane name="change-requests" :tab="t('driver.documents.tabChangeRequests')">
         <n-card embedded>
           <DriverChangeRequestsList ref="changeRequestsRef" />
         </n-card>
@@ -38,9 +38,10 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
-useSeoMeta({ title: 'Добавить документы — BridgeCore Systems' })
+useSeoMeta({ title: t('driver.documents.pageTitle') })
 
 const route = useRoute()
 const router = useRouter()

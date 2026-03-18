@@ -361,7 +361,7 @@ useHead({
 
 /* Control Center */
 .control-center-section {
-  background: #fff5f0; /* Легкий оранжевый оттенок как на скрине */
+  background: #fff5f0; /* Light orange tint */
   padding: 100px 0;
 }
 

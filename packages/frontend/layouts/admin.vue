@@ -1,6 +1,6 @@
 <template>
   <n-layout has-sider style="min-height: 100vh;">
-    <!-- Sider (Боковая панель) -->
+    <!-- Sider (Sidebar) -->
     <n-layout-sider
       bordered
       collapse-mode="width"
@@ -33,13 +33,14 @@
       <n-layout-header bordered class="admin-header">
         <div class="header-left">
           <n-breadcrumb>
-            <n-breadcrumb-item @click="navigateTo('/admin')">Панель</n-breadcrumb-item>
+            <n-breadcrumb-item @click="navigateTo('/admin')">{{ t('layout.admin.panel') }}</n-breadcrumb-item>
             <n-breadcrumb-item>{{ pageTitle }}</n-breadcrumb-item>
           </n-breadcrumb>
         </div>
         
         <div class="header-right">
           <n-space align="center" size="large">
+            <LanguageSwitcher />
             <n-badge :value="0" dot color="#ff6b4a">
               <n-button quaternary circle size="large">
                 <template #icon>🔔</template>
@@ -63,7 +64,7 @@
                   {{ session?.user?.name?.charAt(0) || 'A' }}
                 </n-avatar>
                 <div class="user-info">
-                  <span class="user-name">{{ session?.user?.name || 'Администратор' }}</span>
+                  <span class="user-name">{{ session?.user?.name || t('layout.admin.administrator') }}</span>
                   <span class="user-role">Super Admin</span>
                 </div>
               </div>
@@ -88,7 +89,7 @@
       </n-layout-content>
       
       <n-layout-footer bordered class="admin-footer">
-        &copy; 2026 BridgeCore Systems | TMGO Admin Panel
+        {{ t('layout.admin.footer') }}
       </n-layout-footer>
     </n-layout>
     <ScrollToTopButton />
@@ -112,6 +113,7 @@ import {
   PersonOutline,
 } from '@vicons/ionicons5'
 
+const { t } = useI18n()
 const { session, signOut } = useAuth()
 const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
 const router = useRouter()
@@ -122,47 +124,47 @@ const activeKey = computed(() => route.path)
 
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
-    '/admin': 'Дашборд',
-    '/admin/users': 'Пользователи',
-    '/admin/mailing': 'Рассылки',
-    '/admin/cities': 'Города',
-    '/admin/cities/add': 'Добавить город',
-    '/admin/settings': 'Настройки',
-    '/admin/settings/deactivated-users': 'Удалённые пользователи',
-    '/admin/orders': 'Все заказы',
-    '/admin/vehicles': 'Транспорт',
-    '/admin/profile': 'Профиль',
+    '/admin': t('layout.admin.dashboard'),
+    '/admin/users': t('layout.admin.users'),
+    '/admin/mailing': t('layout.admin.mailing'),
+    '/admin/cities': t('layout.admin.cities'),
+    '/admin/cities/add': t('layout.admin.addCity'),
+    '/admin/settings': t('layout.admin.settings'),
+    '/admin/settings/deactivated-users': t('layout.admin.deactivatedUsers'),
+    '/admin/orders': t('layout.admin.allOrders'),
+    '/admin/vehicles': t('layout.admin.vehicles'),
+    '/admin/profile': t('layout.admin.profile'),
   }
-  return titles[route.path] || 'Панель управления'
+  return titles[route.path] || t('layout.admin.controlPanel')
 })
 
 function renderIcon(Icon: Component) {
   return () => h(NIcon, null, { default: () => h(Icon) })
 }
 
-const menuOptions: MenuOption[] = [
-  { label: 'Дашборд', key: '/admin', icon: renderIcon(StatsChartOutline) },
-  { label: 'Заказы', key: '/admin/orders', icon: renderIcon(CubeOutline) },
-  { label: 'Пользователи', key: '/admin/users', icon: renderIcon(PeopleOutline) },
-  { label: 'Рассылки', key: '/admin/mailing', icon: renderIcon(MailOutline) },
-  { label: 'Транспорт', key: '/admin/vehicles', icon: renderIcon(CarOutline) },
+const menuOptions = computed<MenuOption[]>(() => [
+  { label: t('layout.admin.dashboard'), key: '/admin', icon: renderIcon(StatsChartOutline) },
+  { label: t('layout.admin.orders'), key: '/admin/orders', icon: renderIcon(CubeOutline) },
+  { label: t('layout.admin.users'), key: '/admin/users', icon: renderIcon(PeopleOutline) },
+  { label: t('layout.admin.mailing'), key: '/admin/mailing', icon: renderIcon(MailOutline) },
+  { label: t('layout.admin.vehicles'), key: '/admin/vehicles', icon: renderIcon(CarOutline) },
   {
-    label: 'Настройки',
+    label: t('layout.admin.settings'),
     key: 'settings',
     icon: renderIcon(SettingsOutline),
     children: [
-      { label: 'Обзор', key: '/admin/settings', icon: renderIcon(ListOutline) },
-      { label: 'Города', key: '/admin/cities', icon: renderIcon(LocationOutline) },
-      { label: 'Удалённые пользователи', key: '/admin/settings/deactivated-users', icon: renderIcon(PersonRemoveOutline) },
+      { label: t('layout.admin.overview'), key: '/admin/settings', icon: renderIcon(ListOutline) },
+      { label: t('layout.admin.cities'), key: '/admin/cities', icon: renderIcon(LocationOutline) },
+      { label: t('layout.admin.deactivatedUsers'), key: '/admin/settings/deactivated-users', icon: renderIcon(PersonRemoveOutline) },
     ],
   },
-  { label: 'Профиль', key: '/admin/profile', icon: renderIcon(PersonOutline) },
-]
+  { label: t('layout.admin.profile'), key: '/admin/profile', icon: renderIcon(PersonOutline) },
+])
 
-const userMenuOptions = [
-  { label: 'Главная', key: 'home' },
-  { label: 'Выйти', key: 'logout' },
-]
+const userMenuOptions = computed(() => [
+  { label: t('layout.home'), key: 'home' },
+  { label: t('layout.logout'), key: 'logout' },
+])
 
 function handleMenuSelect(key: string) {
   if (key.startsWith('/')) {

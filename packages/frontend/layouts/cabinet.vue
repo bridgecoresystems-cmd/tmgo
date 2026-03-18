@@ -28,18 +28,21 @@
     <n-layout content-style="display: flex; flex-direction: column; min-height: 100vh;">
       <n-layout-header bordered class="cabinet-header">
         <div class="header-left">
-          <n-text strong style="font-size: 16px;">Личный кабинет {{ roleLabel }}</n-text>
+          <n-text strong style="font-size: 16px;">{{ t('layout.cabinet.title') }} {{ roleLabel }}</n-text>
         </div>
         
         <div class="header-right">
-          <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
+          <n-space align="center" style="gap: 12px">
+            <LanguageSwitcher />
+            <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
             <n-space align="center" style="cursor: pointer">
               <n-avatar round size="small" :style="{ backgroundColor: '#ff6b4a' }">
                 {{ session?.user?.name?.charAt(0) || 'U' }}
               </n-avatar>
               <n-text v-if="!collapsed">{{ session?.user?.name }}</n-text>
             </n-space>
-          </n-dropdown>
+            </n-dropdown>
+          </n-space>
         </div>
       </n-layout-header>
 
@@ -68,13 +71,14 @@ import {
   PersonOutline,
 } from '@vicons/ionicons5'
 
+const { t } = useI18n()
 const { session, signOut } = useAuth()
 const router = useRouter()
 const route = useRoute()
 const collapsed = ref(false)
 
 const activeKey = computed(() => route.path)
-const roleLabel = computed(() => session.value?.user?.role === 'driver' ? '(Перевозчик)' : '(Заказчик)')
+const roleLabel = computed(() => session.value?.user?.role === 'driver' ? t('layout.cabinet.roleDriver') : t('layout.cabinet.roleClient'))
 
 function renderIcon(Icon: Component) {
   return () => h(NIcon, null, { default: () => h(Icon) })
@@ -82,23 +86,23 @@ function renderIcon(Icon: Component) {
 
 const menuOptions = computed<MenuOption[]>(() => {
   const base = [
-    { label: 'Главная', key: '/cabinet', icon: renderIcon(HomeOutline) },
-    { label: 'Мои заказы', key: '/cabinet/orders', icon: renderIcon(CubeOutline) },
-    { label: 'Сообщения', key: '/cabinet/chat', icon: renderIcon(ChatbubblesOutline) },
-    { label: 'Профиль', key: '/cabinet/profile', icon: renderIcon(PersonOutline) },
+    { label: t('layout.cabinet.menuHome'), key: '/cabinet', icon: renderIcon(HomeOutline) },
+    { label: t('layout.cabinet.menuMyOrders'), key: '/cabinet/orders', icon: renderIcon(CubeOutline) },
+    { label: t('layout.cabinet.menuMessages'), key: '/cabinet/chat', icon: renderIcon(ChatbubblesOutline) },
+    { label: t('layout.cabinet.menuProfile'), key: '/cabinet/profile', icon: renderIcon(PersonOutline) },
   ]
   
   if (session.value?.user?.role === 'driver') {
-    base.splice(1, 0, { label: 'Мой транспорт', key: '/cabinet/vehicles', icon: renderIcon(CarOutline) })
+    base.splice(1, 0, { label: t('layout.cabinet.menuMyVehicles'), key: '/cabinet/vehicles', icon: renderIcon(CarOutline) })
   }
   
   return base
 })
 
-const userMenuOptions = [
-  { label: 'Главная', key: 'home' },
-  { label: 'Выйти', key: 'logout' },
-]
+const userMenuOptions = computed(() => [
+  { label: t('layout.home'), key: 'home' },
+  { label: t('layout.logout'), key: 'logout' },
+])
 
 function handleMenuSelect(key: string) {
   navigateTo(key)

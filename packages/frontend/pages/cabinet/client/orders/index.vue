@@ -3,27 +3,27 @@
     <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
       {{ loadError }}
       <template #footer>
-        <n-button size="small" @click="loadOrders">Повторить</n-button>
+        <n-button size="small" @click="loadOrders">{{ t('common.retry') }}</n-button>
       </template>
     </n-alert>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-      <n-h3 style="margin: 0;">Мои заказы</n-h3>
+      <n-h3 style="margin: 0;">{{ t('client.orders.title') }}</n-h3>
       <n-button type="primary" @click="navigateTo('/cabinet/client/orders/create')">
-        Создать
+        {{ t('common.create') }}
       </n-button>
     </div>
 
     <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
       <n-input
         v-model:value="search"
-        placeholder="Поиск по маршруту или товару"
+        :placeholder="t('client.orders.searchPlaceholder')"
         clearable
         style="width: 280px"
       />
       <n-select
         v-model:value="statusFilter"
         :options="statusOptions"
-        placeholder="Статус"
+        :placeholder="t('common.status')"
         clearable
         style="width: 160px"
       />
@@ -45,6 +45,7 @@ import { h } from 'vue'
 import { NTag, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
 const { apiBase: API } = useApiBase()
@@ -55,18 +56,18 @@ const orderList = ref<any[]>([])
 const search = ref('')
 const statusFilter = ref<string>('')
 
-const statusLabels: Record<string, string> = {
-  PENDING: 'Ожидание',
-  ACCEPTED: 'Принят',
-  IN_TRANSIT: 'В пути',
-  DELIVERED: 'Доставлен',
-  CANCELLED: 'Отменён',
-}
+const statusLabels = computed<Record<string, string>>(() => ({
+  PENDING: t('client.orders.statusPending'),
+  ACCEPTED: t('client.orders.statusAccepted'),
+  IN_TRANSIT: t('client.orders.statusInTransit'),
+  DELIVERED: t('client.orders.statusDelivered'),
+  CANCELLED: t('client.orders.statusCancelled'),
+}))
 
-const statusOptions = [
-  { label: 'Все', value: '' },
-  ...Object.entries(statusLabels).map(([value, label]) => ({ label, value })),
-]
+const statusOptions = computed(() => [
+  { label: t('client.orders.statusAll'), value: '' },
+  ...Object.entries(statusLabels.value).map(([value, label]) => ({ label, value })),
+])
 
 const statusTypes: Record<string, any> = {
   PENDING: 'warning',
@@ -93,35 +94,35 @@ const filteredOrders = computed(() => {
   return list
 })
 
-const columns: DataTableColumns<any> = [
-  { title: 'Откуда', key: 'from_city', ellipsis: true },
-  { title: 'Куда', key: 'to_city', ellipsis: true },
+const columns = computed<DataTableColumns<any>>(() => [
+  { title: t('common.from'), key: 'from_city', ellipsis: true },
+  { title: t('common.to'), key: 'to_city', ellipsis: true },
   {
-    title: 'Товар',
+    title: t('client.orders.cargo'),
     key: 'cargo_name',
     ellipsis: true,
     width: 140,
     render: (row) => h('span', { class: 'order-link' }, row.cargo_name || '—'),
   },
   {
-    title: 'Цена',
+    title: t('common.price'),
     key: 'price',
     width: 100,
     render: (row) => `${row.price} ${row.currency || 'TMT'}`,
   },
   {
-    title: 'Статус',
+    title: t('common.status'),
     key: 'status',
     width: 120,
-    render: (row) => h(NTag, { type: statusTypes[row.status] || 'default', size: 'small' }, { default: () => statusLabels[row.status] || row.status }),
+    render: (row) => h(NTag, { type: statusTypes[row.status] || 'default', size: 'small' }, { default: () => statusLabels.value[row.status] || row.status }),
   },
   {
-    title: 'Дата',
+    title: t('common.date'),
     key: 'created_at',
     width: 120,
     render: (row) => new Date(row.created_at).toLocaleDateString('ru-RU'),
   },
-]
+])
 
 async function loadOrders() {
   loadError.value = null
@@ -130,7 +131,7 @@ async function loadOrders() {
     const data = await $fetch<any[]>(`${API || ''}/cabinet/orders`, { credentials: 'include' })
     orderList.value = Array.isArray(data) ? data : []
   } catch (e: any) {
-    const err = e?.data?.message || e?.message || 'Ошибка загрузки заказов'
+    const err = e?.data?.message || e?.message || t('client.orders.loadOrdersError')
     loadError.value = err
     message.error(err)
     if (import.meta.dev) console.error('Cabinet orders fetch failed:', e)

@@ -26,10 +26,12 @@
       <ImpersonateBanner />
       <n-layout-header bordered class="cabinet-header">
         <div class="header-left">
-          <n-text strong style="font-size: 16px;">Личный кабинет (Заказчик)</n-text>
+          <n-text strong style="font-size: 16px;">{{ t('layout.cabinet.title') }} {{ t('layout.cabinet.roleClient') }}</n-text>
         </div>
         <div class="header-right">
-          <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
+          <n-space align="center" style="gap: 12px">
+            <LanguageSwitcher />
+            <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
             <n-space align="center" style="cursor: pointer">
               <img
                 v-if="avatarSrc"
@@ -47,7 +49,8 @@
               </n-avatar>
               <n-text v-if="!collapsed">{{ session?.user?.name }}</n-text>
             </n-space>
-          </n-dropdown>
+            </n-dropdown>
+          </n-space>
         </div>
       </n-layout-header>
 
@@ -83,6 +86,7 @@ import {
   PersonOutline,
 } from '@vicons/ionicons5'
 
+const { t } = useI18n()
 const { session, signOut } = useAuth()
 const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
 const { chatOpen, chatOrderId, chatTitle } = useOrderChat()
@@ -96,17 +100,17 @@ function renderIcon(Icon: Component) {
 }
 
 const menuOptions: MenuOption[] = [
-  { label: 'Главная', key: '/cabinet/client', icon: renderIcon(HomeOutline) },
-  { label: 'Мои заказы', key: '/cabinet/client/orders', icon: renderIcon(CubeOutline) },
-  { label: 'Услуги перевозчиков', key: '/cabinet/client/services', icon: renderIcon(MapOutline) },
-  { label: 'Рассылки', key: '/cabinet/client/mailing', icon: renderIcon(MailOutline) },
-  { label: 'Профиль', key: '/cabinet/client/profile', icon: renderIcon(PersonOutline) },
+  { label: t('layout.cabinet.menuHome'), key: '/cabinet/client', icon: renderIcon(HomeOutline) },
+  { label: t('layout.cabinet.menuMyOrders'), key: '/cabinet/client/orders', icon: renderIcon(CubeOutline) },
+  { label: t('layout.cabinet.menuCarrierServices'), key: '/cabinet/client/services', icon: renderIcon(MapOutline) },
+  { label: t('layout.cabinet.menuMailing'), key: '/cabinet/client/mailing', icon: renderIcon(MailOutline) },
+  { label: t('layout.cabinet.menuProfile'), key: '/cabinet/client/profile', icon: renderIcon(PersonOutline) },
 ]
 
-const userMenuOptions = [
-  { label: 'Главная', key: 'home' },
-  { label: 'Выйти', key: 'logout' },
-]
+const userMenuOptions = computed(() => [
+  { label: t('layout.home'), key: 'home' },
+  { label: t('layout.logout'), key: 'logout' },
+])
 
 function handleMenuSelect(key: string) {
   navigateTo(key)

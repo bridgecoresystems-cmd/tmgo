@@ -25,6 +25,7 @@ function daysBetween(from: Date, to: Date): number {
 }
 
 export function useDriverAlerts() {
+  const { t } = useI18n()
   const { apiBase } = useApiBase()
   const alerts = ref<DriverAlert[]>([])
   const count = computed(() => alerts.value.length)
@@ -65,15 +66,15 @@ export function useDriverAlerts() {
       const hasNewerPassport = fromDocsPassports.length > 0
 
       if (!hasNewerPassport) {
-        add('passport', 'Паспорт (1)', data.passport_expiry_date, undefined, data.passport_is_active)
+        add('passport', t('driver.alerts.passportN', { n: 1 }), data.passport_expiry_date, undefined, data.passport_is_active)
         const extra = Array.isArray(data.extra_passports) ? data.extra_passports : []
         extra.forEach((p: { passport_expiry_date?: string | null; is_active?: boolean }, i: number) => {
-          add('passport', `Паспорт (${i + 2})`, p.passport_expiry_date, `extra-${i}`, p.is_active)
+          add('passport', t('driver.alerts.passportN', { n: i + 2 }), p.passport_expiry_date, `extra-${i}`, p.is_active)
         })
       } else {
         // Только самый новый паспорт (первый в списке — orderBy createdAt desc)
         const newest = fromDocsPassports[0]
-        if (newest) add('passport', 'Паспорт (1)', newest.expires_at, 'doc-0', true)
+        if (newest) add('passport', t('driver.alerts.passportN', { n: 1 }), newest.expires_at, 'doc-0', true)
       }
 
       // ВУ: аналогично — если есть licenses_from_documents, не показываем алерт по старому ВУ из профиля
@@ -81,13 +82,13 @@ export function useDriverAlerts() {
       const hasNewerLicense = fromDocsLicenses.length > 0
 
       if (!hasNewerLicense) {
-        add('license', 'Водительское удостоверение', data.license_expiry)
+        add('license', t('driver.alerts.driversLicense'), data.license_expiry)
       } else {
         const newestLic = fromDocsLicenses[0]
-        if (newestLic) add('license', 'Водительское удостоверение', newestLic.expires_at, 'doc-0', true)
+        if (newestLic) add('license', t('driver.alerts.driversLicense'), newestLic.expires_at, 'doc-0', true)
       }
 
-      add('permission', 'Разрешение на въезд', data.permission_validity_date)
+      add('permission', t('driver.alerts.entryPermit'), data.permission_validity_date)
 
       // Медосмотр действует 1 год — срок = дата осмотра + 365 дней
       const medDate = parseDate(data.last_medical_examination_date)
@@ -99,7 +100,7 @@ export function useDriverAlerts() {
           items.push({
             id: 'medical-expiry',
             type: 'medical',
-            title: 'Медосмотр (срок действия)',
+            title: t('driver.alerts.medicalExpiry'),
             expiryDate: medExpiry.toISOString().slice(0, 10),
             daysLeft: days,
             isExpired: days < 0,

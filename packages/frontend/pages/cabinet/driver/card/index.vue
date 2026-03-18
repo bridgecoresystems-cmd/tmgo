@@ -1,12 +1,12 @@
 <template>
   <div>
-    <n-h3 style="margin: 0 0 20px 0;">Карточка водителя</n-h3>
+    <n-h3 style="margin: 0 0 20px 0;">{{ t('driver.card.title') }}</n-h3>
     <DriverProfileVerificationStatus />
     <n-tabs v-model:value="mainTab" type="line" animated class="card-tabs">
-      <n-tab-pane name="my-card" tab="Моя карточка">
+      <n-tab-pane name="my-card" :tab="t('driver.card.myCard')">
         <DriverCardView :is-driver-context="true" />
       </n-tab-pane>
-      <n-tab-pane name="profile" tab="Профиль (Старая)">
+      <n-tab-pane name="profile" :tab="t('driver.card.profileOld')">
         <DriverCardForm
           ref="formRef"
           :load-url="loadUrl"
@@ -19,16 +19,16 @@
           @saved="onFormSaved"
         />
       </n-tab-pane>
-      <n-tab-pane name="profile-v2" tab="Карточка водителя V2">
+      <n-tab-pane name="profile-v2" :tab="t('driver.card.profileV2')">
         <DriverCardV2 :is-driver-context="true" @submitted="onFormSaved" @saved="onFormSaved" />
       </n-tab-pane>
-      <n-tab-pane name="documents" tab="Документы">
+      <n-tab-pane name="documents" :tab="t('driver.documents.tabDocuments')">
         <DriverDocumentsList ref="documentsRef" />
       </n-tab-pane>
-      <n-tab-pane name="citizenships" tab="Гражданства">
+      <n-tab-pane name="citizenships" :tab="t('driver.documents.tabCitizenships')">
         <DriverCitizenshipsList ref="citizenshipsRef" />
       </n-tab-pane>
-      <n-tab-pane name="contacts" tab="Контакты">
+      <n-tab-pane name="contacts" :tab="t('driver.contacts.title')">
         <DriverContactsList ref="contactsRef" />
       </n-tab-pane>
     </n-tabs>
@@ -36,9 +36,10 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
-useSeoMeta({ title: 'Карточка водителя — BridgeCore Systems' })
+useSeoMeta({ title: t('driver.card.pageTitle') })
 
 const route = useRoute()
 const router = useRouter()

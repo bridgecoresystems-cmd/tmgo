@@ -1,11 +1,11 @@
 <template>
   <div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <n-h3 style="margin: 0;">Услуги перевозчиков</n-h3>
+      <n-h3 style="margin: 0;">{{ t('client.services.title') }}</n-h3>
     </div>
 
     <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-      <n-input v-model:value="search" placeholder="Поиск по маршруту" clearable style="width: 280px" />
+      <n-input v-model:value="search" :placeholder="t('client.services.searchPlaceholder')" clearable style="width: 280px" />
     </div>
 
     <n-data-table
@@ -23,6 +23,7 @@
 import { useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
 const { apiBase: API } = useApiBase()
@@ -43,13 +44,13 @@ const filteredServices = computed(() => {
   )
 })
 
-const columns: DataTableColumns<any> = [
-  { title: 'Откуда', key: 'from_city', ellipsis: true },
-  { title: 'Куда', key: 'to_city', ellipsis: true },
-  { title: 'Транспорт', key: 'vehicle_plate', width: 120 },
-  { title: 'Описание', key: 'description', ellipsis: true },
-  { title: 'Цена', key: 'price', width: 100, render: (row) => `${row.price} ${row.currency || 'TMT'}` },
-]
+const columns = computed<DataTableColumns<any>>(() => [
+  { title: t('common.from'), key: 'from_city', ellipsis: true },
+  { title: t('common.to'), key: 'to_city', ellipsis: true },
+  { title: t('client.services.transport'), key: 'vehicle_plate', width: 120 },
+  { title: t('client.services.description'), key: 'description', ellipsis: true },
+  { title: t('client.services.price'), key: 'price', width: 100, render: (row) => `${row.price} ${row.currency || 'TMT'}` },
+])
 
 async function loadServices() {
   loading.value = true
@@ -57,7 +58,7 @@ async function loadServices() {
     const data = await $fetch<any[]>(`${API}/cabinet/client/services`, { credentials: 'include' })
     serviceList.value = Array.isArray(data) ? data : []
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.loadError'))
   } finally {
     loading.value = false
   }

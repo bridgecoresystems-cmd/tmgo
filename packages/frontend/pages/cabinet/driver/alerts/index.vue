@@ -1,8 +1,8 @@
 <template>
   <div>
-    <n-h3 style="margin: 0 0 20px 0;">Оповещения</n-h3>
+    <n-h3 style="margin: 0 0 20px 0;">{{ t('driver.alerts.title') }}</n-h3>
     <p v-if="!loading && alerts.length === 0" class="text-secondary">
-      Нет срочных напоминаний. Все документы в порядке.
+      {{ t('driver.alerts.noAlerts') }}
     </p>
     <n-spin v-else-if="loading" style="min-height: 120px; display: flex; align-items: center; justify-content: center;" />
     <div v-else class="alerts-grid">
@@ -16,15 +16,15 @@
       >
         <div class="alert-card__header">
           <n-tag :type="a.isExpired ? 'error' : 'warning'" size="small">
-            {{ a.isExpired ? 'Истёк' : `Осталось ${a.daysLeft} дн.` }}
+            {{ a.isExpired ? t('driver.alerts.expired') : daysLeftText(a.daysLeft) }}
           </n-tag>
           <span class="alert-card__title">{{ a.title }}</span>
         </div>
         <div class="alert-card__date">
-          Срок действия до: {{ formatDate(a.expiryDate) }}
+          {{ t('driver.alerts.validUntil') }} {{ formatDate(a.expiryDate) }}
         </div>
         <NuxtLink :to="alertLink(a)" class="alert-card__link">
-          Добавить документ →
+          {{ t('driver.alerts.addDocument') }}
         </NuxtLink>
       </n-card>
     </div>
@@ -32,12 +32,18 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
-useSeoMeta({ title: 'Оповещения — BridgeCore Systems' })
+useSeoMeta({ title: t('driver.alerts.pageTitle') })
 
 const { alerts, fetchAlerts } = useDriverAlerts()
 const loading = ref(true)
+
+function daysLeftText(days: number) {
+  // locale-aware: "Осталось 5 дн." / "5 days left"
+  return t('driver.alerts.daysLeft').replace('{days}', String(days))
+}
 
 function formatDate(s: string) {
   const d = new Date(s)

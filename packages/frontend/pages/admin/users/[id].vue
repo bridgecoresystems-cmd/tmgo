@@ -1,11 +1,11 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/admin/users')">← К списку пользователей</n-button>
+    <n-button text style="margin-bottom: 16px" @click="navigateTo('/admin/users')">{{ $t('admin.usersDetail.backToList') }}</n-button>
 
     <n-spin v-if="userApi.loading" />
     <n-alert v-else-if="userApi.loadError" type="error" style="margin-bottom: 16px">
       {{ userApi.loadError }}
-      <n-button size="small" style="margin-top: 8px" @click="load">Повторить</n-button>
+      <n-button size="small" style="margin-top: 8px" @click="load">{{ $t('common.retry') }}</n-button>
     </n-alert>
 
     <template v-else>

@@ -1,18 +1,18 @@
 <template>
   <div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <n-h3 style="margin: 0;">Рассылки</n-h3>
+      <n-h3 style="margin: 0;">{{ t('client.mailing.title') }}</n-h3>
       <n-button v-if="unreadCount > 0" secondary @click="handleMarkAllRead" :loading="markingAll">
-        Прочитать все
+        {{ t('client.mailing.markAllRead') }}
       </n-button>
     </div>
 
     <n-tabs v-model:value="filterKey" type="segment" style="margin-bottom: 16px">
-      <n-tab name="all">Все</n-tab>
+      <n-tab name="all">{{ t('client.mailing.filterAll') }}</n-tab>
       <n-tab name="unread">
-        <n-badge :value="unreadCount" type="error" :max="99">Непрочитанные</n-badge>
+        <n-badge :value="unreadCount" type="error" :max="99">{{ t('client.mailing.filterUnread') }}</n-badge>
       </n-tab>
-      <n-tab name="read">Прочитанные</n-tab>
+      <n-tab name="read">{{ t('client.mailing.filterRead') }}</n-tab>
     </n-tabs>
 
     <div v-if="loading" style="padding: 40px; text-align: center">
@@ -31,7 +31,7 @@
         <div style="display: flex; justify-content: space-between; align-items: flex-start">
           <div>
             <div style="font-weight: 600; margin-bottom: 4px">{{ msg.title }}</div>
-            <div style="font-size: 13px; color: var(--n-text-color-3)">От: {{ msg.sender }}</div>
+            <div style="font-size: 13px; color: var(--n-text-color-3)">{{ t('client.mailing.from') }} {{ msg.sender }}</div>
             <div style="font-size: 14px; margin-top: 8px; color: var(--n-text-color-2)">
               {{ truncate(msg.content, 100) }}
             </div>
@@ -43,13 +43,14 @@
       </n-card>
     </div>
 
-    <n-empty v-else description="Сообщений пока нет" style="padding: 60px 0" />
+    <n-empty v-else :description="t('client.mailing.noMessages')" style="padding: 60px 0" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
 const { apiBase: API } = useApiBase()
@@ -69,8 +70,8 @@ const filteredMessages = computed(() => {
 })
 
 function truncate(text: string | undefined, max: number) {
-  const t = text || ''
-  return t.length > max ? t.slice(0, max) + '...' : t
+  const str = text || ''
+  return str.length > max ? str.slice(0, max) + '...' : str
 }
 
 function formatDate(s: string | undefined) {
@@ -84,7 +85,7 @@ async function loadMessages() {
     const data = await $fetch<any[]>(`${API || ''}/cabinet/mailing`, { credentials: 'include' })
     messages.value = Array.isArray(data) ? data : []
   } catch (e: any) {
-    message.error(e?.data?.message || e?.message || 'Ошибка загрузки')
+    message.error(e?.data?.message || e?.message || t('client.mailing.loadError'))
     messages.value = []
   } finally {
     loading.value = false
@@ -100,9 +101,9 @@ async function handleMarkAllRead() {
   try {
     await $fetch(`${API || ''}/cabinet/mailing/read-all`, { method: 'POST', credentials: 'include' })
     ;(Array.isArray(messages.value) ? messages.value : []).forEach((m) => (m.is_read = true))
-    message.success('Все прочитано')
+    message.success(t('client.mailing.allRead'))
   } catch {
-    message.error('Ошибка')
+    message.error(t('common.error'))
   } finally {
     markingAll.value = false
   }

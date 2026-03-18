@@ -1,7 +1,7 @@
 <template>
   <div>
     <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/client/mailing')">
-      ← Назад к списку
+      {{ t('client.mailing.backToList') }}
     </n-button>
 
     <div v-if="loading" style="padding: 40px; text-align: center">
@@ -13,17 +13,18 @@
         <n-h3 style="margin: 0">{{ msg.title }}</n-h3>
       </template>
       <div style="font-size: 14px; color: var(--n-text-color-3); margin-bottom: 16px">
-        От: {{ msg.sender }} · {{ formatDate(msg.received_at) }}
+        {{ t('client.mailing.from') }} {{ msg.sender }} · {{ formatDate(msg.received_at) }}
       </div>
       <n-divider />
       <div style="white-space: pre-wrap; line-height: 1.6">{{ msg.content }}</div>
     </n-card>
 
-    <n-empty v-else description="Сообщение не найдено" style="padding: 60px 0" />
+    <n-empty v-else :description="t('client.mailing.messageNotFound')" style="padding: 60px 0" />
   </div>
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
 const { apiBase: API } = useApiBase()

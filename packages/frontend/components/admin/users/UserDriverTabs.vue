@@ -1,12 +1,12 @@
 <template>
   <div class="print-area">
     <n-tabs type="line" animated class="admin-driver-tabs">
-    <n-tab-pane name="card" tab="Карточка">
+    <n-tab-pane name="card" :tab="t('admin.tabCard')">
       <n-card embedded :bordered="false" class="mt-16">
         <DriverCardView :is-driver-context="false" :initial-profile="profile" />
       </n-card>
     </n-tab-pane>
-    <n-tab-pane name="edit" tab="Редактирование">
+    <n-tab-pane name="edit" :tab="t('admin.tabEdit')">
       <n-card embedded :bordered="false" class="mt-16">
         <AdminUsersAdminDriverCardForm
           ref="formRef"
@@ -18,7 +18,7 @@
         />
       </n-card>
     </n-tab-pane>
-    <n-tab-pane name="requests" tab="Запросы">
+    <n-tab-pane name="requests" :tab="t('admin.tabRequests')">
       <n-card embedded :bordered="false" class="mt-16">
         <AdminUsersChangeRequestsTab
           :filter="changeRequestsFilter"
@@ -42,6 +42,8 @@
 
 <script setup lang="ts">
 import { NTabs, NTabPane, NCard } from 'naive-ui'
+
+const { t } = useI18n()
 
 defineProps<{
   profile: any

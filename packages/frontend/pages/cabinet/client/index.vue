@@ -2,9 +2,9 @@
   <div class="onboarding-page">
     <n-card :bordered="false" class="shadow-sm onboarding-card">
       <n-steps :current="currentStep" :status="currentStatus">
-        <n-step title="Контактные данные" description="Телефон и имя" />
-        <n-step title="Документы" description="Паспорт" />
-        <n-step title="Завершение" description="Проверка модератором" />
+        <n-step :title="t('client.dashboard.contactData')" :description="t('client.dashboard.contactSubtitle')" />
+        <n-step :title="t('client.dashboard.documentsStep')" :description="t('client.dashboard.documentsSubtitle')" />
+        <n-step :title="t('client.dashboard.completion')" :description="t('client.dashboard.completionSubtitle')" />
       </n-steps>
 
       <div class="step-content mt-40">
@@ -12,48 +12,48 @@
           <n-form :model="form" ref="formRef">
             <n-grid :cols="2" :x-gap="24">
               <n-gi>
-                <n-form-item label="Ваше полное имя" path="name">
-                  <n-input v-model:value="form.name" placeholder="Иван Иванов" />
+                <n-form-item :label="t('client.dashboard.fullName')" path="name">
+                  <n-input v-model:value="form.name" :placeholder="t('client.dashboard.fullNamePlaceholder')" />
                 </n-form-item>
               </n-gi>
               <n-gi>
-                <n-form-item label="Номер телефона" path="phone">
+                <n-form-item :label="t('client.dashboard.phoneNumber')" path="phone">
                   <n-input v-model:value="form.phone" placeholder="+993 ..." />
                 </n-form-item>
               </n-gi>
             </n-grid>
-            <n-button type="primary" size="large" @click="nextStep">Далее</n-button>
+            <n-button type="primary" size="large" @click="nextStep">{{ t('client.dashboard.next') }}</n-button>
           </n-form>
         </div>
 
         <div v-if="currentStep === 2">
-          <n-alert title="Безопасность" type="info" class="mb-20">
-            Для работы на платформе необходимо подтвердить личность. Загрузите фото документов.
+          <n-alert :title="t('client.dashboard.security')" type="info" class="mb-20">
+            {{ t('client.dashboard.securityInfo') }}
           </n-alert>
           <n-grid :cols="2" :x-gap="24">
             <n-gi>
-              <n-form-item label="Серия и номер паспорта">
+              <n-form-item :label="t('client.dashboard.passportSeriesNumber')">
                 <n-input v-model:value="form.passport" placeholder="I-AS 123456" />
               </n-form-item>
               <n-upload action="#" :default-upload="false">
-                <n-button>Загрузить фото паспорта</n-button>
+                <n-button>{{ t('client.dashboard.uploadPassport') }}</n-button>
               </n-upload>
             </n-gi>
           </n-grid>
           <n-space class="mt-20">
-            <n-button @click="prevStep">Назад</n-button>
-            <n-button type="primary" size="large" @click="nextStep">Отправить на проверку</n-button>
+            <n-button @click="prevStep">{{ t('client.dashboard.back') }}</n-button>
+            <n-button type="primary" size="large" @click="nextStep">{{ t('client.dashboard.sendForVerification') }}</n-button>
           </n-space>
         </div>
 
         <div v-if="currentStep === 3" class="text-center py-40">
           <n-result
             status="success"
-            title="Данные отправлены"
-            description="Наш модератор проверит ваши документы в течение 24 часов. Вы получите уведомление."
+            :title="t('client.dashboard.dataSent')"
+            :description="t('client.dashboard.dataDescription')"
           >
             <template #footer>
-              <n-button @click="navigateTo('/')">На главную</n-button>
+              <n-button @click="navigateTo('/')">{{ t('client.dashboard.toMain') }}</n-button>
             </template>
           </n-result>
         </div>
@@ -63,6 +63,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
 const { session } = useAuth()

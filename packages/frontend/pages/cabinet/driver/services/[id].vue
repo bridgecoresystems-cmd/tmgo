@@ -1,45 +1,45 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/driver/services')">← Назад к списку</n-button>
+    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/driver/services')">{{ t('common.backToList') }}</n-button>
 
-    <n-card v-if="service" title="Редактировать услугу">
+    <n-card v-if="service" :title="t('driver.services.editService')">
       <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
         <n-grid :cols="3" :x-gap="16">
           <n-gi>
-            <n-form-item label="Откуда" path="from_city_id" required>
-              <n-select v-model:value="form.from_city_id" :options="cityOptions" placeholder="Выберите город" filterable />
+            <n-form-item :label="t('common.from')" path="from_city_id" required>
+              <n-select v-model:value="form.from_city_id" :options="cityOptions" :placeholder="t('driver.services.selectCity')" filterable />
             </n-form-item>
           </n-gi>
           <n-gi>
-            <n-form-item label="Куда" path="to_city_id" required>
-              <n-select v-model:value="form.to_city_id" :options="cityOptions" placeholder="Выберите город" filterable />
+            <n-form-item :label="t('common.to')" path="to_city_id" required>
+              <n-select v-model:value="form.to_city_id" :options="cityOptions" :placeholder="t('driver.services.selectCity')" filterable />
             </n-form-item>
           </n-gi>
           <n-gi>
-            <n-form-item label="Транспорт" path="vehicle_id" required>
-              <n-select v-model:value="form.vehicle_id" :options="vehicleOptions" placeholder="Выберите ТС" />
+            <n-form-item :label="t('common.transport')" path="vehicle_id" required>
+              <n-select v-model:value="form.vehicle_id" :options="vehicleOptions" :placeholder="t('common.selectVehicle')" />
             </n-form-item>
           </n-gi>
           <n-gi>
-            <n-form-item label="Цена (TMT)" path="price" required>
+            <n-form-item :label="t('driver.services.priceTmt')" path="price" required>
               <n-input-number v-model:value="form.price" :min="0.01" :precision="2" style="width: 100%" />
             </n-form-item>
           </n-gi>
           <n-gi :span="3">
-            <n-form-item label="Описание услуги" path="description">
-              <n-input v-model:value="form.description" type="textarea" placeholder="Опишите услугу" :rows="3" />
+            <n-form-item :label="t('driver.services.serviceDescription')" path="description">
+              <n-input v-model:value="form.description" type="textarea" :placeholder="t('driver.services.descriptionPlaceholder')" :rows="3" />
             </n-form-item>
           </n-gi>
         </n-grid>
         <n-space>
-          <n-button type="primary" :loading="saving" @click="handleSave">Сохранить</n-button>
-          <n-button @click="navigateTo('/cabinet/driver/services')">Отмена</n-button>
+          <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
+          <n-button @click="navigateTo('/cabinet/driver/services')">{{ t('common.cancel') }}</n-button>
         </n-space>
       </n-form>
     </n-card>
 
     <div v-else-if="!loading" style="padding: 40px; text-align: center">
-      <n-empty description="Услуга не найдена" />
+      <n-empty :description="t('driver.services.serviceNotFound')" />
     </div>
     <div v-else style="padding: 40px; text-align: center">
       <n-spin size="large" />
@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
 
 const { apiBase: API } = useApiBase()
@@ -70,12 +71,12 @@ const form = reactive({
   description: '' as string,
 })
 
-const rules = {
-  from_city_id: { required: true, message: 'Выберите город', trigger: 'blur' },
-  to_city_id: { required: true, message: 'Выберите город', trigger: 'blur' },
-  vehicle_id: { required: true, message: 'Выберите транспорт', trigger: 'blur' },
-  price: { required: true, type: 'number', min: 0.01, message: 'Введите цену', trigger: 'blur' },
-}
+const rules = computed(() => ({
+  from_city_id: { required: true, message: t('driver.services.selectCityRequired'), trigger: 'blur' },
+  to_city_id: { required: true, message: t('driver.services.selectCityRequired'), trigger: 'blur' },
+  vehicle_id: { required: true, message: t('driver.services.selectVehicleRequired'), trigger: 'blur' },
+  price: { required: true, type: 'number', min: 0.01, message: t('driver.services.enterPrice'), trigger: 'blur' },
+}))
 
 const cityOptions = computed(() => allCities.value.map((c) => ({ label: c.name, value: c.id })))
 const vehicleOptions = computed(() => vehicles.value.map((v) => ({ label: `${v.plate_number} (${v.type})`, value: v.id })))
@@ -89,7 +90,7 @@ async function loadData() {
     allCities.value = citiesData
     vehicles.value = veh
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.loadError'))
   }
 }
 
@@ -124,7 +125,7 @@ async function handleSave() {
         description: form.description || undefined,
       },
     })
-    message.success('Услуга сохранена')
+    message.success(t('driver.services.serviceSaved'))
     navigateTo('/cabinet/driver/services')
   } catch (e: any) {
     if (e?.data?.error) message.error(e.data.error)

@@ -1,11 +1,11 @@
 <!--
-  ChatWidget — плавающая панель чата (внизу справа)
+  ChatWidget — floating chat panel (bottom right)
   Props: modelValue, orderId, title, currentUserId
-  При клике вне виджета — закрывается
+  Click outside to close
 -->
 <template>
   <Teleport to="body">
-    <!-- Оверлей — клик закрывает чат -->
+    <!-- Overlay — click to close chat -->
     <div
       v-if="modelValue"
       class="cw-backdrop"
@@ -16,7 +16,7 @@
       <div class="cw-header" @click="togglePanel">
         <div class="cw-header__left">
           <span class="cw-status" :class="{ 'cw-status--online': wsConnected }" />
-          <span class="cw-header__title">{{ title || 'Чат' }}</span>
+          <span class="cw-header__title">{{ title || t('chat.title') }}</span>
           <NIcon v-if="typingName" size="14" class="cw-typing-icon">
             <component :is="PencilIcon" />
           </NIcon>
@@ -35,7 +35,7 @@
 
         <div v-else-if="messages.length === 0" class="cw-center cw-empty">
           <NIcon size="32" color="#d1d5db"><component :is="ChatIcon" /></NIcon>
-          <span>Нет сообщений</span>
+          <span>{{ t('chat.noMessages') }}</span>
         </div>
 
         <template v-else>
@@ -59,7 +59,10 @@
                 {{ msg.user?.name }}
               </div>
               <div class="cw-msg__bubble">
-                <template v-if="msg.content && msg.content !== '[Фото]'">{{ msg.content }}</template>
+                <template v-if="msg.content">
+                  <span v-if="msg.content === '[Фото]' || msg.content === '[Photo]'">{{ t('chat.photo') }}</span>
+                  <span v-else>{{ msg.content }}</span>
+                </template>
                 <div v-if="msg.attachments?.length" class="cw-msg__imgs">
                   <div
                     v-for="(url, i) in msg.attachments"
@@ -67,7 +70,7 @@
                     class="cw-msg__img-link"
                     @click="previewImage = imageUrl(url)"
                   >
-                    <img :src="imageUrl(url)" alt="Фото" class="cw-msg__img" />
+                    <img :src="imageUrl(url)" :alt="t('chat.photoAlt')" class="cw-msg__img" />
                   </div>
                 </div>
               </div>
@@ -76,7 +79,7 @@
           </div>
 
           <div v-if="typingName" class="cw-typing">
-            <span>{{ typingName }} печатает</span>
+            <span>{{ typingName }} {{ t('chat.typing') }}</span>
             <span class="cw-dots"><span>.</span><span>.</span><span>.</span></span>
           </div>
         </template>
@@ -105,7 +108,7 @@
           <textarea
             v-model="inputText"
             class="cw-input"
-            placeholder="Написать сообщение..."
+            :placeholder="t('chat.typingPlaceholder')"
             rows="2"
             :disabled="!wsConnected"
             @keydown="handleKey"
@@ -133,15 +136,15 @@
       </div>
     </div>
 
-    <NModal v-model:show="imageModalShow" preset="card" title="Фото" style="width: 90vw; max-width: 900px">
-      <img v-if="previewImage" :src="previewImage" alt="Фото" style="width: 100%; height: auto; display: block" />
+    <NModal v-model:show="imageModalShow" preset="card" :title="t('chat.photoTitle')" style="width: 90vw; max-width: 900px">
+      <img v-if="previewImage" :src="previewImage" :alt="t('chat.photoAlt')" style="width: 100%; height: auto; display: block" />
     </NModal>
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
-import { NButton, NIcon, NAvatar, NSpin } from 'naive-ui'
+import { NButton, NIcon, NAvatar, NSpin, useMessage } from 'naive-ui'
 import {
   ChatbubbleEllipsesOutline as ChatIcon,
   CloseOutline as CloseIcon,
@@ -149,6 +152,8 @@ import {
   PencilOutline as PencilIcon,
   ImageOutline as ImageIcon,
 } from '@vicons/ionicons5'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   modelValue: boolean

@@ -1,19 +1,19 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/client/services')">← Назад к списку</n-button>
+    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/client/services')">{{ t('common.backToList') }}</n-button>
 
-    <n-card v-if="service" title="Услуга перевозчика">
+    <n-card v-if="service" :title="t('client.services.serviceDetails')">
       <n-descriptions :column="1" bordered>
-        <n-descriptions-item label="Маршрут">{{ service.from_city }} → {{ service.to_city }}</n-descriptions-item>
-        <n-descriptions-item label="Транспорт">{{ service.vehicle_plate }} ({{ service.vehicle_type || '—' }})</n-descriptions-item>
-        <n-descriptions-item label="Компания">{{ service.company_name || '—' }}</n-descriptions-item>
-        <n-descriptions-item label="Описание">{{ service.description || '—' }}</n-descriptions-item>
-        <n-descriptions-item label="Цена">{{ service.price }} {{ service.currency }}</n-descriptions-item>
+        <n-descriptions-item :label="t('client.services.route')">{{ service.from_city }} → {{ service.to_city }}</n-descriptions-item>
+        <n-descriptions-item :label="t('client.services.transport')">{{ service.vehicle_plate }} ({{ service.vehicle_type || '—' }})</n-descriptions-item>
+        <n-descriptions-item :label="t('client.services.company')">{{ service.company_name || '—' }}</n-descriptions-item>
+        <n-descriptions-item :label="t('client.services.description')">{{ service.description || '—' }}</n-descriptions-item>
+        <n-descriptions-item :label="t('client.services.price')">{{ service.price }} {{ service.currency }}</n-descriptions-item>
       </n-descriptions>
     </n-card>
 
     <div v-else-if="!loading" style="padding: 40px; text-align: center">
-      <n-empty description="Услуга не найдена" />
+      <n-empty :description="t('client.services.serviceNotFound')" />
     </div>
     <div v-else style="padding: 40px; text-align: center">
       <n-spin size="large" />
@@ -22,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
 const { apiBase: API } = useApiBase()

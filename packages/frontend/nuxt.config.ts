@@ -17,6 +17,9 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/i18n',
   ],
+  plugins: [
+    { src: '~/plugins/i18n-locale.client.ts', order: -10 },
+  ],
   i18n: {
     locales: [
       { code: 'ru', iso: 'ru-RU', name: 'Русский' },
@@ -27,7 +30,11 @@ export default defineNuxtConfig({
     fallbackLocale: 'ru',
     vueI18n: 'i18n.config.ts',
     strategy: 'no_prefix',
-    detectBrowserLanguage: false,
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      fallbackLocale: 'ru',
+    },
   },
   naiveui: {
     colorMode: 'light'

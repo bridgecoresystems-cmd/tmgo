@@ -1,7 +1,7 @@
 <template>
   <div class="profile-page">
     <n-grid :cols="3" :x-gap="24" responsive="screen">
-      <!-- Левая колонка: Аватар и основная инфа -->
+      <!-- Left column: Avatar and basic info -->
       <n-gi :span="1">
         <n-card class="shadow-sm text-center">
           <n-space vertical align="center" size="large">
@@ -21,24 +21,24 @@
                 :custom-request="handleAvatarUpload"
                 :show-file-list="false"
               >
-                <n-button quaternary size="small" class="avatar-upload-btn">Изменить фото</n-button>
+                <n-button quaternary size="small" class="avatar-upload-btn">{{ t('client.profile.changePhoto') }}</n-button>
               </n-upload>
             </div>
             <div>
-              <n-h2 style="margin: 0">{{ displayName || 'Заказчик' }}</n-h2>
-              <n-text depth="3">Заказчик</n-text>
+              <n-h2 style="margin: 0">{{ displayName || t('client.profile.client') }}</n-h2>
+              <n-text depth="3">{{ t('client.profile.client') }}</n-text>
             </div>
-            <n-tag type="info" round :bordered="false">Личный кабинет</n-tag>
+            <n-tag type="info" round :bordered="false">{{ t('client.profile.personalCabinet') }}</n-tag>
 
             <n-divider />
 
             <div class="profile-details">
               <div class="detail-item">
-                <n-text depth="3">Email:</n-text>
+                <n-text depth="3">{{ t('common.email') }}:</n-text>
                 <n-text strong>{{ profile?.email || '—' }}</n-text>
               </div>
               <div v-if="phones.length" class="detail-item">
-                <n-text depth="3">Телефоны:</n-text>
+                <n-text depth="3">{{ t('client.profile.phones') }}</n-text>
                 <div class="phones-list">
                   <n-text v-for="(p, i) in phones" :key="i" strong>{{ p }}</n-text>
                 </div>
@@ -48,18 +48,18 @@
         </n-card>
       </n-gi>
 
-      <!-- Правая колонка: Формы -->
+      <!-- Right column: Forms -->
       <n-gi :span="2">
         <n-tabs type="line" animated>
-          <n-tab-pane name="basic" tab="Основные данные">
+          <n-tab-pane name="basic" :tab="t('client.profile.basicData')">
             <n-form class="mt-20" style="max-width: 400px">
-              <n-form-item label="Имя">
-                <n-input v-model:value="basicForm.name" placeholder="Введите имя" />
+              <n-form-item :label="t('common.name')">
+                <n-input v-model:value="basicForm.name" :placeholder="t('client.profile.namePlaceholder')" />
               </n-form-item>
-              <n-form-item label="Email">
+              <n-form-item :label="t('common.email')">
                 <n-input :value="profile?.email" disabled />
               </n-form-item>
-              <n-form-item label="Телефоны (через запятую)">
+              <n-form-item :label="t('client.profile.phonesLabel')">
                 <n-input
                   v-model:value="basicForm.phones"
                   type="textarea"
@@ -68,39 +68,39 @@
                 />
               </n-form-item>
               <n-button type="primary" :loading="basicLoading" @click="handleUpdateProfile">
-                Сохранить изменения
+                {{ t('client.profile.saveChanges') }}
               </n-button>
             </n-form>
           </n-tab-pane>
 
-          <n-tab-pane name="security" tab="Безопасность">
+          <n-tab-pane name="security" :tab="t('client.profile.security')">
             <n-form class="mt-20" style="max-width: 400px">
-              <n-form-item label="Текущий пароль">
+              <n-form-item :label="t('client.profile.currentPassword')">
                 <n-input
                   v-model:value="passwordForm.currentPassword"
                   type="password"
                   show-password-on="click"
-                  placeholder="Введите текущий пароль"
+                  :placeholder="t('client.profile.currentPasswordPlaceholder')"
                 />
               </n-form-item>
-              <n-form-item label="Новый пароль">
+              <n-form-item :label="t('client.profile.newPassword')">
                 <n-input
                   v-model:value="passwordForm.newPassword"
                   type="password"
                   show-password-on="click"
-                  placeholder="Минимум 6 символов"
+                  :placeholder="t('client.profile.newPasswordPlaceholder')"
                 />
               </n-form-item>
-              <n-form-item label="Подтвердите пароль">
+              <n-form-item :label="t('client.profile.confirmPassword')">
                 <n-input
                   v-model:value="passwordForm.confirmPassword"
                   type="password"
                   show-password-on="click"
-                  placeholder="Повторите новый пароль"
+                  :placeholder="t('client.profile.confirmPasswordPlaceholder')"
                 />
               </n-form-item>
               <n-button type="primary" :loading="passwordLoading" @click="handleChangePassword">
-                Обновить пароль
+                {{ t('client.profile.updatePassword') }}
               </n-button>
             </n-form>
           </n-tab-pane>
@@ -113,9 +113,10 @@
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+const { t } = useI18n()
 definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
 
-useSeoMeta({ title: 'Профиль — BridgeCore Systems' })
+useSeoMeta({ title: t('client.profile.title') })
 
 const { apiBase } = useApiBase()
 const { fetchSession } = useAuth()
@@ -131,7 +132,7 @@ const profile = ref<{
   phones: string[]
 } | null>(null)
 
-const displayName = computed(() => profile.value?.displayName || 'Заказчик')
+const displayName = computed(() => profile.value?.displayName || t('client.profile.client'))
 
 const phones = computed(() => profile.value?.phones ?? [])
 
@@ -174,17 +175,17 @@ async function handleAvatarUpload({
   try {
     const fd = new FormData()
     fd.append('file', file.file, file.file.name)
-    const res = await $fetch<{ url: string }>(`${apiBase}/api/auth/upload-avatar`, {
+    await $fetch<{ url: string }>(`${apiBase}/api/auth/upload-avatar`, {
       method: 'POST',
       credentials: 'include',
       body: fd,
     })
     await fetchSession()
     await loadProfile()
-    message.success('Фото обновлено')
+    message.success(t('client.profile.photoUpdated'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('client.profile.uploadError'))
     onError(e)
   }
 }
@@ -207,9 +208,9 @@ async function handleUpdateProfile() {
     })
     await fetchSession()
     await loadProfile()
-    message.success('Профиль обновлён')
+    message.success(t('client.profile.profileUpdated'))
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка сохранения')
+    message.error(e?.data?.error || t('client.profile.saveError'))
   } finally {
     basicLoading.value = false
   }
@@ -217,11 +218,11 @@ async function handleUpdateProfile() {
 
 async function handleChangePassword() {
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    message.error('Пароли не совпадают')
+    message.error(t('client.profile.passwordsMismatch'))
     return
   }
   if (passwordForm.newPassword.length < 6) {
-    message.error('Пароль должен быть не менее 6 символов')
+    message.error(t('client.profile.passwordTooShort'))
     return
   }
   passwordLoading.value = true
@@ -234,12 +235,12 @@ async function handleChangePassword() {
         newPassword: passwordForm.newPassword,
       },
     })
-    message.success('Пароль обновлён')
+    message.success(t('client.profile.passwordUpdated'))
     passwordForm.currentPassword = ''
     passwordForm.newPassword = ''
     passwordForm.confirmPassword = ''
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка смены пароля')
+    message.error(e?.data?.error || t('client.profile.passwordChangeError'))
   } finally {
     passwordLoading.value = false
   }

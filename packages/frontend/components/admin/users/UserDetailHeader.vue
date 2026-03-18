@@ -1,6 +1,6 @@
 <template>
   <div class="user-detail-header">
-    <n-h3 style="margin: 0;">{{ user?.name || user?.email || 'Пользователь' }}</n-h3>
+    <n-h3 style="margin: 0;">{{ user?.name || user?.email || t('admin.user') }}</n-h3>
     <n-space>
       <n-button
         v-if="user?.role !== 'admin' && user?.isActive"
@@ -8,48 +8,48 @@
         quaternary
         @click="$emit('impersonate')"
       >
-        👤 Войти под пользователем
+        👤 {{ t('admin.impersonate') }}
       </n-button>
-      <n-tag v-if="!user?.isActive" type="error">Деактивирован</n-tag>
+      <n-tag v-if="!user?.isActive" type="error">{{ t('admin.deactivated') }}</n-tag>
       <n-tag v-else-if="user?.role" :type="roleTagType">{{ user.role }}</n-tag>
-      <n-tag v-if="profile?.verification_status === 'verified'" type="success">Верифицирован</n-tag>
-      <n-tag v-else-if="profile?.verification_status === 'submitted' || profile?.verification_status === 'waiting_verification'" type="warning">Ожидает проверки</n-tag>
-      <n-tag v-else-if="profile?.verification_status === 'request'" type="info">Запрос</n-tag>
-      <n-tag v-else-if="profile?.verification_status === 'rejected'" type="error">Отклонён</n-tag>
-      <n-tag v-else-if="profile?.verification_status === 'suspended'" type="error">Приостановлен</n-tag>
-      <n-tag v-else-if="profile?.verification_status === 'not_verified' || profile?.verification_status === 'not_submitted'" type="default">Не верифицирован</n-tag>
+      <n-tag v-if="profile?.verification_status === 'verified'" type="success">{{ t('admin.verified') }}</n-tag>
+      <n-tag v-else-if="profile?.verification_status === 'submitted' || profile?.verification_status === 'waiting_verification'" type="warning">{{ t('admin.waitingVerification') }}</n-tag>
+      <n-tag v-else-if="profile?.verification_status === 'request'" type="info">{{ t('admin.request') }}</n-tag>
+      <n-tag v-else-if="profile?.verification_status === 'rejected'" type="error">{{ t('admin.rejected') }}</n-tag>
+      <n-tag v-else-if="profile?.verification_status === 'suspended'" type="error">{{ t('admin.suspended') }}</n-tag>
+      <n-tag v-else-if="profile?.verification_status === 'not_verified' || profile?.verification_status === 'not_submitted'" type="default">{{ t('admin.notVerified') }}</n-tag>
       <n-space v-if="user?.role === 'driver' && profile" :size="8">
         <n-button type="info" quaternary @click="typeof window !== 'undefined' && window.print()">
-          Печать
+          {{ t('admin.print') }}
         </n-button>
         <n-button v-if="canVerify" type="primary" :loading="verifying" @click="$emit('verify')">
-          Верифицировать
+          {{ t('admin.verify') }}
         </n-button>
         <n-button v-if="canReject" type="error" quaternary :loading="rejecting" @click="$emit('reject')">
-          Отклонить
+          {{ t('admin.reject') }}
         </n-button>
         <n-button v-if="canSuspend" type="warning" quaternary :loading="suspending" @click="$emit('suspend')">
-          Приостановить
+          {{ t('admin.suspend') }}
         </n-button>
         <n-button v-if="canRestore" type="success" quaternary :loading="restoring" @click="$emit('restore')">
-          Восстановить
+          {{ t('admin.restore') }}
         </n-button>
       </n-space>
       <n-button v-if="!user?.isActive" type="success" :loading="activating" @click="$emit('activate')">
-        Восстановить
+        {{ t('admin.restore') }}
       </n-button>
       <n-popconfirm
         v-if="!user?.isActive"
-        positive-text="Удалить"
-        negative-text="Отмена"
+        :positive-text="t('common.delete')"
+        :negative-text="t('common.cancel')"
         @positive-click="$emit('delete-permanent')"
       >
         <template #trigger>
           <n-button type="error" :loading="deleting" quaternary>
-            Удалить навсегда
+            {{ t('admin.deletePermanent') }}
           </n-button>
         </template>
-        Удалить пользователя навсегда? Все данные будут безвозвратно потеряны.
+        {{ t('admin.deletePermanentConfirm') }}
       </n-popconfirm>
     </n-space>
   </div>
@@ -57,6 +57,8 @@
 
 <script setup lang="ts">
 import { NH3, NSpace, NButton, NTag, NPopconfirm } from 'naive-ui'
+
+const { t } = useI18n()
 
 defineProps<{
   user: any

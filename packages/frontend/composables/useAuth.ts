@@ -19,9 +19,19 @@ interface SessionState {
 const state = reactive<SessionState>({ user: null, loading: true, isImpersonating: false })
 let initialized = false
 
+const RATE_LIMIT_FALLBACK = 'Too many login attempts. Try again in 15 minutes.'
+
 export const useAuth = () => {
   const { apiBase: API } = useApiBase()
   const session = computed(() => state.user ? { user: state.user } : null)
+
+  function getRateLimitMessage() {
+    try {
+      return useI18n().t('auth.rateLimited.fallback')
+    } catch {
+      return RATE_LIMIT_FALLBACK
+    }
+  }
 
   async function fetchSession() {
     try {
@@ -57,7 +67,7 @@ export const useAuth = () => {
     } catch (e: any) {
       const is429 = e?.statusCode === 429 || e?.status === 429 || e?.response?.status === 429
       if (is429) {
-        const msg = e?.data?.error?.message ?? e?.data?.message ?? 'Слишком много попыток входа. Попробуйте через 15 минут.'
+        const msg = e?.data?.error?.message ?? e?.data?.message ?? getRateLimitMessage()
         const err = new Error(msg) as Error & { isRateLimited?: boolean }
         err.isRateLimited = true
         throw err

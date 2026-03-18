@@ -18,7 +18,7 @@ body {
   padding: 0 20px;
 }
 
-/* Печать только области с классом print-area */
+/* Print only area with class print-area */
 @media print {
   body * {
     visibility: hidden;
@@ -35,7 +35,7 @@ body {
     box-shadow: none !important;
     border: none !important;
   }
-  /* Скрыть вкладки при печати (админка) */
+  /* Hide tabs when printing (admin) */
   .print-area .n-tabs-nav,
   .print-area .n-tabs-tab-wrapper {
     display: none !important;

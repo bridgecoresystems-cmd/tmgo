@@ -1,114 +1,114 @@
 <template>
   <div class="auth-main">
-    <input 
-      type="checkbox" 
-      id="chk" 
+    <input
+      type="checkbox"
+      id="chk"
       v-model="isSignupMode"
       aria-hidden="true"
     >
-    
-    <!-- Форма регистрации -->
+
+    <!-- Registration form -->
     <div class="signup" :class="{ active: isSignupMode }">
       <form @submit.prevent="handleRegister">
-        <label for="chk" class="form-title">Регистрация</label>
+        <label for="chk" class="form-title">{{ t('auth.signup.title') }}</label>
 
         <div v-if="registerError" class="form-error">
           {{ registerError }}
         </div>
-        
+
         <div class="form-group">
-          <label class="form-label">Email адрес *</label>
-          <input 
-            type="email" 
+          <label class="form-label">{{ t('auth.signup.emailAddress') }}</label>
+          <input
+            type="email"
             v-model="registerForm.email"
-            placeholder="example@mail.com" 
-            required 
+            placeholder="example@mail.com"
+            required
           >
         </div>
 
         <div class="form-group">
-          <label class="form-label">Я хочу быть *</label>
+          <label class="form-label">{{ t('auth.signup.iWantToBe') }}</label>
           <select v-model="registerForm.role" class="custom-select">
-            <option value="client">Заказчиком</option>
-            <option value="driver">Перевозчиком</option>
+            <option value="client">{{ t('auth.signup.asClient') }}</option>
+            <option value="driver">{{ t('auth.signup.asDriver') }}</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Пароль *</label>
-          <input 
-            type="password" 
+          <label class="form-label">{{ t('auth.signup.passwordLabel') }}</label>
+          <input
+            type="password"
             v-model="registerForm.password"
-            placeholder="Минимум 8 символов"
-            required 
+            :placeholder="t('auth.signup.passwordPlaceholder')"
+            required
           >
         </div>
 
         <div class="form-group">
-          <label class="form-label">Подтвердите пароль *</label>
-          <input 
-            type="password" 
+          <label class="form-label">{{ t('auth.signup.passwordConfirmLabel') }}</label>
+          <input
+            type="password"
             v-model="registerForm.passwordConfirm"
-            placeholder="Повторите пароль"
-            required 
+            :placeholder="t('auth.signup.passwordConfirmPlaceholder')"
+            required
           >
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="btn-submit"
           :disabled="loading"
         >
-          {{ loading ? 'Создание аккаунта...' : 'Продолжить' }}
+          {{ loading ? t('auth.signup.creatingAccount') : t('auth.signup.continue') }}
         </button>
-        
+
         <p class="form-switch">
-          Уже есть аккаунт? 
-          <span @click="isSignupMode = false" class="switch-link">Войти</span>
+          {{ t('auth.signup.alreadyHaveAccount') }}
+          <span @click="isSignupMode = false" class="switch-link">{{ t('auth.login.submit') }}</span>
         </p>
       </form>
     </div>
 
-    <!-- Форма входа -->
+    <!-- Login form -->
     <div class="login" :class="{ active: !isSignupMode }">
       <form @submit.prevent="handleLogin">
-        <label for="chk" class="form-title">Вход</label>
+        <label for="chk" class="form-title">{{ t('auth.login.title') }}</label>
 
         <div v-if="loginError" class="form-error">
           {{ loginError }}
         </div>
-        
+
         <div class="form-group">
-          <label class="form-label">Email</label>
-          <input 
-            type="email" 
+          <label class="form-label">{{ t('auth.login.emailLabel') }}</label>
+          <input
+            type="email"
             v-model="loginForm.email"
-            placeholder="your@email.com" 
-            required 
+            :placeholder="t('auth.login.emailPlaceholder')"
+            required
           >
         </div>
 
         <div class="form-group">
-          <label class="form-label">Пароль</label>
-          <input 
-            type="password" 
+          <label class="form-label">{{ t('auth.login.passwordLabel') }}</label>
+          <input
+            type="password"
             v-model="loginForm.password"
-            placeholder="Введите пароль" 
-            required 
+            :placeholder="t('auth.login.passwordPlaceholder')"
+            required
           >
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="btn-submit"
           :disabled="loading"
         >
-          {{ loading ? 'Вход...' : 'Войти' }}
+          {{ loading ? t('auth.login.submitLoading') : t('auth.login.submit') }}
         </button>
-        
+
         <p class="form-switch">
-          Нет аккаунта? 
-          <span @click="isSignupMode = true" class="switch-link">Регистрация</span>
+          {{ t('auth.login.noAccount') }}
+          <span @click="isSignupMode = true" class="switch-link">{{ t('auth.signup.title') }}</span>
         </p>
       </form>
     </div>
@@ -118,6 +118,7 @@
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'
 
+const { t } = useI18n()
 const { signIn, signUp } = useAuth()
 const router = useRouter()
 const message = useMessage()
@@ -156,7 +157,7 @@ const handleLogin = async () => {
       router.push('/rate-limited')
       return
     }
-    loginError.value = e.message || 'Ошибка входа'
+    loginError.value = e.message || t('auth.errors.loginFailed')
   } finally {
     loading.value = false
   }
@@ -165,7 +166,7 @@ const handleLogin = async () => {
 const handleRegister = async () => {
   registerError.value = ''
   if (registerForm.password !== registerForm.passwordConfirm) {
-    registerError.value = 'Пароли не совпадают'
+    registerError.value = t('auth.errors.passwordsMismatch')
     return
   }
 
@@ -174,18 +175,18 @@ const handleRegister = async () => {
     const user = await signUp(
       registerForm.email,
       registerForm.password,
-      registerForm.email.split('@')[0], // Временное имя из email
+      registerForm.email.split('@')[0],
       registerForm.role
     )
-    
-    message.success('Аккаунт создан! Заполните профиль.')
+
+    message.success(t('auth.signup.accountCreated'))
     if (user?.role === 'driver') {
       router.push('/cabinet/driver')
     } else {
       router.push('/cabinet/client')
     }
   } catch (e: any) {
-    registerError.value = e.message || 'Ошибка регистрации'
+    registerError.value = e.message || t('auth.errors.registerFailed')
   } finally {
     loading.value = false
   }

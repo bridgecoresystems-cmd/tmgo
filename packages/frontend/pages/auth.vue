@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-main">
-      <!-- Скрытый чекбокс для переключения через CSS (если нужно) или просто через v-model -->
+      <!-- Hidden checkbox for mode toggle via v-model -->
       <input 
         type="checkbox" 
         id="chk" 
@@ -9,7 +9,7 @@
         aria-hidden="true"
       >
       
-      <!-- Форма регистрации -->
+      <!-- Signup form -->
       <div class="signup" :class="{ active: isSignupMode }">
         <form @submit.prevent="handleRegister">
           <label for="chk" class="form-title">{{ $t('auth.signup.title') }}</label>
@@ -73,7 +73,7 @@
         </form>
       </div>
 
-      <!-- Форма входа -->
+      <!-- Login form -->
       <div class="login" :class="{ active: !isSignupMode }">
         <form @submit.prevent="handleLogin">
           <label for="chk" class="form-title">{{ $t('auth.login.title') }}</label>
@@ -169,15 +169,12 @@ const handleLogin = async () => {
       await navigateTo('/cabinet/client')
     }
   } catch (e: any) {
-    if (e?.isRateLimited) {
+    const is429 = e?.isRateLimited || e?.statusCode === 429 || e?.status === 429 || e?.response?.status === 429
+    if (is429) {
       await navigateTo('/rate-limited')
       return
     }
     const msg = e?.message || ''
-    if (msg.includes('попыток') || msg.includes('15 минут') || msg.toLowerCase().includes('too many')) {
-      await navigateTo('/rate-limited')
-      return
-    }
     if (msg.toLowerCase().includes('failed to fetch') || msg.includes('network')) {
       message.error(t('auth.errors.serverUnavailable'))
     } else {
@@ -230,13 +227,13 @@ const handleRegister = async () => {
   align-items: flex-start;
   justify-content: center;
   padding: 20px 20px;
-  /* Без серого фона — белая зона от layout */
+  /* No gray background — white zone from layout */
 }
 
 .auth-main {
   width: 100%;
   max-width: 450px;
-  background: #f5f6f8; /* Серый блок для формы */  
+  background: #f5f6f8; /* Gray block for form */  
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   position: relative;
@@ -256,10 +253,10 @@ const handleRegister = async () => {
   width: 100%;
   height: 100%;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
-  padding: 25px 35px; /* Уменьшил паддинги */
+  padding: 25px 35px;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Контент к верху */
+  justify-content: center;
   box-sizing: border-box;
 }
 
@@ -299,16 +296,16 @@ const handleRegister = async () => {
 }
 
 .form-title {
-  font-size: 22px; /* Уменьшил заголовок */
+  font-size: 22px;
   font-weight: 800;
   color: #ff6b4a;
-  margin-bottom: 15px; /* Уменьшил отступ */
+  margin-bottom: 15px;
   text-align: center;
   display: block;
 }
 
 .form-group {
-  margin-bottom: 10px; /* Уменьшил отступ между полями */
+  margin-bottom: 10px;
   width: 100%;
   box-sizing: border-box;
 }

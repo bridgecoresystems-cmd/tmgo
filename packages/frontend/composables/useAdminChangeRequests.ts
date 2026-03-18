@@ -3,22 +3,23 @@ import { useMessage } from 'naive-ui'
 /**
  * Composable для работы с запросами на изменение в админке
  */
-const CHANGE_REQUEST_FIELD_LABELS: Record<string, string> = {
-  'passport:add': 'Добавить паспорт',
-  'passport:renew': 'Обновить паспорт',
-  'citizenship:add': 'Добавить гражданство',
-  'citizenship:revoke': 'Отказ от гражданства',
-  'drivers_license:renew': 'Обновить ВУ',
-  'medical_certificate:renew': 'Обновить медсправку',
-  'visa:add': 'Добавить визу',
-  'insurance:add': 'Добавить страховку',
-  'entry_permit:add': 'Добавить разрешение на въезд',
-  surname: 'Фамилия',
-  given_name: 'Имя',
-  identity_correction: 'Исправление данных',
+const CHANGE_REQUEST_FIELD_I18N_KEYS: Record<string, string> = {
+  'passport:add': 'driver.changeRequests.fieldPassportAdd',
+  'passport:renew': 'driver.changeRequests.fieldPassportRenew',
+  'citizenship:add': 'driver.changeRequests.fieldCitizenshipAdd',
+  'citizenship:revoke': 'driver.changeRequests.fieldCitizenshipRevoke',
+  'drivers_license:renew': 'driver.changeRequests.fieldDriversLicenseRenew',
+  'medical_certificate:renew': 'driver.changeRequests.fieldMedicalRenew',
+  'visa:add': 'driver.changeRequests.fieldVisaAdd',
+  'insurance:add': 'driver.changeRequests.fieldInsuranceAdd',
+  'entry_permit:add': 'driver.changeRequests.fieldEntryPermitAdd',
+  surname: 'driver.changeRequests.fieldSurname',
+  given_name: 'driver.changeRequests.fieldGivenName',
+  identity_correction: 'driver.changeRequests.fieldIdentityCorrection',
 }
 
 export function useAdminChangeRequests(onRefresh: () => void) {
+  const { t } = useI18n()
   const { apiBase } = useApiBase()
   const route = useRoute()
   const message = useMessage()
@@ -36,15 +37,16 @@ export function useAdminChangeRequests(onRefresh: () => void) {
   const selectedChangeRequest = ref<any>(null)
 
   function fieldLabel(key: string) {
-    return CHANGE_REQUEST_FIELD_LABELS[key] || key
+    const i18nKey = CHANGE_REQUEST_FIELD_I18N_KEYS[key]
+    return i18nKey ? t(i18nKey) : key
   }
 
   function statusLabel(s: string) {
     const m: Record<string, string> = {
-      pending: 'Ожидает',
-      approved: 'Одобрен',
-      rejected: 'Отклонён',
-      cancelled: 'Отозван',
+      pending: t('driver.changeRequests.statusPending'),
+      approved: t('driver.changeRequests.statusApproved'),
+      rejected: t('driver.changeRequests.statusRejected'),
+      cancelled: t('driver.changeRequests.statusCancelled'),
     }
     return m[s] || s
   }
@@ -65,7 +67,7 @@ export function useAdminChangeRequests(onRefresh: () => void) {
       })
       changeRequests.value = Array.isArray(data) ? data : []
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка загрузки')
+      message.error(e?.data?.error || t('admin.changeRequests.loadError'))
       changeRequests.value = []
     } finally {
       changeRequestsLoading.value = false
@@ -88,13 +90,13 @@ export function useAdminChangeRequests(onRefresh: () => void) {
         credentials: 'include',
         body: { comment: approveRequestComment.value || null, unlock_days: approveRequestUnlockDays.value },
       })
-      message.success('Запрос одобрен')
+      message.success(t('admin.changeRequests.requestApproved'))
       approveRequestModal.value = false
       selectedChangeRequest.value = null
       await fetchChangeRequests()
       onRefresh()
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка')
+      message.error(e?.data?.error || t('admin.changeRequests.error'))
     } finally {
       approvingRequestId.value = null
     }
@@ -108,7 +110,7 @@ export function useAdminChangeRequests(onRefresh: () => void) {
 
   async function submitRejectRequest() {
     if (!selectedChangeRequest.value?.id || !rejectRequestComment.value?.trim()) {
-      message.error('Укажите причину отклонения')
+      message.error(t('admin.changeRequests.specifyRejectReason'))
       return
     }
     rejectingRequestId.value = selectedChangeRequest.value.id
@@ -118,13 +120,13 @@ export function useAdminChangeRequests(onRefresh: () => void) {
         credentials: 'include',
         body: { comment: rejectRequestComment.value.trim() },
       })
-      message.success('Запрос отклонён')
+      message.success(t('admin.changeRequests.requestRejected'))
       rejectRequestModal.value = false
       selectedChangeRequest.value = null
       await fetchChangeRequests()
       onRefresh()
     } catch (e: any) {
-      message.error(e?.data?.error || 'Ошибка')
+      message.error(e?.data?.error || t('admin.changeRequests.error'))
     } finally {
       rejectingRequestId.value = null
     }

@@ -1,16 +1,17 @@
 /**
- * ADR классы опасных грузов (соглашение о перевозке опасных грузов)
+ * ADR dangerous goods classes (agreement on the carriage of dangerous goods)
+ * Labels are i18n keys: use t('adrClasses.' + item.value) in components.
  */
 export const adrClasses = [
-  { value: '1', label: 'Класс 1 — Взрывчатые вещества' },
-  { value: '2', label: 'Класс 2 — Газы' },
-  { value: '3', label: 'Класс 3 — Легковоспламеняющиеся жидкости' },
-  { value: '4', label: 'Класс 4 — Легковоспламеняющиеся твердые в-ва' },
-  { value: '5', label: 'Класс 5 — Окисляющие вещества' },
-  { value: '6', label: 'Класс 6 — Токсичные и инфекционные в-ва' },
-  { value: '7', label: 'Класс 7 — Радиоактивные материалы' },
-  { value: '8', label: 'Класс 8 — Коррозионные (едкие) вещества' },
-  { value: '9', label: 'Класс 9 — Прочие опасные вещества' },
+  { value: '1' },
+  { value: '2' },
+  { value: '3' },
+  { value: '4' },
+  { value: '5' },
+  { value: '6' },
+  { value: '7' },
+  { value: '8' },
+  { value: '9' },
 ] as const
 
 export type AdrClassValue = (typeof adrClasses)[number]['value']
