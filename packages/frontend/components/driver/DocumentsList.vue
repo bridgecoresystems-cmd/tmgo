@@ -66,7 +66,7 @@
     <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.documents.addDocumentModal')" style="max-width: 500px">
       <n-form ref="addFormRef" :model="addForm" label-placement="top">
         <n-form-item :label="t('driver.documents.docType')" required>
-          <n-select v-model:value="addForm.doc_type" :options="docTypeOptions" :placeholder="t('driver.documents.select')" />
+          <n-select v-model:value="addForm.doc_type" :options="docTypeOptions" :placeholder="t('driver.documents.select')" :render-label="renderDocTypeOption" />
         </n-form-item>
 
         <!-- Medical certificate -->
@@ -367,12 +367,47 @@
 </template>
 
 <script setup lang="ts">
+import { h } from 'vue'
 import { useMessage } from 'naive-ui'
 import { visaCountries, adrClasses, licenseCategories } from '@tmgo/shared'
 
 const { t } = useI18n()
 const { apiBase } = useApiBase()
 const { docs, loading, error, fetch, upload, create, remove } = useDriverDocuments()
+const { unlocked, fetchUnlocked } = useDriverChangeRequests()
+
+// doc_type → change_request field_key (должно совпадать с backend)
+const DOC_TYPE_TO_CHANGE_KEY: Record<string, string> = {
+  passport: 'passport:add',
+  drivers_license: 'drivers_license:renew',
+  international_drivers_license: 'drivers_license:renew',
+  visa: 'visa:add',
+  medical_certificate: 'medical_certificate:add',
+  tachograph_card: 'tachograph_card:add',
+  technical_minimum_cert: 'technical_minimum_cert:add',
+  adr_certificate: 'adr_certificate:add',
+  insurance: 'insurance:add',
+  entry_permit: 'entry_permit:add',
+}
+
+function isDocTypeAllowed(docType: string) {
+  const key = DOC_TYPE_TO_CHANGE_KEY[docType]
+  if (!key) return true // 'other' — без ограничений
+  return unlocked.value.unlocked_keys.includes(key)
+}
+
+function renderDocTypeOption(option: { label: string; value: string }) {
+  const allowed = isDocTypeAllowed(option.value)
+  const expires = DOC_TYPE_TO_CHANGE_KEY[option.value]
+    ? unlocked.value.expires_at[DOC_TYPE_TO_CHANGE_KEY[option.value]]
+    : null
+  return h('span', {
+    style: { color: allowed ? '#18a058' : '#d03050', fontStyle: allowed ? 'normal' : 'italic' },
+  }, allowed
+    ? `${option.label} — ${t('driver.changeRequests.allowed')}${expires ? ` (${t('driver.changeRequests.until')} ${expires})` : ''}`
+    : `${option.label} — ${t('driver.changeRequests.forbidden')}`
+  )
+}
 const message = useMessage()
 const showHistory = ref(false)
 const showAddModal = ref(false)
@@ -615,7 +650,7 @@ async function doAdd() {
 }
 
 watch(showHistory, () => fetch(showHistory.value))
-onMounted(() => fetch(showHistory.value))
+onMounted(() => { fetch(showHistory.value); fetchUnlocked() })
 
 defineExpose({ fetch })
 </script>

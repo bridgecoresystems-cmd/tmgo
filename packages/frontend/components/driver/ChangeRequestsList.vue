@@ -50,7 +50,7 @@
       </n-alert>
       <n-form :model="addForm" label-placement="top">
         <n-form-item :label="t('driver.changeRequests.changeType')" required>
-          <n-select v-model:value="addForm.field_key" :options="fieldKeyOptions" :placeholder="t('driver.documents.select')" />
+          <n-select v-model:value="addForm.field_key" :options="fieldKeyOptions" :placeholder="t('driver.documents.select')" :render-label="renderFieldOption" />
         </n-form-item>
         <n-form-item :label="t('driver.changeRequests.reason')" required>
           <n-input v-model:value="addForm.reason" type="textarea" :placeholder="t('driver.changeRequests.reasonPlaceholder')" :rows="3" />
@@ -70,10 +70,11 @@
 </template>
 
 <script setup lang="ts">
+import { h } from 'vue'
 import { useMessage } from 'naive-ui'
 
 const { t } = useI18n()
-const { list, loading, error, fetch, create, cancel } = useDriverChangeRequests()
+const { list, loading, error, fetch, fetchUnlocked, unlocked, create, cancel } = useDriverChangeRequests()
 const message = useMessage()
 const showAddModal = ref(false)
 const adding = ref(false)
@@ -120,6 +121,20 @@ const FIELD_LABELS = computed((): Record<string, string> => ({
 
 function fieldLabel(key: string) {
   return FIELD_LABELS.value[key] || key
+}
+
+function renderFieldOption(option: { label: string; value: string }) {
+  const isAllowed = unlocked.value.unlocked_keys.includes(option.value)
+  const expires = unlocked.value.expires_at[option.value]
+  return h('span', {
+    style: {
+      color: isAllowed ? '#18a058' : '#d03050',
+      fontStyle: isAllowed ? 'normal' : 'italic',
+    },
+  }, isAllowed
+    ? `${option.label} — ${t('driver.changeRequests.allowed')}${expires ? ` (${t('driver.changeRequests.until')} ${expires})` : ''}`
+    : `${option.label} — ${t('driver.changeRequests.forbidden')}`
+  )
 }
 
 function statusLabel(s: string) {
@@ -176,7 +191,7 @@ async function doCancel(id: string) {
   }
 }
 
-onMounted(() => fetch())
+onMounted(() => { fetch(); fetchUnlocked() })
 
 defineExpose({ fetch })
 </script>

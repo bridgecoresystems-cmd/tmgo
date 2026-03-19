@@ -737,6 +737,16 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       .set({ isVerified: true, verificationStatus: 'verified', updatedAt: new Date() })
       .where(eq(carrierProfiles.id, profile.id))
       .returning();
+
+    // Activate all pending documents when driver is verified
+    await db
+      .update(driverDocuments)
+      .set({ status: 'active', updatedAt: new Date() })
+      .where(and(
+        eq(driverDocuments.carrierId, profile.id),
+        eq(driverDocuments.status, 'pending_verification'),
+      ));
+
     return { success: true, is_verified: updated!.isVerified, verification_status: updated!.verificationStatus };
   })
   .post('/:id/driver-profile/upload-passport', async ({ params, body, set, error }) => {
@@ -974,6 +984,29 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       .where(eq(driverDocuments.id, params.docId));
     return { success: true };
   })
+  // PATCH /admin/users/:id/documents/:docId/status — одобрить или отклонить документ
+  .patch('/:id/documents/:docId/status', async ({ params, body, error }) => {
+    const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
+    if (!user) return error(404, 'User not found');
+    if (user.role !== 'driver') return error(400, 'User is not a driver');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
+    if (!profile) return error(404, 'Driver profile not found');
+    const [doc] = await db.select().from(driverDocuments).where(and(
+      eq(driverDocuments.id, params.docId),
+      eq(driverDocuments.carrierId, profile.id),
+    )).limit(1);
+    if (!doc) return error(404, 'Document not found');
+    const b = body as any;
+    const newStatus = b.status as 'active' | 'rejected';
+    if (!['active', 'rejected'].includes(newStatus)) return error(400, 'Invalid status');
+    await db.update(driverDocuments)
+      .set({ status: newStatus, updatedAt: new Date() })
+      .where(eq(driverDocuments.id, params.docId));
+    return { success: true, id: params.docId, status: newStatus };
+  }, {
+    body: t.Object({ status: t.String() }),
+  })
+
   .post('/:id/documents/upload', async ({ params, body, set, error }) => {
     const [user] = await db.select().from(users).where(eq(users.id, params.id)).limit(1);
     if (!user) return error(404, 'User not found');

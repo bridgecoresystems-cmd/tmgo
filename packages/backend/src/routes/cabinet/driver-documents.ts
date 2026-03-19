@@ -10,18 +10,37 @@ import { getUserFromRequest } from '../../lib/auth';
 const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-// Документы, которые водитель может добавлять свободно (без change_request)
-const FREE_ADD_DOC_TYPES = [
-  'medical_certificate', 'insurance', 'visa', 'entry_permit',
-  'tachograph_card', 'technical_minimum_cert', 'adr_certificate', 'other',
-  'international_drivers_license',
-];
+// Маппинг doc_type → change_request field_key (для добавления)
+const DOC_TYPE_TO_ADD_KEY: Record<string, string> = {
+  passport: 'passport:add',
+  drivers_license: 'drivers_license:renew',
+  international_drivers_license: 'drivers_license:renew',
+  visa: 'visa:add',
+  medical_certificate: 'medical_certificate:add',
+  tachograph_card: 'tachograph_card:add',
+  technical_minimum_cert: 'technical_minimum_cert:add',
+  adr_certificate: 'adr_certificate:add',
+  insurance: 'insurance:add',
+  entry_permit: 'entry_permit:add',
+};
 
-// Документы, требующие change_request для обновления
-const RESTRICTED_DOC_TYPES = ['passport', 'drivers_license'];
-
-// Статусы, при которых паспорт/ВУ требуют change_request (совместимость со старыми: waiting_verification, request)
+// Статусы, при которых требуется change_request для добавления/обновления документов
 const LOCKED_STATUSES = ['submitted', 'verified', 'suspended', 'waiting_verification', 'request'];
+
+// Проверка наличия активного одобренного change_request для данного поля
+async function hasApprovedRequest(carrierId: string, fieldKey: string): Promise<boolean> {
+  const [req] = await db
+    .select({ id: profileChangeRequests.id })
+    .from(profileChangeRequests)
+    .where(and(
+      eq(profileChangeRequests.carrierId, carrierId),
+      eq(profileChangeRequests.fieldKey, fieldKey),
+      eq(profileChangeRequests.status, 'approved'),
+      gte(profileChangeRequests.unlockedUntil, new Date()),
+    ))
+    .limit(1);
+  return !!req;
+}
 
 async function uploadDocScan(carrierId: string, docType: string, file: File): Promise<string> {
   const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
@@ -127,22 +146,13 @@ export const cabinetDriverDocumentsRoutes = new Elysia({ prefix: '/cabinet/drive
     const vStatus = carrierProfile.verificationStatus ?? 'not_submitted';
     const isLocked = LOCKED_STATUSES.includes(vStatus);
 
-    // Для паспорта и ВУ после верификации — нужен одобренный change_request
-    if (isLocked && RESTRICTED_DOC_TYPES.includes(docType)) {
-      const changeKey = docType === 'passport' ? 'passport:add' : 'drivers_license:renew';
-      const [approved] = await db
-        .select()
-        .from(profileChangeRequests)
-        .where(and(
-          eq(profileChangeRequests.carrierId, carrierProfile.id),
-          eq(profileChangeRequests.fieldKey, changeKey),
-          eq(profileChangeRequests.status, 'approved'),
-          gte(profileChangeRequests.unlockedUntil, new Date()),
-        ))
-        .limit(1);
-      if (!approved) {
+    // После верификации — для каждого типа документа нужен одобренный change_request
+    const changeKey = DOC_TYPE_TO_ADD_KEY[docType];
+    if (isLocked && changeKey) {
+      const allowed = await hasApprovedRequest(carrierProfile.id, changeKey);
+      if (!allowed) {
         set.status = 403;
-        return { error: `Для добавления ${docType} после верификации требуется одобренный запрос на изменение (${changeKey})` };
+        return { error: `Для добавления этого документа требуется одобренный запрос (${changeKey})` };
       }
     }
 
@@ -203,19 +213,10 @@ export const cabinetDriverDocumentsRoutes = new Elysia({ prefix: '/cabinet/drive
     const vStatus = carrierProfile.verificationStatus ?? 'not_submitted';
     const isLocked = LOCKED_STATUSES.includes(vStatus);
 
-    if (isLocked && RESTRICTED_DOC_TYPES.includes(existing.docType)) {
-      const changeKey = existing.docType === 'passport' ? 'passport:renew' : 'drivers_license:renew';
-      const [approved] = await db
-        .select()
-        .from(profileChangeRequests)
-        .where(and(
-          eq(profileChangeRequests.carrierId, carrierProfile.id),
-          eq(profileChangeRequests.fieldKey, changeKey),
-          eq(profileChangeRequests.status, 'approved'),
-          gte(profileChangeRequests.unlockedUntil, new Date()),
-        ))
-        .limit(1);
-      if (!approved) {
+    const updateKey = DOC_TYPE_TO_ADD_KEY[existing.docType];
+    if (isLocked && updateKey) {
+      const allowed = await hasApprovedRequest(carrierProfile.id, updateKey);
+      if (!allowed) {
         set.status = 403;
         return { error: 'Для изменения этого документа требуется одобренный запрос на изменение' };
       }
@@ -281,21 +282,12 @@ export const cabinetDriverDocumentsRoutes = new Elysia({ prefix: '/cabinet/drive
     const vStatus = carrierProfile.verificationStatus ?? 'not_submitted';
     const isLocked = LOCKED_STATUSES.includes(vStatus);
 
-    if (isLocked && RESTRICTED_DOC_TYPES.includes(existing.docType)) {
-      const changeKey = existing.docType === 'passport' ? 'passport:renew' : 'drivers_license:renew';
-      const [approved] = await db
-        .select()
-        .from(profileChangeRequests)
-        .where(and(
-          eq(profileChangeRequests.carrierId, carrierProfile.id),
-          eq(profileChangeRequests.fieldKey, changeKey),
-          eq(profileChangeRequests.status, 'approved'),
-          gte(profileChangeRequests.unlockedUntil, new Date()),
-        ))
-        .limit(1);
-      if (!approved) {
+    const renewKey = DOC_TYPE_TO_ADD_KEY[existing.docType];
+    if (isLocked && renewKey) {
+      const allowed = await hasApprovedRequest(carrierProfile.id, renewKey);
+      if (!allowed) {
         set.status = 403;
-        return { error: 'Для обновления паспорта/ВУ требуется одобренный запрос на изменение' };
+        return { error: 'Для обновления этого документа требуется одобренный запрос на изменение' };
       }
     }
 
@@ -359,9 +351,13 @@ export const cabinetDriverDocumentsRoutes = new Elysia({ prefix: '/cabinet/drive
 
     const vStatus = carrierProfile.verificationStatus ?? 'not_submitted';
     const isLocked = LOCKED_STATUSES.includes(vStatus);
-    if (isLocked && RESTRICTED_DOC_TYPES.includes(existing.docType)) {
-      set.status = 403;
-      return { error: 'Нельзя удалить паспорт/ВУ после верификации' };
+    const deleteKey = DOC_TYPE_TO_ADD_KEY[existing.docType];
+    if (isLocked && deleteKey) {
+      const allowed = await hasApprovedRequest(carrierProfile.id, deleteKey);
+      if (!allowed) {
+        set.status = 403;
+        return { error: 'Для удаления этого документа требуется одобренный запрос на изменение' };
+      }
     }
 
     await db.update(driverDocuments)

@@ -246,6 +246,16 @@
     "tabCard": "Card",
     "tabEdit": "Edit",
     "tabRequests": "Requests",
+    "tabDocuments": "Documents",
+    "docsNone": "No documents pending review",
+    "docsAll": "All",
+    "docsPending": "Pending",
+    "docsStatusActive": "Active",
+    "docsStatusPending": "Pending review",
+    "docsStatusRejected": "Rejected",
+    "docsStatusRevoked": "Revoked",
+    "docsApproveSuccess": "Document approved",
+    "docsRejectSuccess": "Document rejected",
     "name": "Name",
     "email": "Email",
     "role": "Role",
@@ -886,7 +896,10 @@
       "fieldCitizenshipAdd": "Add citizenship",
       "fieldCitizenshipRevoke": "Renounce citizenship",
       "fieldIdentityCorrection": "Identity correction",
-      "fieldPassport": "Passport"
+      "fieldPassport": "Passport",
+      "allowed": "allowed",
+      "forbidden": "forbidden",
+      "until": "until"
     }
   },
   "client": {

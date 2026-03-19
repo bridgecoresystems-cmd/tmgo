@@ -36,6 +36,7 @@
         v-if="userApi.user?.role === 'driver' && userApi.profile"
         ref="driverTabsRef"
         :profile="userApi.profile"
+        :user-id="String(route.params.id)"
         :load-url="userApi.loadUrl"
         :save-url="userApi.saveUrl"
         :api-base="apiBase"
@@ -91,6 +92,7 @@ import { NButton, NSpin, NAlert } from 'naive-ui'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
+const route = useRoute()
 const { apiBase } = useApiBase()
 const userApi = reactive(useAdminUser())
 const changeRequests = reactive(useAdminChangeRequests(() => {

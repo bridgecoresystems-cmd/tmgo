@@ -246,6 +246,16 @@
     "tabCard": "Karta",
     "tabEdit": "Redaktirlemek",
     "tabRequests": "Haýyşlar",
+    "tabDocuments": "Resminamalar",
+    "docsNone": "Barlanmaly resminamalar ýok",
+    "docsAll": "Ählisi",
+    "docsPending": "Garaşylýar",
+    "docsStatusActive": "Işjeň",
+    "docsStatusPending": "Garaşylýar",
+    "docsStatusRejected": "Ret edildi",
+    "docsStatusRevoked": "Yzyna alyndy",
+    "docsApproveSuccess": "Resminama tassyklandy",
+    "docsRejectSuccess": "Resminama ret edildi",
     "name": "At",
     "email": "Email",
     "role": "Rol",
@@ -886,7 +896,10 @@
       "fieldCitizenshipAdd": "Raýatlyk goş",
       "fieldCitizenshipRevoke": "Raýatlykdan ýüz döndermek",
       "fieldIdentityCorrection": "Maglumatlary düzetmek",
-      "fieldPassport": "Pasport"
+      "fieldPassport": "Pasport",
+      "allowed": "rugsat edilýär",
+      "forbidden": "gadagan",
+      "until": "çenli"
     }
   },
   "client": {

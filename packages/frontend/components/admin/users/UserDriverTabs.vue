@@ -36,6 +36,11 @@
         />
       </n-card>
     </n-tab-pane>
+    <n-tab-pane name="documents" :tab="t('admin.tabDocuments')">
+      <n-card embedded :bordered="false" class="mt-16">
+        <AdminUsersAdminDocumentsTab :user-id="userId" />
+      </n-card>
+    </n-tab-pane>
     </n-tabs>
   </div>
 </template>
@@ -47,6 +52,7 @@ const { t } = useI18n()
 
 defineProps<{
   profile: any
+  userId: string
   loadUrl: string
   saveUrl: string
   apiBase: string

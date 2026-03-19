@@ -145,9 +145,8 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
   })
   .get('/', async ({ user, carrierProfile }) => {
     const d = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
-    const legacyUnlocked = (carrierProfile.unlockedFields as string[]) ?? [];
     const changeRequestUnlocked = await getUnlockedKeys(carrierProfile.id);
-    const unlocked_fields = [...new Set([...legacyUnlocked, ...changeRequestUnlocked])];
+    const unlocked_fields = [...changeRequestUnlocked];
 
     // Merge citizenships: legacy + driver_citizenships (active)
     const legacyCitizenships = (carrierProfile.citizenship ?? '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -476,9 +475,8 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
   })
   .patch('/', async ({ carrierProfile, body, set }) => {
     const status = carrierProfile.verificationStatus ?? 'not_verified';
-    const legacyUnlocked = (carrierProfile.unlockedFields as string[]) ?? [];
     const changeRequestUnlocked = await getUnlockedKeys(carrierProfile.id);
-    const unlocked = [...legacyUnlocked, ...changeRequestUnlocked];
+    const unlocked = [...changeRequestUnlocked];
 
     let updateData = buildProfileUpdate(body as Record<string, unknown>);
 

@@ -246,6 +246,16 @@
     "tabCard": "Карточка",
     "tabEdit": "Редактирование",
     "tabRequests": "Запросы",
+    "tabDocuments": "Документы",
+    "docsNone": "Нет документов на проверке",
+    "docsAll": "Все",
+    "docsPending": "На проверке",
+    "docsStatusActive": "Активен",
+    "docsStatusPending": "На проверке",
+    "docsStatusRejected": "Отклонён",
+    "docsStatusRevoked": "Отозван",
+    "docsApproveSuccess": "Документ одобрен",
+    "docsRejectSuccess": "Документ отклонён",
     "name": "Имя",
     "email": "Email",
     "role": "Роль",
@@ -886,7 +896,10 @@
       "fieldCitizenshipAdd": "Добавить гражданство",
       "fieldCitizenshipRevoke": "Отказ от гражданства",
       "fieldIdentityCorrection": "Исправление данных",
-      "fieldPassport": "Паспорт"
+      "fieldPassport": "Паспорт",
+      "allowed": "разрешено",
+      "forbidden": "запрещено",
+      "until": "до"
     }
   },
   "client": {
