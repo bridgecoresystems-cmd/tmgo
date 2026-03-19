@@ -2,6 +2,24 @@ import { join } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'] as const;
+const ALLOWED_DOC_TYPES = ['passport', 'drivers_license', 'visa', 'medical_certificate', 'insurance', 'tachograph_card', 'technical_minimum_cert', 'adr_certificate', 'other', 'document'] as const;
+
+function safeExt(name: string): string | null {
+  const ext = (name || '').split('.').pop()?.toLowerCase() || null;
+  return ext && ALLOWED_EXT.includes(ext) ? ext : null;
+}
+
+function safeDocType(docType: unknown): string {
+  const s = String(docType || 'document').toLowerCase().replace(/[^a-z0-9_]/g, '');
+  return ALLOWED_DOC_TYPES.includes(s as any) ? s : 'document';
+}
+
+function safeProfileId(id: string): boolean {
+  return UUID_REGEX.test(id);
+}
 import { db } from '../../db';
 import { users, accounts, carrierProfiles, sessions, profileEditRequests, profileChangeRequests, vehicles, orderResponses, driverServices, orders, orderMessages, driverCitizenships, driverContacts, driverDocuments } from '../../db/schema';
 import { eq, and, desc, inArray, isNull } from 'drizzle-orm';
@@ -755,13 +773,14 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     if (user.role !== 'driver') return error(400, 'User is not a driver');
     const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
     if (!profile) return error(404, 'Driver profile not found');
+    if (!safeProfileId(profile.id)) return error(400, 'Invalid profile');
     const file = body.file;
     if (!file || !file.size) {
       set.status = 400;
       return { error: 'No file' };
     }
-    const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
-    if (!['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(ext)) {
+    const ext = safeExt(file.name || '');
+    if (!ext) {
       set.status = 400;
       return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
     }
@@ -785,14 +804,16 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
   .post('/:id/driver-profile/upload-extra-passport', async ({ params, body, set, error }) => {
     const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
     if (!profile) return error(404, 'Driver profile not found');
+    if (!safeProfileId(profile.id)) return error(400, 'Invalid profile');
     const file = body.file;
-    const index = typeof body.index === 'number' ? body.index : (parseInt(String(body.index || 0), 10) || 0);
+    const rawIndex = typeof body.index === 'number' ? body.index : (parseInt(String(body.index || 0), 10) || 0);
+    const index = Math.max(0, Math.min(99, Number.isNaN(rawIndex) ? 0 : rawIndex));
     if (!file || !file.size) {
       set.status = 400;
       return { error: 'No file' };
     }
-    const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
-    if (!['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(ext)) {
+    const ext = safeExt(file.name || '');
+    if (!ext) {
       set.status = 400;
       return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
     }
@@ -820,13 +841,14 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     if (user.role !== 'driver') return error(400, 'User is not a driver');
     const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
     if (!profile) return error(404, 'Driver profile not found');
+    if (!safeProfileId(profile.id)) return error(400, 'Invalid profile');
     const file = body.file;
     if (!file || !file.size) {
       set.status = 400;
       return { error: 'No file' };
     }
-    const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
-    if (!['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(ext)) {
+    const ext = safeExt(file.name || '');
+    if (!ext) {
       set.status = 400;
       return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
     }
@@ -853,13 +875,14 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     if (user.role !== 'driver') return error(400, 'User is not a driver');
     const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
     if (!profile) return error(404, 'Driver profile not found');
+    if (!safeProfileId(profile.id)) return error(400, 'Invalid profile');
     const file = body.file;
     if (!file || !file.size) {
       set.status = 400;
       return { error: 'No file' };
     }
-    const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
-    if (!['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(ext)) {
+    const ext = safeExt(file.name || '');
+    if (!ext) {
       set.status = 400;
       return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
     }
@@ -1013,12 +1036,13 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     if (user.role !== 'driver') return error(400, 'User is not a driver');
     const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, params.id)).limit(1);
     if (!profile) return error(404, 'Driver profile not found');
+    if (!safeProfileId(profile.id)) return error(400, 'Invalid profile');
     const file = body.file;
     if (!file || !file.size) { set.status = 400; return { error: 'Файл не загружен' }; }
-    const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
-    if (!['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(ext)) { set.status = 400; return { error: 'Только PDF, JPG, PNG' }; }
+    const ext = safeExt(file.name || '');
+    if (!ext) { set.status = 400; return { error: 'Только PDF, JPG, PNG' }; }
     if (file.size > 10 * 1024 * 1024) { set.status = 400; return { error: 'Файл слишком большой (макс. 10 МБ)' }; }
-    const docType = (body as any).doc_type || 'document';
+    const docType = safeDocType((body as any).doc_type);
     const uploadDir = join(process.cwd(), 'storage', 'driver-docs', profile.id);
     await mkdir(uploadDir, { recursive: true });
     const filename = `${docType}_${randomUUID()}.${ext}`;

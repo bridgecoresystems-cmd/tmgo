@@ -9,7 +9,8 @@ const COOKIE_KEY = 'i18n_redirected'
 export default defineNuxtPlugin(() => {
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored && VALID_LOCALES.includes(stored)) {
-    document.cookie = `${COOKIE_KEY}=${stored};path=/;max-age=31536000`
+    const secure = typeof window !== 'undefined' && window.location?.protocol === 'https:'
+    document.cookie = `${COOKIE_KEY}=${stored};path=/;max-age=31536000;SameSite=Lax${secure ? ';Secure' : ''}`
     localStorage.removeItem(STORAGE_KEY)
   }
 })

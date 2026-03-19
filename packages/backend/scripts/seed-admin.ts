@@ -3,9 +3,9 @@ import { db } from '../src/db';
 import { users, accounts } from '../src/db/schema';
 import { eq } from 'drizzle-orm';
 
-const ADMIN_EMAIL = 'batyr@tmgo.com';
-const ADMIN_PASSWORD = 'Kepler03lim@';
-const ADMIN_NAME = 'Batyr (Admin)';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_NAME = process.env.ADMIN_NAME || 'Admin';
 
 function generateId(length = 32): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -17,6 +17,11 @@ function generateId(length = 32): string {
 }
 
 async function seedAdmin() {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD env vars. Example: ADMIN_EMAIL=admin@tmgo.com ADMIN_PASSWORD=secret bun run scripts/seed-admin.ts');
+    process.exit(1);
+  }
+
   console.log('Checking if admin already exists...');
 
   const existing = await db.select().from(users).where(eq(users.email, ADMIN_EMAIL));
@@ -51,7 +56,6 @@ async function seedAdmin() {
   });
 
   console.log(`Admin created: ${ADMIN_EMAIL}`);
-  console.log(`Password: ${ADMIN_PASSWORD}`);
   process.exit(0);
 }
 
