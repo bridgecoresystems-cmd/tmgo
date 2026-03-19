@@ -1,8 +1,6 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/driver/vehicles')">
-      {{ t('common.backToList') }}
-    </n-button>
+    <UiBackBtn to="/cabinet/driver/vehicles" />
 
     <n-h3 style="margin: 0 0 24px 0;">{{ t('driver.vehicles.addTractor') }}</n-h3>
 
@@ -179,8 +177,8 @@
       </n-card>
 
       <n-space>
-        <n-button type="primary" :loading="creating" @click="handleCreate">{{ t('common.save') }}</n-button>
-        <n-button @click="navigateTo('/cabinet/driver/vehicles')">{{ t('common.cancel') }}</n-button>
+        <UiSaveBtn :loading="creating" @click="handleCreate" />
+        <UiCancelBtn @click="navigateTo('/cabinet/driver/vehicles')" />
       </n-space>
     </n-form>
   </div>

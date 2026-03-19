@@ -1,6 +1,6 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/client/services')">{{ t('common.backToList') }}</n-button>
+    <UiBackBtn to="/cabinet/client/services" />
 
     <n-card v-if="service" :title="t('client.services.serviceDetails')">
       <n-descriptions :column="1" bordered>

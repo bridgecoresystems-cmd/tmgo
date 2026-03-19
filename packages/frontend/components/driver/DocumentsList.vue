@@ -44,17 +44,12 @@
                   </n-button>
                 </div>
                 <div class="doc-actions">
-                  <n-popconfirm
+                  <UiDeleteBtn
                     v-if="canDelete(doc)"
-                    :positive-text="t('common.delete')"
-                    :negative-text="t('common.cancel')"
-                    @positive-click="doRemove(doc.id)"
-                  >
-                    <template #trigger>
-                      <n-button quaternary size="small" type="error">{{ t('common.delete') }}</n-button>
-                    </template>
-                    {{ t('driver.documents.deleteDocument') }}
-                  </n-popconfirm>
+                    size="tiny"
+                    :confirm-text="t('driver.documents.deleteDocument')"
+                    @confirm="doRemove(doc.id)"
+                  />
                 </div>
               </n-card>
             </n-space>

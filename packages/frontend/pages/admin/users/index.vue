@@ -3,14 +3,14 @@
     <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
       {{ loadError }}
       <template #footer>
-        <n-button size="small" @click="loadUsers">{{ $t('common.retry') }}</n-button>
+        <n-button size="small" type="primary" ghost @click="loadUsers">{{ $t('common.retry') }}</n-button>
       </template>
     </n-alert>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <n-h3 style="margin: 0;">{{ $t('admin.usersIndex.title') }}</n-h3>
       <n-space>
-        <n-button type="primary" @click="showAddModal = true">{{ $t('admin.usersIndex.addUser') }}</n-button>
-        <n-button quaternary @click="navigateTo('/admin/settings/deactivated-users')">{{ $t('admin.usersIndex.deactivated') }}</n-button>
+        <UiAddBtn :label="$t('admin.usersIndex.addUser')" @click="showAddModal = true" />
+        <n-button quaternary size="small" @click="navigateTo('/admin/settings/deactivated-users')">{{ $t('admin.usersIndex.deactivated') }}</n-button>
         <n-select
           v-model:value="verificationFilter"
           :options="verificationFilterOptions"
@@ -33,9 +33,11 @@
       :columns="columns"
       :data="filteredUsers"
       :loading="loading"
-      :pagination="{ pageSize: 20 }"
+      :pagination="pagination"
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => navigateTo(`/admin/users/${row.id}`) })"
       striped
+      @update:page="pagination.page = $event"
+      @update:page-size="onPageSizeChange"
     />
 
     <n-modal v-model:show="showAddModal" preset="card" :title="$t('admin.usersIndex.modalTitle')" style="max-width: 420px" @after-leave="resetAddForm">
@@ -55,8 +57,8 @@
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showAddModal = false">{{ $t('admin.usersIndex.cancel') }}</n-button>
-          <n-button type="primary" :loading="adding" @click="handleAddUser">{{ $t('admin.usersIndex.create') }}</n-button>
+          <UiCancelBtn @click="showAddModal = false" />
+          <UiSaveBtn :loading="adding" :label="$t('admin.usersIndex.create')" @click="handleAddUser" />
         </n-space>
       </template>
     </n-modal>
@@ -100,6 +102,22 @@ const addRules = computed(() => ({
 }))
 const loadError = ref<string | null>(null)
 const users = ref<any[]>([])
+
+const PAGE_SIZE_KEY = 'admin:users:pageSize'
+const savedPageSize = parseInt(localStorage.getItem(PAGE_SIZE_KEY) || '20', 10)
+const pagination = reactive({
+  page: 1,
+  pageSize: [10, 20, 50, 100].includes(savedPageSize) ? savedPageSize : 20,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50, 100],
+  prefix: ({ itemCount }: { itemCount: number }) => `Всего: ${itemCount}`,
+})
+
+function onPageSizeChange(size: number) {
+  pagination.pageSize = size
+  pagination.page = 1
+  localStorage.setItem(PAGE_SIZE_KEY, String(size))
+}
 
 const roleColors: Record<string, any> = {
   admin: 'error',

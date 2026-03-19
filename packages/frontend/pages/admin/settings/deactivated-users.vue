@@ -1,6 +1,6 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/admin/settings')">← Настройки</n-button>
+    <UiBackBtn to="/admin/settings" label="Настройки" />
 
     <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
       {{ loadError }}

@@ -732,7 +732,7 @@
           <!-- Actions -->
           <div class="form-actions mt-24">
             <n-space justify="end">
-              <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
+              <UiSaveBtn :loading="saving" @click="handleSave" />
             </n-space>
           </div>
         </n-form>

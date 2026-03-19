@@ -1,6 +1,6 @@
 <template>
   <div>
-    <n-button text class="no-print" style="margin-bottom: 16px" @click="navigateTo('/admin/users')">{{ $t('admin.usersDetail.backToList') }}</n-button>
+    <UiBackBtn class="no-print" to="/admin/users" />
 
     <n-spin v-if="userApi.loading" />
     <n-alert v-else-if="userApi.loadError" type="error" style="margin-bottom: 16px">

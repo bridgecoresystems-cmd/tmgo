@@ -25,18 +25,14 @@
 
     <div class="coupling-footer">
       <span class="coupling-date">{{ t('driver.couplings.since') }}: {{ formattedDate }}</span>
-      <n-popconfirm
-        :positive-text="t('common.yes')"
-        :negative-text="t('common.cancel')"
-        @positive-click="decouple"
-      >
-        <template #trigger>
-          <n-button size="small" type="warning" :loading="decoupling">
-            {{ t('driver.couplings.decouple') }}
-          </n-button>
-        </template>
-        {{ t('driver.couplings.decoupleConfirm') }}
-      </n-popconfirm>
+      <UiDeleteBtn
+        :danger="false"
+        icon="unlink"
+        :label="t('driver.couplings.decouple')"
+        :confirm-text="t('driver.couplings.decoupleConfirm')"
+        :loading="decoupling"
+        @confirm="decouple"
+      />
     </div>
   </n-card>
 </template>

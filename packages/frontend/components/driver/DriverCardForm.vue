@@ -67,17 +67,13 @@
                     clearable
                     style="flex: 1; margin-bottom: 8px"
                   />
-                  <n-popconfirm
+                  <UiDeleteBtn
                     v-if="i > 0"
-                    :positive-text="t('common.delete')"
-                    :negative-text="t('common.cancel')"
-                    @positive-click="form.citizenships.splice(i, 1)"
-                  >
-                    <template #trigger>
-                      <n-button quaternary size="small" type="error" class="remove-btn" :disabled="!isFieldEditable('citizenship', i)">×</n-button>
-                    </template>
-                    {{ t('driver.card.confirmDelete') }}
-                  </n-popconfirm>
+                    size="tiny"
+                    :disabled="!isFieldEditable('citizenship', i)"
+                    :confirm-text="t('driver.card.confirmDelete')"
+                    @confirm="form.citizenships.splice(i, 1)"
+                  />
                   <n-button v-if="showRequestBtn('citizenship', i)" quaternary size="small" type="info" :loading="requestingFieldKey === 'citizenship_' + i" @click="requestChange('citizenship_' + i)">{{ t('driver.card.request') }}</n-button>
                   <n-button v-else-if="showApproveBtn('citizenship', i)" size="small" type="success" :loading="approvingFieldKey === 'citizenship_' + i" @click="approveRequestByField('citizenship_' + i)">{{ t('driver.card.allow') }}</n-button>
                 </div>
@@ -112,17 +108,13 @@
                     style="flex: 1; margin-bottom: 8px"
                     :disabled="!isFieldEditable('phone', i)"
                   />
-                  <n-popconfirm
+                  <UiDeleteBtn
                     v-if="i > 0"
-                    :positive-text="t('common.delete')"
-                    :negative-text="t('common.cancel')"
-                    @positive-click="form.phones.splice(i, 1)"
-                  >
-                    <template #trigger>
-                      <n-button quaternary size="small" type="error" class="remove-btn" :disabled="!isFieldEditable('phone', i)">×</n-button>
-                    </template>
-                    {{ t('driver.card.confirmDelete') }}
-                  </n-popconfirm>
+                    size="tiny"
+                    :disabled="!isFieldEditable('phone', i)"
+                    :confirm-text="t('driver.card.confirmDelete')"
+                    @confirm="form.phones.splice(i, 1)"
+                  />
                   <n-button v-if="showRequestBtn('phone', i)" quaternary size="small" type="info" :loading="requestingFieldKey === 'phone_' + i" @click="requestChange('phone_' + i)">{{ t('driver.card.request') }}</n-button>
                   <n-button v-else-if="showApproveBtn('phone', i)" size="small" type="success" :loading="approvingFieldKey === 'phone_' + i" @click="approveRequestByField('phone_' + i)">{{ t('driver.card.allow') }}</n-button>
                 </div>
@@ -147,16 +139,12 @@
                     style="flex: 1; margin-bottom: 8px"
                     :disabled="!isFieldEditable('additional_emails', i)"
                   />
-                  <n-popconfirm
-                    :positive-text="t('common.delete')"
-                    :negative-text="t('common.cancel')"
-                    @positive-click="form.extra_emails.splice(i, 1)"
-                  >
-                    <template #trigger>
-                      <n-button quaternary size="small" type="error" class="remove-btn" :disabled="!isFieldEditable('additional_emails', i)">×</n-button>
-                    </template>
-                    {{ t('driver.card.confirmDelete') }}
-                  </n-popconfirm>
+                  <UiDeleteBtn
+                    size="tiny"
+                    :disabled="!isFieldEditable('additional_emails', i)"
+                    :confirm-text="t('driver.card.confirmDelete')"
+                    @confirm="form.extra_emails.splice(i, 1)"
+                  />
                   <n-button v-if="showRequestBtn('additional_emails', i)" quaternary size="small" type="info" :loading="requestingFieldKey === 'additional_emails_' + i" @click="requestChange('additional_emails_' + i)">{{ t('driver.card.request') }}</n-button>
                   <n-button v-else-if="showApproveBtn('additional_emails', i)" size="small" type="success" :loading="approvingFieldKey === 'additional_emails_' + i" @click="approveRequestByField('additional_emails_' + i)">{{ t('driver.card.allow') }}</n-button>
                 </div>
@@ -195,7 +183,7 @@
               </div>
             </n-form-item>
             <n-space v-if="isDriverContext">
-              <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
+              <UiSaveBtn :loading="saving" @click="handleSave" />
               <n-button type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
                 {{ t('driver.card.submitForVerification') }}
               </n-button>
@@ -449,7 +437,7 @@
                 </n-space>
               </template>
               <n-space>
-                <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
+                <UiSaveBtn :loading="saving" @click="handleSave" />
                 <n-button v-if="isDriverContext" type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
                   {{ t('driver.card.submitForVerification') }}
                 </n-button>
@@ -549,7 +537,7 @@
               <n-input :value="form.updated_at" disabled :placeholder="t('admin.autoBySystem')" />
             </n-form-item>
             <n-space v-if="isDriverContext">
-              <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
+              <UiSaveBtn :loading="saving" @click="handleSave" />
               <n-button type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
                 {{ t('driver.card.submitForVerification') }}
               </n-button>
@@ -625,7 +613,7 @@
             </n-form-item>
             </template>
             <n-space v-if="isDriverContext">
-              <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
+              <UiSaveBtn :loading="saving" @click="handleSave" />
               <n-button type="success" :loading="submittingForVerification" @click="handleSubmitForVerification">
                 {{ t('driver.card.submitForVerification') }}
               </n-button>

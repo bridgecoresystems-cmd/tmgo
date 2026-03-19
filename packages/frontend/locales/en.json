@@ -223,6 +223,9 @@
     "uploadError": "Upload error",
     "saveError": "Save error",
     "requestError": "Request error",
+    "deleteConfirm": "Are you sure? This action cannot be undone.",
+    "deactivate": "Deactivate",
+    "deactivateConfirm": "Deactivate?",
     "from2": "From",
     "scrollToTop": "Scroll to top"
   },
@@ -351,7 +354,7 @@
       "placeholderGivenName": "Batyr",
       "placeholderPatronymic": "Muhamednazarowich",
       "placeholderPhone": "+99364852563",
-      "placeholderEmail": "extra@mail.com",
+      "placeholderEmail": "extra{'@'}mail.com",
       "placeholderCompany": "Transport LLC",
       "placeholderInn": "123456789",
       "placeholderAddress": "Ashgabat, Makhtumkuli St., 10",

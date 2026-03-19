@@ -223,6 +223,9 @@
     "uploadError": "Ошибка загрузки",
     "saveError": "Ошибка сохранения",
     "requestError": "Ошибка отправки запроса",
+    "deleteConfirm": "Вы уверены? Это действие необратимо.",
+    "deactivate": "Деактивировать",
+    "deactivateConfirm": "Деактивировать?",
     "from2": "От",
     "scrollToTop": "Наверх"
   },
@@ -351,7 +354,7 @@
       "placeholderGivenName": "Batyr",
       "placeholderPatronymic": "Muhamednazarowich",
       "placeholderPhone": "+99364852563",
-      "placeholderEmail": "extra@mail.com",
+      "placeholderEmail": "extra{'@'}mail.com",
       "placeholderCompany": "ООО Транспорт",
       "placeholderInn": "123456789",
       "placeholderAddress": "г. Ашхабад, ул. Махтумкули, д. 10",

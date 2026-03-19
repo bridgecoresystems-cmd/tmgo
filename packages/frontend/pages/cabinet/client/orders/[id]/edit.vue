@@ -1,8 +1,6 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo(`/cabinet/client/orders/${route.params.id}`)">
-      {{ t('client.orders.backToOrder') }}
-    </n-button>
+    <UiBackBtn @click="navigateTo(`/cabinet/client/orders/${route.params.id}`)" />
 
     <n-card :title="t('client.orders.editOrder')">
       <div v-if="loading" style="padding: 40px; text-align: center">
@@ -54,8 +52,8 @@
           </n-gi>
         </n-grid>
         <n-space v-if="order.status === 'PENDING'">
-          <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
-          <n-button @click="navigateTo(`/cabinet/client/orders/${route.params.id}`)">{{ t('common.cancel') }}</n-button>
+          <UiSaveBtn :loading="saving" @click="handleSave" />
+          <UiCancelBtn @click="navigateTo(`/cabinet/client/orders/${route.params.id}`)" />
         </n-space>
       </n-form>
 

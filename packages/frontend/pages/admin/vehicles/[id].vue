@@ -1,8 +1,6 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/admin/vehicles')">
-      {{ t('admin.vehicles.backToList') }}
-    </n-button>
+    <UiBackBtn to="/admin/vehicles" />
 
     <n-spin :show="loading">
       <template v-if="!loading">
@@ -16,19 +14,16 @@
         <n-card v-else-if="vehicle" :title="t('admin.vehicles.vehicleTitle')">
           <template #header-extra>
             <n-space>
-              <n-button v-if="!editMode" type="primary" @click="editMode = true">{{ t('admin.vehicles.editMode') }}</n-button>
-              <n-button v-else @click="editMode = false">{{ t('admin.vehicles.viewMode') }}</n-button>
-              <n-popconfirm
+              <UiEditBtn v-if="!editMode" @click="editMode = true" />
+              <UiCancelBtn v-else size="small" :label="t('common.back')" @click="editMode = false" />
+              <UiDeleteBtn
                 v-if="vehicle.isActive"
-                :positive-text="t('common.yes')"
-                :negative-text="t('common.cancel')"
-                @positive-click="handleDeactivate"
-              >
-                <template #trigger>
-                  <n-button type="warning" :disabled="editMode">{{ t('admin.vehicles.deactivate') }}</n-button>
-                </template>
-                {{ t('admin.vehicles.deactivateConfirm') }}
-              </n-popconfirm>
+                :danger="false"
+                :label="t('admin.vehicles.deactivate')"
+                :confirm-text="t('admin.vehicles.deactivateConfirm')"
+                :disabled="editMode"
+                @confirm="handleDeactivate"
+              />
               <n-popconfirm
                 v-else
                 :positive-text="t('common.yes')"
@@ -36,7 +31,7 @@
                 @positive-click="handleActivate"
               >
                 <template #trigger>
-                  <n-button type="success" :disabled="editMode">{{ t('admin.vehicles.activate') }}</n-button>
+                  <n-button type="success" size="small" :disabled="editMode">{{ t('admin.vehicles.activate') }}</n-button>
                 </template>
                 {{ t('admin.vehicles.activateConfirm') }}
               </n-popconfirm>
@@ -200,8 +195,8 @@
               <n-input-number v-model:value="form.maxGrossWeightT" :min="0" :precision="2" style="width: 120px" />
             </n-form-item>
             <n-space>
-              <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
-              <n-button @click="editMode = false">{{ t('common.cancel') }}</n-button>
+              <UiSaveBtn :loading="saving" @click="handleSave" />
+              <UiCancelBtn @click="editMode = false" />
             </n-space>
           </n-form>
         </n-card>

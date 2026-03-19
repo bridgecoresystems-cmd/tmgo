@@ -37,8 +37,8 @@
     </n-form>
     <template #footer>
       <n-space justify="end">
-        <n-button @click="showCreate = false">Отмена</n-button>
-        <n-button type="primary" :loading="creating" @click="handleCreate">Создать</n-button>
+        <UiCancelBtn @click="showCreate = false" />
+        <UiSaveBtn :loading="creating" :label="'Создать'" @click="handleCreate" />
       </n-space>
     </template>
   </n-modal>

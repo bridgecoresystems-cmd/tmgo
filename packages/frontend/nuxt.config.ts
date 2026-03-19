@@ -39,13 +39,40 @@ export default defineNuxtConfig({
   naiveui: {
     colorMode: 'light'
   },
+  // SSR=false — transpile нужен только для SSR, без него Vite пре-бандлит пакеты
   build: {
-    transpile: ['naive-ui', 'vueuc', '@css-render/vue3-ssr', '@juggle/resize-observer']
+    transpile: process.env.NODE_ENV === 'production' ? [] : []
   },
   vite: {
     optimizeDeps: {
-      include: ['naive-ui', 'vueuc']
-    }
+      // Все тяжёлые пакеты пре-бандлятся один раз при старте → F5 мгновенный
+      include: [
+        'naive-ui',
+        'vueuc',
+        '@css-render/vue3-ssr',
+        '@juggle/resize-observer',
+        '@vicons/ionicons5',
+        'vue-i18n',
+        'pinia',
+        '@vueuse/core',
+        'date-fns',
+        'lodash-es',
+      ],
+      // Не ждать полного обхода файлов — стартует сразу
+      holdUntilCrawlEnd: false,
+    },
+    server: {
+      warmup: {
+        // Прогрев ключевых файлов сразу после старта dev-сервера
+        clientFiles: [
+          './app.vue',
+          './layouts/*.vue',
+          './pages/cabinet/driver/vehicles/index.vue',
+          './pages/cabinet/driver/orders/index.vue',
+          './pages/admin/users/index.vue',
+        ],
+      },
+    },
   },
   css: [
     '~/assets/css/main.css'

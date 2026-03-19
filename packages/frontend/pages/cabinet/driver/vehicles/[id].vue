@@ -1,8 +1,6 @@
 <template>
   <div class="vehicle-detail">
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/driver/vehicles')">
-      ← {{ t('common.backToList') }}
-    </n-button>
+    <UiBackBtn to="/cabinet/driver/vehicles" />
 
     <n-spin :show="loading">
       <template v-if="!loading">
@@ -69,24 +67,14 @@
 
                 <!-- Кнопки действий -->
                 <n-space style="margin-top: 16px; justify-content: flex-end">
-                  <n-button v-if="!editMode" type="primary" size="small" @click="editMode = true">
-                    {{ t('driver.vehicles.editMode') }}
-                  </n-button>
-                  <n-button v-else size="small" @click="cancelEdit">
-                    {{ t('driver.vehicles.viewMode') }}
-                  </n-button>
-                  <n-popconfirm
-                    :positive-text="t('common.yes')"
-                    :negative-text="t('common.cancel')"
-                    @positive-click="handleDeactivate"
-                  >
-                    <template #trigger>
-                      <n-button type="error" size="small" :disabled="editMode">
-                        {{ t('driver.vehicles.deactivate') }}
-                      </n-button>
-                    </template>
-                    {{ t('driver.vehicles.deactivateConfirm') }}
-                  </n-popconfirm>
+                  <UiEditBtn v-if="!editMode" @click="editMode = true" />
+                  <UiCancelBtn v-else size="small" :label="t('common.back')" @click="cancelEdit" />
+                  <UiDeleteBtn
+                    :label="t('driver.vehicles.deactivate')"
+                    :confirm-text="t('driver.vehicles.deactivateConfirm')"
+                    :disabled="editMode"
+                    @confirm="handleDeactivate"
+                  />
                 </n-space>
               </div>
             </div>
@@ -494,8 +482,8 @@
               </n-card>
 
               <n-space style="margin-top: 4px">
-                <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
-                <n-button @click="cancelEdit">{{ t('common.cancel') }}</n-button>
+                <UiSaveBtn :loading="saving" @click="handleSave" />
+                <UiCancelBtn @click="cancelEdit" />
               </n-space>
             </n-form>
           </template>

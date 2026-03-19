@@ -1,8 +1,6 @@
 <template>
   <div class="trailer-detail">
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/driver/vehicles?tab=trailers')">
-      ← {{ t('common.backToList') }}
-    </n-button>
+    <UiBackBtn to="/cabinet/driver/vehicles?tab=trailers" />
 
     <n-spin :show="loading">
       <template v-if="!loading">
@@ -22,18 +20,15 @@
             <n-tag size="small" style="font-family:monospace;font-weight:700;letter-spacing:1px;margin-left:8px">
               {{ activeCoupling.tractor.plateNumber }}
             </n-tag>
-            <n-popconfirm
-              :positive-text="t('common.yes')"
-              :negative-text="t('common.cancel')"
-              @positive-click="handleDecouple"
-            >
-              <template #trigger>
-                <n-button size="small" type="warning" style="margin-left: 12px" :loading="decoupling">
-                  {{ t('driver.couplings.decouple') }}
-                </n-button>
-              </template>
-              {{ t('driver.couplings.decoupleConfirm') }}
-            </n-popconfirm>
+            <UiDeleteBtn
+              style="margin-left: 12px"
+              :danger="false"
+              icon="unlink"
+              :label="t('driver.couplings.decouple')"
+              :confirm-text="t('driver.couplings.decoupleConfirm')"
+              :loading="decoupling"
+              @confirm="handleDecouple"
+            />
           </n-alert>
 
           <!-- ── HERO CARD ───────────────────────────────────── -->
@@ -103,24 +98,14 @@
 
                 <!-- Кнопки действий -->
                 <n-space style="margin-top: 8px; justify-content: flex-end">
-                  <n-button v-if="!editMode" type="primary" size="small" @click="editMode = true">
-                    {{ t('driver.trailers.editMode') }}
-                  </n-button>
-                  <n-button v-else size="small" @click="cancelEdit">
-                    {{ t('driver.trailers.viewMode') }}
-                  </n-button>
-                  <n-popconfirm
-                    :positive-text="t('common.yes')"
-                    :negative-text="t('common.cancel')"
-                    @positive-click="handleDeactivate"
-                  >
-                    <template #trigger>
-                      <n-button type="error" size="small" :disabled="editMode">
-                        {{ t('driver.trailers.deactivate') }}
-                      </n-button>
-                    </template>
-                    {{ t('driver.trailers.deactivateConfirm') }}
-                  </n-popconfirm>
+                  <UiEditBtn v-if="!editMode" @click="editMode = true" />
+                  <UiCancelBtn v-else size="small" :label="t('common.back')" @click="cancelEdit" />
+                  <UiDeleteBtn
+                    :label="t('driver.trailers.deactivate')"
+                    :confirm-text="t('driver.trailers.deactivateConfirm')"
+                    :disabled="editMode"
+                    @confirm="handleDeactivate"
+                  />
                 </n-space>
               </div>
             </div>
@@ -546,8 +531,8 @@
               </n-card>
 
               <n-space style="margin-top: 4px">
-                <n-button type="primary" :loading="saving" @click="handleSave">{{ t('common.save') }}</n-button>
-                <n-button @click="cancelEdit">{{ t('common.cancel') }}</n-button>
+                <UiSaveBtn :loading="saving" @click="handleSave" />
+                <UiCancelBtn @click="cancelEdit" />
               </n-space>
             </n-form>
           </template>

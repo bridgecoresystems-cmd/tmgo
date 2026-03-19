@@ -1,8 +1,6 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/driver/orders')">
-      {{ t('common.back') }}
-    </n-button>
+    <UiBackBtn to="/cabinet/driver/orders" />
 
     <n-alert v-if="vehicles.length === 0" type="warning" style="margin-bottom: 16px">
       {{ t('driver.orders.addVehicleFirst') }}

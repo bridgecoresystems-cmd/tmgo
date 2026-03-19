@@ -223,6 +223,9 @@
     "uploadError": "Ýüklemek ýalňyşlygy",
     "saveError": "Saklamak ýalňyşlygy",
     "requestError": "Haýyş ibermek ýalňyşlygy",
+    "deleteConfirm": "Eminmi? Bu hereket yzyna öwrülip bilinmez.",
+    "deactivate": "Deaktiwirleme",
+    "deactivateConfirm": "Deaktiwirlemek?",
     "from2": "Den",
     "scrollToTop": "Ýokary"
   },

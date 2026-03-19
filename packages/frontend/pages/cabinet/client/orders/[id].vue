@@ -1,8 +1,6 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/client/orders')">
-      {{ t('common.backToList') }}
-    </n-button>
+    <UiBackBtn to="/cabinet/client/orders" />
 
     <div v-if="loading" style="padding: 40px; text-align: center">
       <n-spin size="large" />

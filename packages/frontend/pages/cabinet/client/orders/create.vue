@@ -1,8 +1,6 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/client/orders')">
-      {{ t('common.backToList') }}
-    </n-button>
+    <UiBackBtn to="/cabinet/client/orders" />
 
     <n-card :title="t('client.orders.newOrder')">
       <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
@@ -44,8 +42,8 @@
           </n-gi>
         </n-grid>
         <n-space>
-          <n-button type="primary" :loading="creating" @click="handleCreate">{{ t('client.orders.createOrder') }}</n-button>
-          <n-button @click="navigateTo('/cabinet/client/orders')">{{ t('common.cancel') }}</n-button>
+          <UiSaveBtn :loading="creating" :label="t('client.orders.createOrder')" @click="handleCreate" />
+          <UiCancelBtn @click="navigateTo('/cabinet/client/orders')" />
         </n-space>
       </n-form>
     </n-card>

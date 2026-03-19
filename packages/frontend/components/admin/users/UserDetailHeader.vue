@@ -38,19 +38,13 @@
       <n-button v-if="!user?.isActive" type="success" :loading="activating" @click="$emit('activate')">
         {{ t('admin.restore') }}
       </n-button>
-      <n-popconfirm
+      <UiDeleteBtn
         v-if="!user?.isActive"
-        :positive-text="t('common.delete')"
-        :negative-text="t('common.cancel')"
-        @positive-click="$emit('delete-permanent')"
-      >
-        <template #trigger>
-          <n-button type="error" :loading="deleting" quaternary>
-            {{ t('admin.deletePermanent') }}
-          </n-button>
-        </template>
-        {{ t('admin.deletePermanentConfirm') }}
-      </n-popconfirm>
+        :label="t('admin.deletePermanent')"
+        :confirm-text="t('admin.deletePermanentConfirm')"
+        :loading="deleting"
+        @confirm="$emit('delete-permanent')"
+      />
     </n-space>
   </div>
 </template>

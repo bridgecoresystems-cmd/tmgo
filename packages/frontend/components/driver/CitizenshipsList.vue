@@ -22,17 +22,13 @@
               </template>
             </n-thing>
             <template #suffix>
-              <n-popconfirm
+              <UiDeleteBtn
                 v-if="c.status === 'active'"
-                :positive-text="t('driver.citizenships.revoke')"
-                :negative-text="t('common.cancel')"
-                @positive-click="doRevoke(c.id)"
-              >
-                <template #trigger>
-                  <n-button quaternary size="small" type="error">{{ t('driver.citizenships.revoke') }}</n-button>
-                </template>
-                {{ t('driver.citizenships.revokeConfirm').replace('{country}', displayCountry(c.country)) }}
-              </n-popconfirm>
+                size="tiny"
+                :label="t('driver.citizenships.revoke')"
+                :confirm-text="t('driver.citizenships.revokeConfirm').replace('{country}', displayCountry(c.country))"
+                @confirm="doRevoke(c.id)"
+              />
             </template>
           </n-list-item>
         </n-list>
@@ -62,8 +58,8 @@
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showAddModal = false">{{ t('common.cancel') }}</n-button>
-          <n-button type="primary" :loading="adding" @click="doAdd">{{ t('common.add') }}</n-button>
+          <UiCancelBtn @click="showAddModal = false" />
+          <UiSaveBtn :loading="adding" :label="t('common.add')" @click="doAdd" />
         </n-space>
       </template>
     </n-modal>

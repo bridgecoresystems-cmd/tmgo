@@ -19,16 +19,11 @@
               </template>
             </n-thing>
             <template #suffix>
-              <n-popconfirm
-                :positive-text="t('common.delete')"
-                :negative-text="t('common.cancel')"
-                @positive-click="doRemove(c.id)"
-              >
-                <template #trigger>
-                  <n-button quaternary size="small" type="error">×</n-button>
-                </template>
-                {{ t('driver.contacts.deleteConfirm') }}
-              </n-popconfirm>
+              <UiDeleteBtn
+                size="tiny"
+                :confirm-text="t('driver.contacts.deleteConfirm')"
+                @confirm="doRemove(c.id)"
+              />
             </template>
           </n-list-item>
         </n-list>
@@ -49,8 +44,8 @@
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showAddModal = false">{{ t('common.cancel') }}</n-button>
-          <n-button type="primary" :loading="adding" @click="doAdd">{{ t('common.add') }}</n-button>
+          <UiCancelBtn @click="showAddModal = false" />
+          <UiSaveBtn :loading="adding" :label="t('common.add')" @click="doAdd" />
         </n-space>
       </template>
     </n-modal>

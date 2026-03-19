@@ -1,6 +1,6 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/driver/services')">{{ t('common.backToList') }}</n-button>
+    <UiBackBtn to="/cabinet/driver/services" />
 
     <n-alert v-if="vehicles.length === 0" type="warning" style="margin-bottom: 16px">
       {{ t('driver.services.addVehicleFirst') }}
@@ -39,8 +39,8 @@
           </n-gi>
         </n-grid>
         <n-space>
-          <n-button type="primary" :loading="creating" @click="handleCreate">{{ t('common.add') }}</n-button>
-          <n-button @click="navigateTo('/cabinet/driver/services')">{{ t('common.cancel') }}</n-button>
+          <UiSaveBtn :loading="creating" @click="handleCreate" />
+          <UiCancelBtn @click="navigateTo('/cabinet/driver/services')" />
         </n-space>
       </n-form>
     </n-card>
