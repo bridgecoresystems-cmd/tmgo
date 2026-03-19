@@ -607,3 +607,62 @@ export const orderMessages = pgTable('order_messages', {
   attachments: jsonb('attachments'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// ── Прицепы / полуприцепы ─────────────────────────────────────────
+
+export const driverTrailers = pgTable('driver_trailers', {
+  id:                   uuid('id').primaryKey().defaultRandom(),
+  carrierId:            uuid('carrier_id').notNull().references(() => carrierProfiles.id, { onDelete: 'cascade' }),
+
+  vin:                  varchar('vin', { length: 17 }),
+  trailerType:          text('trailer_type').$type<'semi' | 'drawbar'>().notNull().default('semi'),
+  bodyType:             text('body_type').notNull(),
+  plateNumber:          text('plate_number').notNull(),
+  color:                text('color').notNull(),
+
+  makeId:               uuid('make_id').references(() => vehicleMakes.id),
+  modelId:              uuid('model_id').references(() => vehicleModels.id),
+  customMake:           text('custom_make'),
+  customModel:          text('custom_model'),
+
+  year:                 integer('year'),
+  chassisNumber:        text('chassis_number'),
+  capacityTons:         decimal('capacity_tons', { precision: 6, scale: 2 }).notNull(),
+  volumeM3:             decimal('volume_m3', { precision: 7, scale: 2 }),
+  axleCount:            integer('axle_count'),
+  palletPlaces:         integer('pallet_places'),
+
+  adrClasses:           text('adr_classes').array().notNull().default([]),
+
+  tempMinC:             integer('temp_min_c'),
+  tempMaxC:             integer('temp_max_c'),
+
+  hasGps:               boolean('has_gps').default(false),
+  insurancePolicyNum:   text('insurance_policy_num'),
+  insuranceExpiresAt:   timestamp('insurance_expires_at'),
+
+  refFuelType:          text('ref_fuel_type').$type<'diesel' | 'lpg' | 'lng' | 'electric'>(),
+  refFuelTankL:         integer('ref_fuel_tank_l'),
+  refTransmission:      text('ref_transmission').$type<'manual' | 'automatic' | 'robotized'>(),
+  refFuelConsumptionPh: decimal('ref_fuel_consumption_ph', { precision: 5, scale: 1 }),
+
+  ownership:            vehicleOwnershipEnum('ownership'),
+
+  isActive:             boolean('is_active').default(true).notNull(),
+  createdAt:            timestamp('created_at').defaultNow().notNull(),
+  updatedAt:            timestamp('updated_at').defaultNow().notNull(),
+});
+
+// ── История сцепок тягач ↔ прицеп ────────────────────────────────
+
+export const vehicleCouplings = pgTable('vehicle_couplings', {
+  id:           uuid('id').primaryKey().defaultRandom(),
+  carrierId:    uuid('carrier_id').notNull().references(() => carrierProfiles.id, { onDelete: 'cascade' }),
+  tractorId:    uuid('tractor_id').notNull().references(() => driverVehicles.id),
+  trailerId:    uuid('trailer_id').notNull().references(() => driverTrailers.id),
+  coupledAt:    timestamp('coupled_at').defaultNow().notNull(),
+  decoupledAt:  timestamp('decoupled_at'),
+  notes:        text('notes'),
+  isActive:     boolean('is_active').default(true).notNull(),
+  createdAt:    timestamp('created_at').defaultNow().notNull(),
+});

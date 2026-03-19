@@ -17,6 +17,7 @@ import { adminCitiesRoutes, publicCitiesRoutes } from './routes/admin/cities';
 import { cabinetMailingRoutes } from './routes/cabinet/mailing';
 import { cabinetOrdersRoutes } from './routes/cabinet/orders';
 import { cabinetDriverVehiclesRoutes } from './routes/cabinet/driver-vehicles';
+import { cabinetDriverTrailersRoutes, cabinetDriverCouplingsRoutes } from './routes/cabinet/driver-trailers';
 import { cabinetDriverOrdersRoutes } from './routes/cabinet/driver-orders';
 import { cabinetDriverServicesRoutes } from './routes/cabinet/driver-services';
 import { cabinetDriverProfileRoutes } from './routes/cabinet/driver-profile';
@@ -102,6 +103,8 @@ const app = new Elysia()
   .use(cabinetOrdersRoutes)
   .use(cabinetClientServicesRoutes)
   .use(cabinetDriverVehiclesRoutes)
+  .use(cabinetDriverTrailersRoutes)
+  .use(cabinetDriverCouplingsRoutes)
   .use(cabinetDriverProfileRoutes)
   .use(cabinetDriverCitizenshipsRoutes)
   .use(cabinetDriverContactsRoutes)

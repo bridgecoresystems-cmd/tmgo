@@ -9,3 +9,5 @@ export * from './chassis-types';
 export * from './axle-configs';
 export * from './vehicle-colors';
 export * from './vehicle-makes-seed';
+export * from './trailer-types';
+export * from './adr-classes_2';
