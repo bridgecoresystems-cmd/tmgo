@@ -828,7 +828,8 @@
       "deactivateConfirm": "Deactivate this vehicle?",
       "editMode": "Edit",
       "viewMode": "View",
-      "notFound": "Vehicle not found"
+      "notFound": "Vehicle not found",
+      "noVehicles": "You have no registered vehicles yet"
     },
     "orders": {
       "title": "My orders",

@@ -828,7 +828,8 @@
       "deactivateConfirm": "Bu ulagy işjeňsizleşdiriňmi?",
       "editMode": "Redaktirle",
       "viewMode": "Görkeziş",
-      "notFound": "Ulag tapylmady"
+      "notFound": "Ulag tapylmady",
+      "noVehicles": "Heniz hasaba alnan ulaglaryňyz ýok"
     },
     "orders": {
       "title": "Meniň sargytlarym",
