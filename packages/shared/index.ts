@@ -4,3 +4,8 @@ export * from './citizenships';
 export * from './visa-countries';
 export * from './adr-classes';
 export * from './license-categories';
+export * from './vehicle-types';
+export * from './chassis-types';
+export * from './axle-configs';
+export * from './vehicle-colors';
+export * from './vehicle-makes-seed';

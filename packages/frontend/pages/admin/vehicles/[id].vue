@@ -1,7 +1,7 @@
 <template>
   <div>
-    <n-button text style="margin-bottom: 16px" @click="navigateTo('/cabinet/driver/vehicles')">
-      {{ t('common.backToList') }}
+    <n-button text style="margin-bottom: 16px" @click="navigateTo('/admin/vehicles')">
+      {{ t('admin.vehicles.backToList') }}
     </n-button>
 
     <n-spin :show="loading">
@@ -13,25 +13,55 @@
           </template>
         </n-alert>
 
-        <n-card v-else-if="vehicle" :title="t('driver.vehicles.vehicleTitle')">
+        <n-card v-else-if="vehicle" :title="t('admin.vehicles.vehicleTitle')">
           <template #header-extra>
             <n-space>
-              <n-button v-if="!editMode" type="primary" @click="editMode = true">{{ t('driver.vehicles.editMode') }}</n-button>
-              <n-button v-else @click="editMode = false">{{ t('driver.vehicles.viewMode') }}</n-button>
+              <n-button v-if="!editMode" type="primary" @click="editMode = true">{{ t('admin.vehicles.editMode') }}</n-button>
+              <n-button v-else @click="editMode = false">{{ t('admin.vehicles.viewMode') }}</n-button>
               <n-popconfirm
+                v-if="vehicle.isActive"
                 :positive-text="t('common.yes')"
                 :negative-text="t('common.cancel')"
                 @positive-click="handleDeactivate"
               >
                 <template #trigger>
-                  <n-button type="error" :disabled="editMode">{{ t('driver.vehicles.deactivate') }}</n-button>
+                  <n-button type="warning" :disabled="editMode">{{ t('admin.vehicles.deactivate') }}</n-button>
                 </template>
-                {{ t('driver.vehicles.deactivateConfirm') }}
+                {{ t('admin.vehicles.deactivateConfirm') }}
+              </n-popconfirm>
+              <n-popconfirm
+                v-else
+                :positive-text="t('common.yes')"
+                :negative-text="t('common.cancel')"
+                @positive-click="handleActivate"
+              >
+                <template #trigger>
+                  <n-button type="success" :disabled="editMode">{{ t('admin.vehicles.activate') }}</n-button>
+                </template>
+                {{ t('admin.vehicles.activateConfirm') }}
               </n-popconfirm>
             </n-space>
           </template>
 
+          <!-- Owner block -->
+          <n-card v-if="vehicle.owner" embedded size="small" style="margin-bottom: 20px;">
+            <template #header>
+              {{ t('admin.vehicles.owner') }}
+            </template>
+            <n-space>
+              <span>{{ vehicle.owner.driverName || vehicle.owner.name || vehicle.owner.email }}</span>
+              <n-button size="small" quaternary type="primary" @click="navigateTo(`/admin/users/${vehicle.owner.id}`)">
+                {{ t('admin.vehicles.viewOwner') }}
+              </n-button>
+            </n-space>
+          </n-card>
+
           <n-descriptions v-if="!editMode" :column="1" bordered label-placement="left" label-width="200">
+            <n-descriptions-item :label="t('admin.vehicles.status')">
+              <n-tag :type="vehicle.isActive ? 'success' : 'default'">
+                {{ vehicle.isActive ? t('admin.vehicles.active') : t('admin.vehicles.inactive') }}
+              </n-tag>
+            </n-descriptions-item>
             <n-descriptions-item :label="t('driver.vehicles.type')">{{ vehicleTypeLabel }}</n-descriptions-item>
             <n-descriptions-item :label="t('driver.vehicles.chassisType')">{{ chassisTypeLabel }}</n-descriptions-item>
             <n-descriptions-item :label="t('driver.vehicles.brand')">{{ vehicle.brand || vehicle.customMake || '—' }}</n-descriptions-item>
@@ -65,10 +95,40 @@
               <n-select v-model:value="form.chassisType" :options="chassisTypeOptions" clearable style="width: 100%" />
             </n-form-item>
             <n-form-item :label="t('driver.vehicles.brand')">
-              <n-input :value="vehicle.brand || vehicle.customMake" disabled />
+              <n-space vertical style="width: 100%">
+                <n-select
+                  v-if="!useCustomMake"
+                  v-model:value="form.makeId"
+                  :options="makeOptions"
+                  filterable
+                  clearable
+                  :placeholder="t('common.select')"
+                  style="width: 100%"
+                  @update:value="onMakeChange"
+                />
+                <n-input v-else v-model:value="form.customMake" :placeholder="t('driver.vehicles.brand')" style="width: 100%" />
+                <n-button text type="primary" size="small" @click="useCustomMake = !useCustomMake">
+                  {{ useCustomMake ? t('driver.vehicles.backToSelect') : t('driver.vehicles.customMakeHint') }}
+                </n-button>
+              </n-space>
             </n-form-item>
             <n-form-item :label="t('driver.vehicles.model')">
-              <n-input :value="vehicle.model || vehicle.customModel" disabled />
+              <n-space vertical style="width: 100%">
+                <n-select
+                  v-if="!useCustomModel"
+                  v-model:value="form.modelId"
+                  :options="modelOptions"
+                  filterable
+                  clearable
+                  :placeholder="t('common.select')"
+                  :loading="modelsLoading"
+                  style="width: 100%"
+                />
+                <n-input v-else v-model:value="form.customModel" :placeholder="t('driver.vehicles.model')" style="width: 100%" />
+                <n-button text type="primary" size="small" @click="useCustomModel = !useCustomModel">
+                  {{ useCustomModel ? t('driver.vehicles.backToSelect') : t('driver.vehicles.customModelHint') }}
+                </n-button>
+              </n-space>
             </n-form-item>
             <n-form-item :label="t('driver.vehicles.year')">
               <n-input-number v-model:value="form.year" :min="1950" :max="currentYear" style="width: 120px" />
@@ -146,7 +206,7 @@
           </n-form>
         </n-card>
 
-        <n-empty v-else :description="t('driver.vehicles.notFound')" />
+        <n-empty v-else :description="t('admin.vehicles.notFound')" />
       </template>
     </n-spin>
   </div>
@@ -162,7 +222,7 @@ import {
 } from '@tmgo/shared'
 
 const { t, locale } = useI18n()
-definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
+definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 
 const route = useRoute()
 const { apiBase: API } = useApiBase()
@@ -173,6 +233,11 @@ const saving = ref(false)
 const error = ref<string | null>(null)
 const vehicle = ref<any>(null)
 const editMode = ref(false)
+const useCustomMake = ref(false)
+const useCustomModel = ref(false)
+const makeOptions = ref<{ label: string; value: string }[]>([])
+const modelOptions = ref<{ label: string; value: string }[]>([])
+const modelsLoading = ref(false)
 
 const currentYear = new Date().getFullYear()
 
@@ -222,6 +287,10 @@ const euroClassOptions = [
 const form = reactive({
   vehicleType: '',
   chassisType: null as string | null,
+  makeId: null as string | null,
+  modelId: null as string | null,
+  customMake: null as string | null,
+  customModel: null as string | null,
   year: null as number | null,
   color: null as string | null,
   vin: '',
@@ -290,10 +359,47 @@ const insuranceExpiresLabel = computed(() => {
   return new Date(d).toLocaleDateString()
 })
 
+async function loadMakes() {
+  try {
+    const list = await $fetch<any[]>(`${API}/admin/vehicles/makes`, { credentials: 'include' })
+    makeOptions.value = (Array.isArray(list) ? list : []).map((m) => ({ label: m.name, value: m.id }))
+  } catch {
+    makeOptions.value = []
+  }
+}
+
+async function loadModels(makeId: string | null) {
+  if (!makeId) {
+    modelOptions.value = []
+    return
+  }
+  modelsLoading.value = true
+  try {
+    const params = form.vehicleType ? `?vehicleType=${encodeURIComponent(form.vehicleType)}` : ''
+    const list = await $fetch<any[]>(`${API}/admin/vehicles/makes/${makeId}/models${params}`, {
+      credentials: 'include',
+    })
+    modelOptions.value = (Array.isArray(list) ? list : []).map((m) => ({ label: m.name, value: m.id }))
+  } catch {
+    modelOptions.value = []
+  } finally {
+    modelsLoading.value = false
+  }
+}
+
+function onMakeChange(makeId: string | null) {
+  form.modelId = null
+  loadModels(makeId)
+}
+
 function fillForm() {
   if (!vehicle.value) return
   form.vehicleType = vehicle.value.vehicleType || ''
   form.chassisType = vehicle.value.chassisType || null
+  form.makeId = vehicle.value.makeId || null
+  form.modelId = vehicle.value.modelId || null
+  form.customMake = vehicle.value.customMake || null
+  form.customModel = vehicle.value.customModel || null
   form.year = vehicle.value.year ? parseInt(vehicle.value.year, 10) : null
   form.color = vehicle.value.color || null
   form.vin = vehicle.value.vin || ''
@@ -313,13 +419,17 @@ function fillForm() {
   form.fuelConsumptionPer100km = vehicle.value.fuelConsumptionPer100km != null ? Number(vehicle.value.fuelConsumptionPer100km) : null
   form.fifthWheelCapacityKg = vehicle.value.fifthWheelCapacityKg ?? null
   form.maxGrossWeightT = vehicle.value.maxGrossWeightT != null ? Number(vehicle.value.maxGrossWeightT) : null
+  useCustomMake.value = !!vehicle.value.customMake && !vehicle.value.makeId
+  useCustomModel.value = !!vehicle.value.customModel && !vehicle.value.modelId
+  if (vehicle.value.makeId) loadModels(vehicle.value.makeId)
 }
 
 async function loadVehicle() {
   loading.value = true
   error.value = null
   try {
-    const data = await $fetch<any>(`${API}/cabinet/driver/vehicles/${route.params.id}`, { credentials: 'include' })
+    await loadMakes()
+    const data = await $fetch<any>(`${API}/admin/vehicles/${route.params.id}`, { credentials: 'include' })
     if (data?.error) {
       error.value = data.error
       vehicle.value = null
@@ -361,12 +471,27 @@ async function handleSave() {
       maxGrossWeightT: form.maxGrossWeightT ?? undefined,
       year: form.year ?? undefined,
     }
-    await $fetch(`${API}/cabinet/driver/vehicles/${route.params.id}`, {
+    if (useCustomMake.value) {
+      body.customMake = form.customMake
+      body.makeId = null
+      body.modelId = null
+      body.customModel = form.customModel
+    } else if (useCustomModel.value) {
+      body.makeId = form.makeId
+      body.modelId = null
+      body.customModel = form.customModel
+    } else {
+      body.makeId = form.makeId
+      body.modelId = form.modelId
+      body.customMake = null
+      body.customModel = null
+    }
+    await $fetch(`${API}/admin/vehicles/${route.params.id}`, {
       method: 'PATCH',
       credentials: 'include',
       body,
     })
-    message.success(t('driver.vehicles.saved'))
+    message.success(t('admin.vehicles.saved'))
     editMode.value = false
     await loadVehicle()
   } catch (e: any) {
@@ -376,14 +501,27 @@ async function handleSave() {
   }
 }
 
-async function handleDeactivate() {
+async function handleActivate() {
   try {
-    await $fetch(`${API}/cabinet/driver/vehicles/${route.params.id}`, {
-      method: 'DELETE',
+    await $fetch(`${API}/admin/vehicles/${route.params.id}/activate`, {
+      method: 'POST',
       credentials: 'include',
     })
-    message.success(t('driver.vehicles.deactivated'))
-    navigateTo('/cabinet/driver/vehicles')
+    message.success(t('admin.vehicles.activated'))
+    await loadVehicle()
+  } catch (e: any) {
+    message.error(e?.data?.error || t('common.saveError'))
+  }
+}
+
+async function handleDeactivate() {
+  try {
+    await $fetch(`${API}/admin/vehicles/${route.params.id}/deactivate`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    message.success(t('admin.vehicles.deactivated'))
+    await loadVehicle()
   } catch (e: any) {
     message.error(e?.data?.error || t('common.saveError'))
   }

@@ -3,7 +3,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <n-h3 style="margin: 0;">{{ t('driver.vehicles.title') }}</n-h3>
       <n-button type="primary" @click="navigateTo('/cabinet/driver/vehicles/create')">
-        {{ t('common.add') }}
+        {{ t('driver.vehicles.addTractor') }}
       </n-button>
     </div>
 
@@ -31,10 +31,12 @@ const loading = ref(true)
 const vehicleList = ref<any[]>([])
 
 const columns = computed<DataTableColumns<any>>(() => [
-  { title: t('driver.vehicles.type'), key: 'type', width: 120 },
-  { title: t('driver.vehicles.plateNumber'), key: 'plate_number', ellipsis: true },
-  { title: t('driver.vehicles.capacity'), key: 'capacity', width: 140 },
-  { title: t('driver.vehicles.volume'), key: 'volume', width: 100 },
+  { title: t('driver.vehicles.type'), key: 'vehicleType', width: 140 },
+  { title: t('driver.vehicles.brand'), key: 'brand', width: 120 },
+  { title: t('driver.vehicles.model'), key: 'model', width: 120 },
+  { title: t('driver.vehicles.plateNumber'), key: 'plateNumber', ellipsis: true },
+  { title: t('driver.vehicles.capacity'), key: 'capacityTons', width: 120 },
+  { title: t('driver.vehicles.year'), key: 'year', width: 80 },
 ])
 
 async function loadVehicles() {

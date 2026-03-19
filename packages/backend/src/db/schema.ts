@@ -142,6 +142,29 @@ export const changeRequestStatusEnum = pgEnum('change_request_status', [
   'cancelled',
 ]);
 
+// --- Справочники марок и моделей ТС ---
+
+export const vehicleMakes = pgTable('vehicle_makes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 100 }).notNull(),
+  slug: varchar('slug', { length: 100 }).notNull().unique(),
+  countryCode: varchar('country_code', { length: 2 }),
+  isCustom: boolean('is_custom').default(false).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+});
+
+export const vehicleModels = pgTable('vehicle_models', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  makeId: uuid('make_id')
+    .notNull()
+    .references(() => vehicleMakes.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 100 }).notNull(),
+  slug: varchar('slug', { length: 100 }).notNull(),
+  compatibleTypes: text('compatible_types').array().notNull().default([]),
+  isCustom: boolean('is_custom').default(false).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+});
+
 // --- Профили перевозчиков (рефакторинг) ---
 
 export const carrierProfiles = pgTable('carrier_profiles', {
@@ -337,11 +360,36 @@ export const driverVehicles = pgTable('driver_vehicles', {
     .references(() => carrierProfiles.id, { onDelete: 'cascade' }),
 
   plateNumber: text('plate_number').notNull(),
-  vehicleType: text('vehicle_type'), // Тент, реф, изотерм...
+  vehicleType: text('vehicle_type'),
   brand: text('brand'),
   model: text('model'),
   year: text('year'),
   ownership: vehicleOwnershipEnum('ownership'),
+
+  // ─── Расширенные поля (тягач) ───
+  vin: varchar('vin', { length: 17 }),
+  chassisNumber: text('chassis_number'),
+  chassisType: text('chassis_type'),
+  axleConfig: text('axle_config'),
+  color: text('color'),
+  capacityTons: decimal('capacity_tons', { precision: 6, scale: 2 }),
+  hasGps: boolean('has_gps').default(false),
+  insurancePolicyNum: text('insurance_policy_num'),
+  insuranceExpiresAt: timestamp('insurance_expires_at'),
+  makeId: uuid('make_id').references(() => vehicleMakes.id),
+  modelId: uuid('model_id').references(() => vehicleModels.id),
+  customMake: text('custom_make'),
+  customModel: text('custom_model'),
+  fuelType: text('fuel_type').$type<'diesel' | 'lpg' | 'lng' | 'electric' | 'hybrid'>(),
+  engineVolumeL: decimal('engine_volume_l', { precision: 4, scale: 1 }),
+  powerHp: integer('power_hp'),
+  fuelTank1L: integer('fuel_tank_1_l'),
+  fuelTank2L: integer('fuel_tank_2_l'),
+  transmission: text('transmission').$type<'manual' | 'automatic' | 'robotized'>(),
+  euroClass: text('euro_class').$type<'euro3' | 'euro4' | 'euro5' | 'euro6'>(),
+  fuelConsumptionPer100km: decimal('fuel_consumption_per_100km', { precision: 5, scale: 1 }),
+  fifthWheelCapacityKg: integer('fifth_wheel_capacity_kg'),
+  maxGrossWeightT: decimal('max_gross_weight_t', { precision: 6, scale: 2 }),
 
   // ─── ЖИЗНЕННЫЙ ЦИКЛ ───
   assignedFrom: timestamp('assigned_from').defaultNow(),
