@@ -1,0 +1,172 @@
+---
+description: TMGO project architecture, structure, and conventions
+alwaysApply: true
+---
+
+# TMGO Architecture Rules
+
+## Monorepo Structure
+
+```
+tmgo/
+├── packages/
+│   ├── backend/    # Elysia API — порт 8000
+│   ├── frontend/   # Nuxt 3 SPA — порт 3000
+│   └── shared/     # Общие типы и схемы (Zod)
+├── docs/           # Документация
+└── package.json    # Bun workspace root
+```
+
+- **Менеджер пакетов:** Bun (не npm/yarn/pnpm)
+- Всегда использовать `bun add`, `bun run`, `bun install`
+- Запуск всего сразу: `bun run dev` в корне (через concurrently)
+
+---
+
+## Backend (`packages/backend`)
+
+**Стек:** Bun + Elysia + Drizzle ORM + PostgreSQL + better-auth + BullMQ (Redis)
+
+### Структура роутов
+
+```
+src/routes/
+├── auth.ts           # Публичные: sign-in, sign-up, sign-out, get-session
+├── cities.ts         # Публичный список городов
+├── admin/            # Только для admin
+│   ├── users.ts
+│   ├── drivers-verify.ts
+│   ├── change-requests.ts
+│   ├── cities.ts
+│   ├── mailing.ts
+│   └── impersonate.ts
+└── cabinet/          # Авторизованные пользователи
+    ├── driver-profile.ts
+    ├── driver-documents.ts
+    ├── driver-vehicles.ts
+    ├── driver-orders.ts
+    ├── driver-services.ts
+    ├── driver-citizenships.ts
+    ├── driver-contacts.ts
+    ├── driver-change-requests.ts
+    ├── profile.ts
+    ├── orders.ts
+    ├── client-services.ts
+    ├── chat.ts
+    └── mailing.ts
+```
+
+### Утилиты (`src/lib/`)
+
+- `auth.ts` — better-auth конфигурация
+- `redis.ts` — Redis клиент
+- `queues.ts` — BullMQ очереди
+- `field-access.ts` — контроль видимости полей (hidden_fields)
+- `document-expiry.ts` — проверка сроков документов
+- `chat-attachments.ts` — вложения в чате
+- `trip-snapshot.ts` — снимки данных поездки
+
+### DB (Drizzle ORM)
+
+- Схема: `src/db/schema.ts`
+- Подключение: `src/db/index.ts`
+- Конфиг: `drizzle.config.ts` → `postgresql://tmgo_user:tmgo_pass123@localhost:5432/tmgo`
+- Миграции: `bun run db:generate` → `bun run db:migrate`
+- Studio: `bun run db:studio`
+
+### Роли и статусы верификации водителя
+
+```
+verification_status enum:
+  not_submitted → submitted → verified
+                            → rejected
+                            → suspended
+```
+
+---
+
+## Frontend (`packages/frontend`)
+
+**Стек:** Nuxt 3 (SSR отключён) + Vue 3 Composition API + Naive UI + Pinia + @nuxtjs/i18n
+
+### Структура страниц
+
+```
+pages/
+├── index.vue / auth.vue / rate-limited.vue
+├── admin/
+│   ├── index.vue, profile.vue
+│   ├── users/index.vue, users/[id].vue
+│   ├── cities/, mailing/, orders/, settings/
+└── cabinet/
+    ├── client/  (profile, chat, orders/, services/, mailing/)
+    └── driver/  (profile, my-card, card/, add-documents, chat,
+                  alerts/, orders/, vehicles/, services/, mailing/)
+```
+
+### Layouts
+
+| Layout | Назначение |
+|--------|-----------|
+| `default.vue` | Публичные страницы |
+| `admin.vue` | Админ-панель |
+| `cabinet.vue` | Личный кабинет (общий) |
+| `cabinet-driver.vue` | Кабинет водителя |
+| `cabinet-client.vue` | Кабинет клиента |
+
+### Middleware
+
+- `admin-auth.ts` — защита `/admin/*`
+- `cabinet-auth.ts` — защита `/cabinet/*`
+
+### Composables (ключевые)
+
+- `useAuth.ts` — сессия, вход/выход
+- `useApiBase.ts` — базовый URL API (прямой доступ на :8000)
+- `useAdminUser.ts` — управление пользователями (admin)
+- `useDriverDocuments/Contacts/Citizenships.ts` — CRUD по разделам карточки водителя
+- `useDriverChangeRequests.ts` / `useAdminChangeRequests.ts` — система запросов на изменение
+
+### Компоненты
+
+```
+components/
+├── AuthContent.vue, ChatWidget.vue, TruckOrderForm.vue
+├── VerificationBadge.vue, ImpersonateBanner.vue
+├── LanguageSwitcher.vue, ScrollToTopButton.vue
+├── admin/users/   (UserDetailHeader, UserNonDriverCard, UserDriverTabs,
+│                   AdminDriverCardForm, ChangeRequestsTab, UserActionModals)
+└── driver/        (DriverCardForm, DriverCardV2, DriverCardView,
+                    DocumentsList, ChangeRequestsList, CitizenshipsList,
+                    ContactsList, OnlineStatusToggle, ProfileVerificationStatus)
+```
+
+---
+
+## Shared (`packages/shared`)
+
+- `types.ts` — общие TypeScript типы
+- `schemas.ts` — Zod схемы (валидация frontend + backend)
+- `citizenships.ts`, `visa-countries.ts`, `adr-classes.ts`, `license-categories.ts` — справочники
+
+> Всегда импортировать общие типы из `packages/shared`, не дублировать их в backend или frontend.
+
+---
+
+## i18n
+
+- Языки: **ru** (дефолт), **en**, **tk**
+- Файлы: `packages/frontend/locales/ru.json`, `en.json`, `tk.json`
+- Стратегия: `no_prefix` (локаль в cookie, не в URL)
+- Плагин: `plugins/i18n-locale.client.ts`
+- Все UI-строки должны идти через `$t('ключ')` — не хардкодить текст
+
+---
+
+## Ключевые соглашения
+
+- **SSR отключён** (`ssr: false`) — весь код может использовать `window`, `localStorage` напрямую
+- **Авторизация** через better-auth, сессии в cookie (`credentials: 'include'` обязательно)
+- **Фоновые задачи** — только через BullMQ (Redis), не через `setTimeout`
+- **Изменения карточки водителя** — сохраняются как `change_request`, не напрямую: сначала подаётся заявка, потом админ одобряет
+- **Защита массивов:** всегда `Array.isArray(data) ? data : []` при получении данных с API

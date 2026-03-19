@@ -19,7 +19,7 @@
       <n-tag v-else-if="profile?.verification_status === 'suspended'" type="error">{{ t('admin.suspended') }}</n-tag>
       <n-tag v-else-if="profile?.verification_status === 'not_verified' || profile?.verification_status === 'not_submitted'" type="default">{{ t('admin.notVerified') }}</n-tag>
       <n-space v-if="user?.role === 'driver' && profile" :size="8">
-        <n-button type="info" quaternary @click="typeof window !== 'undefined' && window.print()">
+        <n-button type="info" quaternary @click="doPrint">
           {{ t('admin.print') }}
         </n-button>
         <n-button v-if="canVerify" type="primary" :loading="verifying" @click="$emit('verify')">
@@ -59,6 +59,10 @@
 import { NH3, NSpace, NButton, NTag, NPopconfirm } from 'naive-ui'
 
 const { t } = useI18n()
+
+function doPrint() {
+  window.print()
+}
 
 defineProps<{
   user: any
