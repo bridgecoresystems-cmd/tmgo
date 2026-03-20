@@ -102,7 +102,7 @@
 import { marked } from 'marked'
 import { useMessage } from 'naive-ui'
 
-definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
+definePageMeta({ layout: 'admin',  })
 const { t } = useI18n()
 const { apiBase } = useApiBase()
 const message = useMessage()

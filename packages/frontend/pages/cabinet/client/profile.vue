@@ -114,7 +114,7 @@
 import { useMessage } from 'naive-ui'
 
 const { t } = useI18n()
-definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
+definePageMeta({ layout: 'cabinet-client',  })
 
 useSeoMeta({ title: t('client.profile.title') })
 

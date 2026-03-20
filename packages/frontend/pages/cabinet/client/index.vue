@@ -64,7 +64,7 @@
 
 <script setup lang="ts">
 const { t } = useI18n()
-definePageMeta({ layout: 'cabinet-client', middleware: 'cabinet-auth' })
+definePageMeta({ layout: 'cabinet-client',  })
 
 const { session } = useAuth()
 

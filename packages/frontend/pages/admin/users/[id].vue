@@ -90,7 +90,7 @@
 <script setup lang="ts">
 import { NButton, NSpin, NAlert } from 'naive-ui'
 
-definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
+definePageMeta({ layout: 'admin',  })
 
 const route = useRoute()
 const { apiBase } = useApiBase()

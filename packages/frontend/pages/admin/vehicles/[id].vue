@@ -217,7 +217,7 @@ import {
 } from '@tmgo/shared'
 
 const { t, locale } = useI18n()
-definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
+definePageMeta({ layout: 'admin',  })
 
 const route = useRoute()
 const { apiBase: API } = useApiBase()

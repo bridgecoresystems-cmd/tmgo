@@ -92,7 +92,7 @@
 import { useMessage } from 'naive-ui'
 
 const { t } = useI18n()
-definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
+definePageMeta({ layout: 'cabinet-driver',  })
 
 useSeoMeta({ title: t('driver.profile.title') })
 

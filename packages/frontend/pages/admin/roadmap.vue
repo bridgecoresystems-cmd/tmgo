@@ -104,7 +104,7 @@ import {
   allMvpRoadmapTaskIds,
 } from '@tmgo/shared'
 
-definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
+definePageMeta({ layout: 'admin',  })
 
 const { t, locale } = useI18n()
 const { apiBase } = useApiBase()

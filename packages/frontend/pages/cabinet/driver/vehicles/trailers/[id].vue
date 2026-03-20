@@ -549,7 +549,7 @@ import { useMessage } from 'naive-ui'
 import { TRAILER_BODY_TYPES, REEFER_BODY_TYPES, ADR_CLASSES } from '@tmgo/shared'
 
 const { t, locale } = useI18n()
-definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
+definePageMeta({ layout: 'cabinet-driver',  })
 
 const route = useRoute()
 const { apiBase: API } = useApiBase()

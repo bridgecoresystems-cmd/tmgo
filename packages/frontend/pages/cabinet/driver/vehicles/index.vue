@@ -119,7 +119,7 @@ import type { DataTableColumns } from 'naive-ui'
 import { VEHICLE_TYPES, VEHICLE_COLORS, TRAILER_BODY_TYPES } from '@tmgo/shared'
 
 const { t, locale } = useI18n()
-definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
+definePageMeta({ layout: 'cabinet-driver',  })
 
 const { apiBase: API } = useApiBase()
 const message = useMessage()

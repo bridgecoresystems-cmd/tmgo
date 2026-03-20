@@ -30,7 +30,7 @@ import { h } from 'vue'
 import { NTag, NButton, NPopconfirm, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
-definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
+definePageMeta({ layout: 'admin',  })
 
 const { apiBase } = useApiBase()
 const message = useMessage()

@@ -31,7 +31,7 @@ import { NTag, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 
 const { t } = useI18n()
-definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
+definePageMeta({ layout: 'cabinet-driver',  })
 
 const { apiBase: API } = useApiBase()
 const message = useMessage()

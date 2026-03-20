@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 const { t } = useI18n()
-definePageMeta({ layout: 'cabinet-driver', middleware: 'cabinet-auth' })
+definePageMeta({ layout: 'cabinet-driver',  })
 
 const { apiBase: API } = useApiBase()
 const route = useRoute()

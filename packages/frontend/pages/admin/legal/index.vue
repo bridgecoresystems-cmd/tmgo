@@ -19,7 +19,7 @@
 import { h } from 'vue'
 import { NTag, NButton, NSpace } from 'naive-ui'
 
-definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
+definePageMeta({ layout: 'admin',  })
 const { t } = useI18n()
 const { apiBase } = useApiBase()
 

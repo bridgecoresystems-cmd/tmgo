@@ -3,5 +3,5 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: false, middleware: 'cabinet-auth' })
+definePageMeta({ layout: false,  })
 </script>

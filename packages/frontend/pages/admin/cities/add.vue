@@ -51,7 +51,7 @@
 import { useMessage } from 'naive-ui'
 import type { FormInst, FormRules } from 'naive-ui'
 
-definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
+definePageMeta({ layout: 'admin',  })
 
 const { apiBase } = useApiBase()
 const message = useMessage()
