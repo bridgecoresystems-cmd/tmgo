@@ -21,7 +21,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // Не авторизован — на страницу входа
   if (!user) {
-    return navigateTo('/auth')
+    return navigateTo('/auth', { replace: true })
   }
 
   const role = user.role
@@ -29,20 +29,33 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // ── Admin ──────────────────────────────────────────────────────
   if (path.startsWith('/admin')) {
-    if (role !== 'admin') return navigateTo('/')
+    if (role !== 'admin') {
+      // Если не админ, отправляем в его кабинет
+      const fallback = role === 'driver' ? '/cabinet/driver' : '/cabinet/client'
+      return navigateTo(fallback, { replace: true })
+    }
     return // ok
   }
 
   // ── Cabinet ────────────────────────────────────────────────────
-  if (path === '/cabinet' || path === '/cabinet/') {
-    return navigateTo(role === 'driver' ? '/cabinet/driver' : '/cabinet/client')
-  }
+  if (path.startsWith('/cabinet')) {
+    // Админам нечего делать в кабинете (если они не impersonate, но тогда role будет driver/client)
+    if (role === 'admin') {
+      return navigateTo('/admin', { replace: true })
+    }
 
-  if (path.startsWith('/cabinet/driver') && role === 'client') {
-    return navigateTo('/cabinet/client')
-  }
+    // Редирект с корня кабинета
+    if (path === '/cabinet' || path === '/cabinet/') {
+      return navigateTo(role === 'driver' ? '/cabinet/driver' : '/cabinet/client', { replace: true })
+    }
 
-  if (path.startsWith('/cabinet/client') && role === 'driver') {
-    return navigateTo('/cabinet/driver')
+    // Чужой кабинет
+    if (path.startsWith('/cabinet/driver') && role !== 'driver') {
+      return navigateTo('/cabinet/client', { replace: true })
+    }
+
+    if (path.startsWith('/cabinet/client') && role !== 'client') {
+      return navigateTo('/cabinet/driver', { replace: true })
+    }
   }
 })
