@@ -42,13 +42,20 @@ async function hasApprovedRequest(carrierId: string, fieldKey: string): Promise<
   return !!req;
 }
 
+function safeDocType(docType: unknown): string {
+  const s = String(docType || 'document').toLowerCase().replace(/[^a-z0-9_]/g, '');
+  return s || 'document';
+}
+
 async function uploadDocScan(carrierId: string, docType: string, file: File): Promise<string> {
   const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
   if (!ALLOWED_EXTS.includes(ext)) throw new Error('Только PDF, JPG, PNG (макс. 10 МБ)');
   if (file.size > MAX_FILE_SIZE) throw new Error('Файл слишком большой (макс. 10 МБ)');
-  const uploadDir = join(process.cwd(), 'storage', 'driver-docs', carrierId);
+  const safeType = safeDocType(docType);
+  const safeCarrierId = carrierId.replace(/[^a-z0-9-]/gi, '');
+  const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeCarrierId);
   await mkdir(uploadDir, { recursive: true });
-  const filename = `${docType}_${randomUUID()}.${ext}`;
+  const filename = `${safeType}_${randomUUID()}.${ext}`;
   const filepath = join(uploadDir, filename);
   const buf = await file.arrayBuffer();
   await writeFile(filepath, Buffer.from(buf));

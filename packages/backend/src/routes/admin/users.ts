@@ -784,17 +784,15 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       set.status = 400;
       return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
     }
-    if (file.size > 10 * 1024 * 1024) {
-      set.status = 400;
-      return { error: 'Файл слишком большой (макс. 10 МБ)' };
-    }
-    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', profile.id);
+    if (file.size > 10 * 1024 * 1024) { set.status = 400; return { error: 'Файл слишком большой (макс. 10 МБ)' }; }
+    const safeProfileId = profile.id.replace(/[^a-z0-9-]/gi, '');
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeProfileId);
     await mkdir(uploadDir, { recursive: true });
     const filename = `passport_${randomUUID()}.${ext}`;
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${safeProfileId}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -817,17 +815,15 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       set.status = 400;
       return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
     }
-    if (file.size > 10 * 1024 * 1024) {
-      set.status = 400;
-      return { error: 'Файл слишком большой (макс. 10 МБ)' };
-    }
-    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', profile.id);
+    if (file.size > 10 * 1024 * 1024) { set.status = 400; return { error: 'Файл слишком большой (макс. 10 МБ)' }; }
+    const safeProfileId = profile.id.replace(/[^a-z0-9-]/gi, '');
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeProfileId);
     await mkdir(uploadDir, { recursive: true });
     const filename = `passport_extra_${index}_${randomUUID()}.${ext}`;
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${safeProfileId}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -852,17 +848,15 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       set.status = 400;
       return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
     }
-    if (file.size > 10 * 1024 * 1024) {
-      set.status = 400;
-      return { error: 'Файл слишком большой (макс. 10 МБ)' };
-    }
-    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', profile.id);
+    if (file.size > 10 * 1024 * 1024) { set.status = 400; return { error: 'Файл слишком большой (макс. 10 МБ)' }; }
+    const safeProfileId = profile.id.replace(/[^a-z0-9-]/gi, '');
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeProfileId);
     await mkdir(uploadDir, { recursive: true });
     const filename = `license_${randomUUID()}.${ext}`;
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${safeProfileId}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -886,17 +880,15 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
       set.status = 400;
       return { error: 'Только PDF, JPG, PNG (макс. 10 МБ)' };
     }
-    if (file.size > 10 * 1024 * 1024) {
-      set.status = 400;
-      return { error: 'Файл слишком большой (макс. 10 МБ)' };
-    }
-    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', profile.id);
+    if (file.size > 10 * 1024 * 1024) { set.status = 400; return { error: 'Файл слишком большой (макс. 10 МБ)' }; }
+    const safeProfileId = profile.id.replace(/[^a-z0-9-]/gi, '');
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeProfileId);
     await mkdir(uploadDir, { recursive: true });
     const filename = `medical_${randomUUID()}.${ext}`;
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${safeProfileId}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -1043,12 +1035,13 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     if (!ext) { set.status = 400; return { error: 'Только PDF, JPG, PNG' }; }
     if (file.size > 10 * 1024 * 1024) { set.status = 400; return { error: 'Файл слишком большой (макс. 10 МБ)' }; }
     const docType = safeDocType((body as any).doc_type);
-    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', profile.id);
+    const safeProfileId = profile.id.replace(/[^a-z0-9-]/gi, '');
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeProfileId);
     await mkdir(uploadDir, { recursive: true });
     const filename = `${docType}_${randomUUID()}.${ext}`;
     const buf = await file.arrayBuffer();
     await writeFile(join(uploadDir, filename), Buffer.from(buf));
-    const url = `/cabinet/driver/document-files/${profile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${safeProfileId}/${filename}`;
     return { url };
   }, {
     body: t.Object({

@@ -49,10 +49,11 @@ export async function serveAttachment(filename: string): Promise<{ buf: Buffer; 
   };
   const ext = filename.split('.').pop()?.toLowerCase();
   const contentType = types[ext || ''] || 'application/octet-stream';
+  const safeFilename = filename.replace(/[^a-z0-9_.-]/gi, '');
 
   for (const dir of ['storage/chat', 'public/uploads/chat']) {
     try {
-      const filepath = join(process.cwd(), dir, filename);
+      const filepath = join(process.cwd(), dir, safeFilename);
       const buf = await readFile(filepath);
       return { buf, contentType };
     } catch {

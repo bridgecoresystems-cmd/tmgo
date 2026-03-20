@@ -994,13 +994,14 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       set.status = 400;
       return { error: 'Файл слишком большой (макс. 10 МБ)' };
     }
-    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', carrierProfile.id);
+    const safeCarrierId = carrierProfile.id.replace(/[^a-z0-9-]/gi, '');
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeCarrierId);
     await mkdir(uploadDir, { recursive: true });
     const filename = `passport_${randomUUID()}.${ext}`;
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/document-files/${carrierProfile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${safeCarrierId}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -1029,13 +1030,14 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       set.status = 400;
       return { error: 'Файл слишком большой (макс. 10 МБ)' };
     }
-    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', carrierProfile.id);
+    const safeCarrierId = carrierProfile.id.replace(/[^a-z0-9-]/gi, '');
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeCarrierId);
     await mkdir(uploadDir, { recursive: true });
     const filename = `passport_extra_${index}_${randomUUID()}.${ext}`;
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/document-files/${carrierProfile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${safeCarrierId}/${filename}`;
     return { url };
   }, {
     body: t.Object({
@@ -1058,13 +1060,14 @@ export const cabinetDriverProfileRoutes = new Elysia({ prefix: '/cabinet/driver/
       set.status = 400;
       return { error: 'Файл слишком большой (макс. 10 МБ)' };
     }
-    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', carrierProfile.id);
+    const safeCarrierId = carrierProfile.id.replace(/[^a-z0-9-]/gi, '');
+    const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeCarrierId);
     await mkdir(uploadDir, { recursive: true });
     const filename = `license_${randomUUID()}.${ext}`;
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));
-    const url = `/cabinet/driver/document-files/${carrierProfile.id}/${filename}`;
+    const url = `/cabinet/driver/document-files/${safeCarrierId}/${filename}`;
     return { url };
   }, {
     body: t.Object({

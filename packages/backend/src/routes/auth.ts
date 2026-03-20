@@ -234,9 +234,10 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
       set.status = 400;
       return { error: { message: 'Файл слишком большой (макс. 2 МБ)' } };
     }
+    const safeUserId = userId.replace(/[^a-z0-9-]/gi, '');
     const uploadDir = join(process.cwd(), 'storage', 'avatars');
     await mkdir(uploadDir, { recursive: true });
-    const filename = `${userId}_${randomUUID()}.${ext}`;
+    const filename = `${safeUserId}_${randomUUID()}.${ext}`;
     const filepath = join(uploadDir, filename);
     const buf = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(buf));

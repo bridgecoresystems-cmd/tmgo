@@ -54,11 +54,12 @@ const app = new Elysia()
   .get('/', () => ({ status: 'ok', message: 'TMGO API is running' }))
   .get('/cabinet/chat/attachments/:filename', async ({ params, query, set }) => {
     const token = (query as { token?: string }).token;
-    if (!token || !verifyAttachmentToken(params.filename, token)) {
+    const safeFilename = params.filename.replace(/[^a-z0-9_.-]/gi, '');
+    if (!token || !verifyAttachmentToken(safeFilename, token)) {
       set.status = 403;
       return 'Forbidden';
     }
-    const result = await serveAttachment(params.filename);
+    const result = await serveAttachment(safeFilename);
     if (!result) {
       set.status = 404;
       return 'Not found';
@@ -72,15 +73,17 @@ const app = new Elysia()
       set.status = 401;
       return 'Unauthorized';
     }
-    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.id, params.carrierId)).limit(1);
+    const safeCarrierId = params.carrierId.replace(/[^a-z0-9-]/gi, '');
+    const safeFilename = params.filename.replace(/[^a-z0-9_.-]/gi, '');
+    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.id, safeCarrierId)).limit(1);
     if (!profile || (profile.userId !== user.id && user.role !== 'admin')) {
       set.status = 403;
       return 'Forbidden';
     }
-    const filepath = join(process.cwd(), 'storage', 'driver-docs', basename(params.carrierId), basename(params.filename));
+    const filepath = join(process.cwd(), 'storage', 'driver-docs', safeCarrierId, safeFilename);
     try {
       const buf = await readFile(filepath);
-      const ext = params.filename.split('.').pop()?.toLowerCase();
+      const ext = safeFilename.split('.').pop()?.toLowerCase();
       const types: Record<string, string> = {
         jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp',
         pdf: 'application/pdf',
