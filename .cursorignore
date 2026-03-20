@@ -1,0 +1,12 @@
+node_modules/
+.nuxt/
+.output/
+dist/
+coverage/
+packages/backend/storage/
+packages/backend/public/
+**/.cache/
+**/.turbo/
+**/.vite/
+bun.lock
+bun.lockb

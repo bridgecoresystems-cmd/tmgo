@@ -1,6 +1,7 @@
 <template>
-  <div class="auth-container">
-    <div class="auth-main">
+  <div class="auth-page">
+    <div class="auth-container">
+      <div class="auth-main">
       <!-- Hidden checkbox for mode toggle via v-model -->
       <input 
         type="checkbox" 
@@ -67,8 +68,12 @@
           </button>
           
           <p class="form-switch">
-            {{ $t('auth.signup.alreadyHave') }} 
+            {{ $t('auth.signup.alreadyHave') }}
             <span @click="navigateTo('/auth?mode=login')" class="switch-link">{{ $t('auth.signup.loginLink') }}</span>
+          </p>
+          <p class="form-legal">
+            {{ $t('auth.signup.agreementPrefix') }}
+            <NuxtLink to="/legal/agreement" target="_blank" class="legal-link">{{ $t('auth.agreement') }}</NuxtLink>
           </p>
         </form>
       </div>
@@ -119,7 +124,10 @@
           </p>
         </form>
       </div>
+      </div>
     </div>
+
+    <footer class="page-footer">{{ $t('layout.footer') }}</footer>
   </div>
 </template>
 
@@ -171,8 +179,7 @@ const handleLogin = async () => {
   } catch (e: any) {
     const is429 = e?.isRateLimited || e?.statusCode === 429 || e?.status === 429 || e?.response?.status === 429
     if (is429) {
-      await navigateTo('/rate-limited')
-      return
+      throw createError({ statusCode: 429, fatal: true })
     }
     const msg = e?.message || ''
     if (msg.toLowerCase().includes('failed to fetch') || msg.includes('network')) {
@@ -222,12 +229,37 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-.auth-container {
+/* Липкий футер: на высоком экране — внизу viewport; если контент выше экрана — скролл, футер после формы. */
+.auth-page {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  /* высота контента под хедером лейаута (80px, см. layouts/default.vue) */
+  min-height: calc(100vh - 80px);
+  min-height: calc(100dvh - 80px);
+  box-sizing: border-box;
+}
+
+.auth-container {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 20px 20px;
-  /* No gray background — white zone from layout */
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-footer {
+  flex-shrink: 0;
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  min-height: 60px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+  font-size: 14px;
+  color: #666;
 }
 
 .auth-main {
@@ -385,5 +417,29 @@ input:focus, .custom-select:focus {
 
 .switch-link:hover {
   color: #e55a3d;
+}
+
+.form-legal {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #999;
+}
+
+.legal-link {
+  color: #aaa;
+  text-decoration: underline;
+}
+
+.legal-link:hover {
+  color: #ff6b4a;
+}
+
+/* Узкий по высоте экран: форма сверху, футер внизу после скролла — ничего не обрезаем */
+@media (max-height: 720px) {
+  .auth-container {
+    align-items: flex-start;
+    padding-top: 16px;
+  }
 }
 </style>

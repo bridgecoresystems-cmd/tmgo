@@ -20,5 +20,11 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
+  },
+  "overrides": {
+    "serialize-javascript": ">=7.0.3"
+  },
+  "resolutions": {
+    "serialize-javascript": ">=7.0.3"
   }
 }

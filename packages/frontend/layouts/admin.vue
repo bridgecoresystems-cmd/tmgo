@@ -111,6 +111,8 @@ import {
   LocationOutline,
   PersonRemoveOutline,
   PersonOutline,
+  DocumentTextOutline,
+  CalendarOutline,
 } from '@vicons/ionicons5'
 
 const { t } = useI18n()
@@ -123,6 +125,8 @@ const collapsed = ref(false)
 const activeKey = computed(() => route.path)
 
 const pageTitle = computed(() => {
+  if (route.path.startsWith('/admin/legal')) return t('legalDocs.pageTitle')
+  if (route.path === '/admin/roadmap') return t('layout.admin.roadmap')
   const titles: Record<string, string> = {
     '/admin': t('layout.admin.dashboard'),
     '/admin/users': t('layout.admin.users'),
@@ -144,10 +148,12 @@ function renderIcon(Icon: Component) {
 
 const menuOptions = computed<MenuOption[]>(() => [
   { label: t('layout.admin.dashboard'), key: '/admin', icon: renderIcon(StatsChartOutline) },
+  { label: t('layout.admin.roadmap'), key: '/admin/roadmap', icon: renderIcon(CalendarOutline) },
   { label: t('layout.admin.orders'), key: '/admin/orders', icon: renderIcon(CubeOutline) },
   { label: t('layout.admin.users'), key: '/admin/users', icon: renderIcon(PeopleOutline) },
   { label: t('layout.admin.mailing'), key: '/admin/mailing', icon: renderIcon(MailOutline) },
   { label: t('layout.admin.vehicles'), key: '/admin/vehicles', icon: renderIcon(CarOutline) },
+  { label: t('layout.admin.legalDocs'), key: '/admin/legal', icon: renderIcon(DocumentTextOutline) },
   {
     label: t('layout.admin.settings'),
     key: 'settings',

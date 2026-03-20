@@ -1,5 +1,6 @@
 <template>
-  <n-layout position="absolute" content-style="display: flex; flex-direction: column; min-height: 100vh;">
+  <!-- Без position=absolute: как в админке — скролл от верха страницы, без белой полосы под navbar -->
+  <n-layout class="tmgo-public-layout" content-style="display: flex; flex-direction: column; min-height: 100vh;">
     <n-layout-header bordered class="header">
       <div class="header-content">
         <div class="logo-container" @click="goHome">
@@ -26,10 +27,11 @@
         </n-space>
       </div>
     </n-layout-header>
-    <n-layout-content :class="['main-content', { 'main-content--no-pad-bottom': isIndexPage }]" style="flex: 1;">
+    <n-layout-content :class="['main-content', { 'main-content--no-pad-bottom': pageHasOwnFooter }]">
       <slot />
     </n-layout-content>
-    <n-layout-footer v-if="!isIndexPage" bordered class="footer">
+    <!-- Скрываем на / и /auth: футер внутри страницы (иначе fixed-footer layout перекрывает контент) -->
+    <n-layout-footer v-if="!pageHasOwnFooter" bordered class="footer">
       {{ $t('layout.footer') }}
     </n-layout-footer>
   </n-layout>
@@ -51,7 +53,8 @@ const userOptions = computed(() => [
 ])
 
 const route = useRoute()
-const isIndexPage = computed(() => route.path === '/')
+/** Страницы, где копирайт в конце контента, а не в n-layout-footer */
+const pageHasOwnFooter = computed(() => route.path === '/' || route.path === '/auth')
 
 const goHome = () => navigateTo('/')
 const goToAuth = (mode: string) => navigateTo(`/auth?mode=${mode}`)
@@ -71,6 +74,10 @@ const handleUserSelect = async (key: string) => {
 
 <style scoped>
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
   height: 80px;
   padding: 0 40px;
   display: flex;
@@ -99,14 +106,16 @@ const handleUserSelect = async (key: string) => {
 }
 
 .main-content {
-  padding-top: 80px;
-  padding-bottom: 60px;
+  flex: 1;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 .main-content--no-pad-bottom {
   padding-bottom: 0;
 }
 
 .footer {
+  flex-shrink: 0;
   height: 60px;
   display: flex;
   align-items: center;

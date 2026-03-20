@@ -27,6 +27,8 @@ import { cabinetDriverDocumentsRoutes } from './routes/cabinet/driver-documents'
 import { cabinetDriverChangeRequestsRoutes } from './routes/cabinet/driver-change-requests';
 import { adminChangeRequestsRoutes } from './routes/admin/change-requests';
 import { adminDriversVerifyRoutes } from './routes/admin/drivers-verify';
+import { adminLegalDocsRoutes, publicLegalDocsRoutes } from './routes/admin/legal-docs';
+import { adminMvpRoadmapRoutes } from './routes/admin/mvp-roadmap';
 import { cabinetClientServicesRoutes } from './routes/cabinet/client-services';
 import { cabinetChatRoutes } from './routes/cabinet/chat';
 import { cabinetProfileRoutes } from './routes/cabinet/profile';
@@ -99,6 +101,9 @@ const app = new Elysia()
   .use(adminImpersonateRoutes)
   .use(adminMailingRoutes)
   .use(adminCitiesRoutes)
+  .use(adminLegalDocsRoutes)
+  .use(adminMvpRoadmapRoutes)
+  .use(publicLegalDocsRoutes)
   .use(cabinetMailingRoutes)
   .use(cabinetOrdersRoutes)
   .use(cabinetClientServicesRoutes)

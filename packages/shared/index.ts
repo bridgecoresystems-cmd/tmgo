@@ -11,3 +11,4 @@ export * from './vehicle-colors';
 export * from './vehicle-makes-seed';
 export * from './trailer-types';
 export * from './adr-classes_2';
+export * from './mvp-roadmap';

@@ -1,0 +1,59 @@
+{
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/node_modules/.bun/**": true,
+    "**/node_modules/.cache/**": true,
+    "**/dist/**": true,
+    "**/.nuxt/**": true,
+    "**/.output/**": true,
+    "**/coverage/**": true,
+    "**/.cache/**": true,
+    "**/.turbo/**": true,
+    "**/.vite/**": true,
+    "packages/backend/storage/**": true,
+    "packages/backend/public/**": true
+  },
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.nuxt": true,
+    "**/.output": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "**/.turbo": true,
+    "**/.vite": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/node_modules/.bun": true,
+    "**/bun.lock": true,
+    "**/bun.lockb": true,
+    "**/dist": true,
+    "**/.nuxt": true,
+    "**/.output": true,
+    "**/coverage": true,
+    "**/.turbo": true,
+    "**/.vite": true,
+    "packages/backend/storage": true,
+    "packages/backend/public": true
+  },
+  "typescript.tsserver.watchOptions": {
+    "watchFile": "useFsEventsOnParentDirectory",
+    "watchDirectory": "useFsEvents",
+    "fallbackPolling": "dynamicPriority",
+    "synchronousWatchDirectory": true,
+    "excludeDirectories": [
+      "**/node_modules",
+      "**/dist",
+      "**/.nuxt",
+      "**/.output",
+      "**/coverage",
+      "**/.cache",
+      "**/.turbo",
+      "**/.vite",
+      "packages/backend/storage",
+      "packages/backend/public"
+    ]
+  }
+}

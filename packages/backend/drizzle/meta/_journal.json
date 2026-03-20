@@ -134,6 +134,13 @@
       "when": 1773267300000,
       "tag": "0019_hidden_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1773267400000,
+      "tag": "0024_mvp_roadmap_progress",
+      "breakpoints": true
     }
   ]
 }

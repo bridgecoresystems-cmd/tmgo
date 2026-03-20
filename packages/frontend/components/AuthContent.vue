@@ -154,8 +154,7 @@ const handleLogin = async () => {
     }
   } catch (e: any) {
     if (e?.isRateLimited) {
-      router.push('/rate-limited')
-      return
+      throw createError({ statusCode: 429, fatal: true })
     }
     loginError.value = e.message || t('auth.errors.loginFailed')
   } finally {

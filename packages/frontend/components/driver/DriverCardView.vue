@@ -1,7 +1,7 @@
 <template>
   <div class="driver-card-view">
     <n-spin :show="loading">
-      <div v-if="!loading" style="min-height: 400px; padding: 20px;">
+      <div v-if="!loading" style="padding: 20px;">
         <n-alert v-if="error" type="error" class="mb-16">
           {{ error }}
           <template #footer>

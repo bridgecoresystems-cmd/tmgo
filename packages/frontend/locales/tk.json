@@ -101,6 +101,7 @@
       "submitLoading": "Hasaba alynýar...",
       "alreadyHave": "Eýýäm hasaba durduňyzmy?",
       "loginLink": "Giriş",
+      "agreementPrefix": "«Hasaba duruň» düwmesine basyp, siz şertleri kabul edýärsiňiz ",
       "iWantToBe": "Men bolmak isleýärin *",
       "asClient": "Sargytçy",
       "asDriver": "Daşaýjy",
@@ -135,7 +136,8 @@
       "hint": "15 minutdan soň täzeden synanyşyň.",
       "fallback": "Giriş synanyşyklary köp. 15 minutdan synanyşyň.",
       "back": "Girişe dolan"
-    }
+    },
+    "agreement": "Ulanyjy ylalaşygy"
   },
   "layout": {
     "login": "Giriş",
@@ -179,7 +181,9 @@
       "orders": "Sargytlar",
       "overview": "Syn",
       "administrator": "Administrator",
-      "footer": "© 2026 BridgeCore Systems | TMGO Admin Panel"
+      "footer": "© 2026 BridgeCore Systems | TMGO Admin Panel",
+      "legalDocs": "Hukuk res-ry",
+      "roadmap": "MVP meýilnamasy"
     }
   },
   "common": {
@@ -227,7 +231,8 @@
     "deactivate": "Deaktiwirleme",
     "deactivateConfirm": "Deaktiwirlemek?",
     "from2": "Den",
-    "scrollToTop": "Ýokary"
+    "scrollToTop": "Ýokary",
+    "backToHome": "Baş sahypa"
   },
   "verificationBadge": {
     "verified": "Tassyklandy",
@@ -1447,5 +1452,89 @@
     "7": "Klas 7 — Radioaktiw materiallar",
     "8": "Klas 8 — Dargadyjy (aşındyryjy) maddalar",
     "9": "Klas 9 — Beýleki howply maddalar"
+  },
+  "legalDocs": {
+    "pageTitle": "Hukuk resminamalary",
+    "pageSubtitle": "Ulanyjy ylalaşygy, gizlinlik syýasaty we platforma düzgünlerini dolandyrmak",
+    "docTypes": {
+      "agreement": "Ulanyjy ylalaşygy",
+      "privacy": "Gizlinlik syýasaty",
+      "rules": "Platforma düzgünleri"
+    },
+    "locales": { "ru": "Rus", "en": "Iňlis", "tk": "Türkmen" },
+    "status": { "published": "Çap edildi", "draft": "Taslama" },
+    "table": {
+      "docType": "Resminama",
+      "locale": "Dil",
+      "version": "Wersiýa",
+      "status": "Ýagdaý",
+      "updatedAt": "Täzelendi",
+      "actions": "Hereketler"
+    },
+    "editor": {
+      "fieldTitle": "Resminama başlygy",
+      "fieldContent": "Mazmun (Markdown)",
+      "fieldVersion": "Wersiýa",
+      "fieldEffectiveDate": "Güýje giriş senesi",
+      "markdownHint": "Markdown formatlaşdyrmasy goldanylýar",
+      "contentPlaceholder": "# Resminama tekstini Markdown formatynda giriziň...",
+      "saveDraft": "Taslama sakla",
+      "publish": "Çap et",
+      "unpublish": "Çap etmegi bes et",
+      "unpublishConfirm": "Resminamany çap etmegi bes etmeli mi?",
+      "preview": "Deslapky görüş",
+      "lastUpdated": "Soňky üýtgetme",
+      "savedSuccess": "Taslama saklandi",
+      "publishedSuccess": "Resminama çap edildi",
+      "unpublishedSuccess": "Resminama çap edilmegini bes etdi",
+      "saveError": "Saklamak ýalňyşlygy",
+      "fillRequired": "Başlyk we mazmuny dolduryň"
+    },
+    "public": {
+      "notAvailable": "Resminama wagtlaýyn elýetersiz",
+      "notAvailableDesc": "Soňrak synanyşyň ýa-da goldaw bilen habarlaşyň.",
+      "effectiveFrom": "Güýje giriş"
+    }
+  },
+  "roadmap": {
+    "pageTitle": "MVP meýilnamasy (Altyn Burgut)",
+    "tasksDone": "wezipeler",
+    "dayN": "Gün {n}",
+    "todayPlan": "Şu gün meýilnamada",
+    "anchorHint": "1-nji gün = 2026-njy ýylyň 10-njy martyndaşenbe (12-nji mart başlaýan hepde). Sene — iş günlerişenbe–änä.",
+    "notesPlaceholder": "Bellik / backend üçin…",
+    "saving": "Saklanýar…",
+    "saved": "Saklandy",
+    "saveError": "Saklamak başartmady",
+    "loadError": "Öňümi ýüklemek başartmady"
+  },
+  "errors": {
+    "goHome": "Baş sahypa",
+    "goAuth": "Giriş",
+    "timerDone": "Indi täzeden synanyşyp bilersiňiz",
+    "404": {
+      "title": "Sahypa tapylmady",
+      "message": "Beýle sahypa ýok ýa-da ol pozuldy.",
+      "hint": "Salgysy barlaň ýa-da baş sahypä gaýdyň"
+    },
+    "403": {
+      "title": "Giriş gadagan",
+      "message": "Bu sahypany görüp bilmersiňiz.",
+      "hint": "Bu ýalňyşlyk diýip pikir edýän bolsaňyz goldaw bilen habarlaşyň"
+    },
+    "401": {
+      "title": "Ygtyýarlyk zerur",
+      "message": "Dowam etmek üçin hasabynıza giriň."
+    },
+    "500": {
+      "title": "Serwer ýalňyşlygy",
+      "message": "Biziň tarapymyzda bir zat ters gitdi. Eýýäm seredýäris.",
+      "hint": "Birnäçe minutdan soň sahypany täzeläp görüň"
+    },
+    "503": {
+      "title": "Hyzmat tehniki işde",
+      "message": "Tehniki işler geçirilýär. Ýakyn wagtda hemme zat işlär.",
+      "hint": "Bu adatça 15 minutdan köp wagt almaýar"
+    }
   }
 }

@@ -1,0 +1,640 @@
+
+<style>
+* { box-sizing: border-box; }
+.wrap { font-family: var(--font-sans); padding: 1rem 0; }
+.phase-header { display: flex; align-items: center; gap: 10px; margin: 1.8rem 0 0.8rem; cursor: pointer; user-select: none; }
+.phase-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.phase-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.phase-badge { font-size: 11px; font-weight: 500; padding: 2px 10px; border-radius: 99px; }
+.phase-toggle { margin-left: auto; font-size: 12px; color: var(--color-text-secondary); }
+.week-block { margin-bottom: 16px; }
+.week-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; padding-left: 4px; }
+.day-row { display: flex; gap: 0; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); margin-bottom: 6px; overflow: hidden; background: var(--color-background-primary); }
+.day-label { font-size: 12px; font-weight: 500; padding: 10px 12px; min-width: 80px; display: flex; flex-direction: column; gap: 1px; border-right: 0.5px solid var(--color-border-tertiary); background: var(--color-background-secondary); flex-shrink: 0; }
+.day-name { color: var(--color-text-secondary); font-size: 11px; }
+.day-num { color: var(--color-text-primary); font-size: 13px; font-weight: 500; }
+.tasks { padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.task { display: flex; align-items: flex-start; gap: 7px; font-size: 13px; color: var(--color-text-primary); line-height: 1.4; }
+.task-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.task-tag { font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+.result-row { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 8px 14px; margin-top: 4px; font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; gap: 8px; }
+.result-row span { color: var(--color-text-primary); font-weight: 500; }
+.phase-body { }
+.phase-body.collapsed { display: none; }
+
+.p1c { background: #185FA5; }
+.p1bg { background: #E6F1FB; color: #185FA5; }
+.p1td { background: #B5D4F4; }
+
+.p2c { background: #0F6E56; }
+.p2bg { background: #E1F5EE; color: #0F6E56; }
+.p2td { background: #9FE1CB; }
+
+.p3c { background: #534AB7; }
+.p3bg { background: #EEEDFE; color: #534AB7; }
+.p3td { background: #CECBF6; }
+
+.p4c { background: #854F0B; }
+.p4bg { background: #FAEEDA; color: #854F0B; }
+.p4td { background: #FAC775; }
+
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 1.5rem; }
+.sum-card { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+.sum-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.sum-val { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.sum-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+</style>
+
+<div class="wrap">
+
+<!-- PHASE 1 -->
+<div class="phase-header" onclick="toggle('p1')">
+  <div class="phase-dot p1c"></div>
+  <div class="phase-title">Фаза 1 — Фундамент</div>
+  <div class="phase-badge p1bg">Неделя 1–2</div>
+  <div class="phase-toggle" id="p1-icon">▲</div>
+</div>
+<div class="phase-body" id="p1">
+
+  <div class="week-block">
+    <div class="week-label">Неделя 1</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 1</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>Создать monorepo структуру: apps/backend, apps/web, packages/shared</div>
+        <div class="task"><div class="task-dot p1c"></div>Настроить bun workspaces + tsconfig paths</div>
+        <div class="task"><div class="task-dot p1c"></div>Git init, .gitignore, README</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 2</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>Docker Compose: PostgreSQL + PostGIS + Redis</div>
+        <div class="task"><div class="task-dot p1c"></div>Elysia.js базовый сервер, health check endpoint</div>
+        <div class="task"><div class="task-dot p1c"></div>Drizzle ORM подключение к БД, drizzle.config.ts</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 3</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>Drizzle схема: таблица users (id, email, phone, role, name, createdAt)</div>
+        <div class="task"><div class="task-dot p1c"></div>Better Auth установка и конфигурация</div>
+        <div class="task"><div class="task-dot p1c"></div>Роли: customer / carrier / dispatcher — enum в схеме</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 4</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>Регистрация по email + телефону (OTP или пароль)</div>
+        <div class="task"><div class="task-dot p1c"></div>Login / logout / refresh token</div>
+        <div class="task"><div class="task-dot p1c"></div>Middleware авторизации в Elysia</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 5</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>Nuxt 3 setup: nuxt.config, layouts, composables/useAuth</div>
+        <div class="task"><div class="task-dot p1c"></div>Eden Treaty подключение к backend</div>
+        <div class="task"><div class="task-dot p1c"></div>Страницы: /login, /register — базовые формы</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 1: <span>работающий auth — можно зарегистрироваться и войти по роли</span></div>
+  </div>
+
+  <div class="week-block">
+    <div class="week-label">Неделя 2</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 6</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>Drizzle схема: carrier_profiles (vehicleType, capacity, bodyType, workZones)</div>
+        <div class="task"><div class="task-dot p1c"></div>Схема: customer_profiles (companyName, requisites)</div>
+        <div class="task"><div class="task-dot p1c"></div>Миграция drizzle-kit generate + migrate</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 7</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>API: GET/PUT /profile/carrier — получить и обновить профиль</div>
+        <div class="task"><div class="task-dot p1c"></div>API: GET/PUT /profile/customer</div>
+        <div class="task"><div class="task-dot p1c"></div>Cloudflare R2 подключение (загрузка фото профиля)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 8</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>Карточка водителя: схема driver_documents (passport, license)</div>
+        <div class="task"><div class="task-dot p1c"></div>Upload документов в R2, сохранение ссылок в БД</div>
+        <div class="task"><div class="task-dot p1c"></div>Статусы документов: not_submitted / draft / submitted / verified</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 9</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>Nuxt: страница /profile/carrier — форма заполнения профиля</div>
+        <div class="task"><div class="task-dot p1c"></div>Nuxt: страница /profile/customer</div>
+        <div class="task"><div class="task-dot p1c"></div>Компонент загрузки документов (drag&drop или input)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 10</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p1c"></div>Тест полного флоу: регистрация → заполнить профиль → загрузить документ</div>
+        <div class="task"><div class="task-dot p1c"></div>Фикс багов, валидация полей (Zod или Valibot)</div>
+        <div class="task"><div class="task-dot p1c"></div>Буфер: доделать всё незавершённое из недели 1</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 2: <span>полный профиль — регистрация, роли, документы, фото работают</span></div>
+  </div>
+</div>
+
+<!-- PHASE 2 -->
+<div class="phase-header" onclick="toggle('p2')">
+  <div class="phase-dot p2c"></div>
+  <div class="phase-title">Фаза 2 — Заявки, доска, гео-поиск</div>
+  <div class="phase-badge p2bg">Неделя 3–5</div>
+  <div class="phase-toggle" id="p2-icon">▲</div>
+</div>
+<div class="phase-body" id="p2">
+
+  <div class="week-block">
+    <div class="week-label">Неделя 3</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 11</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>Drizzle схема: orders (id, customerId, fromCity, toCity, fromPoint GEOMETRY, toPoint GEOMETRY, distance)</div>
+        <div class="task"><div class="task-dot p2c"></div>PostGIS расширение: CREATE EXTENSION postgis в миграции</div>
+        <div class="task"><div class="task-dot p2c"></div>Поля заявки: cargoWeight, cargoVolume, bodyType, temperature, isDangerous</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 12</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>Поля заявки: loadingDate, unloadingDate, price, priceType (fix/auction)</div>
+        <div class="task"><div class="task-dot p2c"></div>Enum статусов заявки: draft / published / in_progress / completed / cancelled</div>
+        <div class="task"><div class="task-dot p2c"></div>API: POST /orders — создать заявку</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 13</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>API: GET /orders — лента заявок с пагинацией</div>
+        <div class="task"><div class="task-dot p2c"></div>Фильтры: по дате, маршруту, типу кузова, цене, весу</div>
+        <div class="task"><div class="task-dot p2c"></div>API: GET /orders/:id — детали заявки</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 14</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>API: PUT /orders/:id — редактировать (только свою, только в статусе draft)</div>
+        <div class="task"><div class="task-dot p2c"></div>API: DELETE /orders/:id — отменить заявку</div>
+        <div class="task"><div class="task-dot p2c"></div>Yandex Maps Geocoder: адрес → координаты при создании заявки</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 15</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>Nuxt: страница /orders/create — форма заявки с картой</div>
+        <div class="task"><div class="task-dot p2c"></div>Автодополнение адресов через Yandex Maps Suggest</div>
+        <div class="task"><div class="task-dot p2c"></div>Тест создания заявки end-to-end</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 3: <span>заказчик может создать заявку с маршрутом, грузом и ценой</span></div>
+  </div>
+
+  <div class="week-block">
+    <div class="week-label">Неделя 4</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 16</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>Nuxt: страница /orders — доска заявок, карточки</div>
+        <div class="task"><div class="task-dot p2c"></div>Компонент фильтров (дата, маршрут, тип кузова, цена)</div>
+        <div class="task"><div class="task-dot p2c"></div>Infinite scroll или пагинация</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 17</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>Nuxt: страница /orders/:id — детали заявки</div>
+        <div class="task"><div class="task-dot p2c"></div>Yandex Maps: показать маршрут на карте в деталях заявки</div>
+        <div class="task"><div class="task-dot p2c"></div>Страница /my-orders — заявки текущего пользователя</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 18</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>Drizzle схема: order_responses (id, orderId, carrierId, price, comment, status)</div>
+        <div class="task"><div class="task-dot p2c"></div>API: POST /orders/:id/respond — перевозчик откликается</div>
+        <div class="task"><div class="task-dot p2c"></div>API: GET /orders/:id/responses — список откликов (только для заказчика)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 19</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>API: POST /orders/:id/confirm — заказчик выбирает перевозчика</div>
+        <div class="task"><div class="task-dot p2c"></div>Смена статуса заявки: published → in_progress после подтверждения</div>
+        <div class="task"><div class="task-dot p2c"></div>Nuxt: кнопка "Откликнуться" на карточке заявки (для перевозчика)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 20</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>Nuxt: список откликов в деталях заявки (для заказчика)</div>
+        <div class="task"><div class="task-dot p2c"></div>Кнопка "Выбрать перевозчика" — подтверждение сделки</div>
+        <div class="task"><div class="task-dot p2c"></div>Тест флоу: создать заявку → откликнуться → подтвердить</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 4: <span>работает полный цикл заявки — создание, отклик, подтверждение</span></div>
+  </div>
+
+  <div class="week-block">
+    <div class="week-label">Неделя 5</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 21</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>PostGIS: колонка current_location GEOMETRY(Point, 4326) в carrier_profiles</div>
+        <div class="task"><div class="task-dot p2c"></div>GIST индекс на current_location</div>
+        <div class="task"><div class="task-dot p2c"></div>API: PUT /carrier/location — перевозчик обновляет свою позицию</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 22</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>PostGIS запрос: найти перевозчиков в радиусе X км от точки погрузки</div>
+        <div class="task"><div class="task-dot p2c"></div>API: GET /orders/:id/nearby-carriers?radius=50 — ближайшие свободные</div>
+        <div class="task"><div class="task-dot p2c"></div>Фильтр по совместимости: тип кузова заявки = тип кузова перевозчика</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 23</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>PostGIS запрос: перевозчики "на пути следования" (буфер вдоль маршрута)</div>
+        <div class="task"><div class="task-dot p2c"></div>Комбинированный поиск: радиус + маршрут</div>
+        <div class="task"><div class="task-dot p2c"></div>API: GET /carriers/search — поиск по гео-параметрам</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 24</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>BullMQ + Redis: очередь уведомлений</div>
+        <div class="task"><div class="task-dot p2c"></div>Job: при публикации заявки — найти подходящих перевозчиков и отправить push</div>
+        <div class="task"><div class="task-dot p2c"></div>OneSignal или FCM: базовая настройка push-уведомлений</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 25</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p2c"></div>Nuxt: карта с перевозчиками в радиусе на странице заявки</div>
+        <div class="task"><div class="task-dot p2c"></div>Тест гео-поиска с реальными координатами</div>
+        <div class="task"><div class="task-dot p2c"></div>Буфер и фикс всего из недель 3–5</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 5: <span>гео-матчинг работает — заявка находит перевозчиков в радиусе и по маршруту</span></div>
+  </div>
+
+</div>
+
+<!-- PHASE 3 -->
+<div class="phase-header" onclick="toggle('p3')">
+  <div class="phase-dot p3c"></div>
+  <div class="phase-title">Фаза 3 — Чат, трекинг, отзывы</div>
+  <div class="phase-badge p3bg">Неделя 6–8</div>
+  <div class="phase-toggle" id="p3-icon">▲</div>
+</div>
+<div class="phase-body" id="p3">
+
+  <div class="week-block">
+    <div class="week-label">Неделя 6</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 26</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Drizzle схема: chats (id, orderId, customerID, carrierId)</div>
+        <div class="task"><div class="task-dot p3c"></div>Схема: messages (id, chatId, senderId, type, content, fileUrl, createdAt)</div>
+        <div class="task"><div class="task-dot p3c"></div>Чат создаётся автоматически при подтверждении заявки</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 27</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Elysia WebSocket: /ws/chat/:chatId — подключение к чату</div>
+        <div class="task"><div class="task-dot p3c"></div>Авторизация WebSocket соединения через токен</div>
+        <div class="task"><div class="task-dot p3c"></div>Broadcast сообщения всем участникам чата</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 28</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>API: GET /chats/:id/messages — история сообщений</div>
+        <div class="task"><div class="task-dot p3c"></div>Загрузка фото в чат: upload в R2, ссылка в сообщении</div>
+        <div class="task"><div class="task-dot p3c"></div>Push-уведомление при новом сообщении (BullMQ job)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 29</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Nuxt: страница /chat/:id — интерфейс чата</div>
+        <div class="task"><div class="task-dot p3c"></div>Реалтайм через useWebSocket composable</div>
+        <div class="task"><div class="task-dot p3c"></div>Отображение сообщений, аватарки, timestamp</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 30</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Загрузка фото прямо из чата (input[type=file])</div>
+        <div class="task"><div class="task-dot p3c"></div>Шаблоны быстрых сообщений: "Еду", "На месте", "Задерживаюсь"</div>
+        <div class="task"><div class="task-dot p3c"></div>Тест чата в реальном времени в двух окнах браузера</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 6: <span>реалтайм чат с фото работает — заказчик и перевозчик общаются по заказу</span></div>
+  </div>
+
+  <div class="week-block">
+    <div class="week-label">Неделя 7</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 31</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Enum статусов заказа: confirmed → loading → in_transit → unloading → completed</div>
+        <div class="task"><div class="task-dot p3c"></div>API: PUT /orders/:id/status — перевозчик меняет статус</div>
+        <div class="task"><div class="task-dot p3c"></div>Лог смены статусов: order_status_logs (orderId, status, changedAt, changedBy)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 32</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Push при каждой смене статуса (заказчику)</div>
+        <div class="task"><div class="task-dot p3c"></div>WebSocket broadcast статуса — заказчик видит изменение без перезагрузки</div>
+        <div class="task"><div class="task-dot p3c"></div>API: GET /orders/:id/status-log — история статусов</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 33</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Фото-контроль: загрузка фото при погрузке и разгрузке</div>
+        <div class="task"><div class="task-dot p3c"></div>Схема: order_photos (orderId, stage, fileUrl, uploadedAt)</div>
+        <div class="task"><div class="task-dot p3c"></div>API: POST /orders/:id/photos — загрузить фото этапа</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 34</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Nuxt: страница /orders/:id/track — трекинг статусов</div>
+        <div class="task"><div class="task-dot p3c"></div>Визуальный прогресс-бар этапов: погрузка → в пути → разгрузка → завершено</div>
+        <div class="task"><div class="task-dot p3c"></div>Кнопки смены статуса (для перевозчика)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 35</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>История заказов: /my-orders с фильтром по статусу</div>
+        <div class="task"><div class="task-dot p3c"></div>Просмотр фото по каждому этапу в деталях заказа</div>
+        <div class="task"><div class="task-dot p3c"></div>Тест полного флоу от confirmed до completed</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 7: <span>трекинг статусов с фото-контролем работает — оба участника видят этапы</span></div>
+  </div>
+
+  <div class="week-block">
+    <div class="week-label">Неделя 8</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 36</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Drizzle схема: reviews (id, orderId, fromUserId, toUserId, rating 1–5, comment)</div>
+        <div class="task"><div class="task-dot p3c"></div>Ограничение: отзыв можно оставить только после completed</div>
+        <div class="task"><div class="task-dot p3c"></div>Один отзыв на пользователя в рамках одного заказа</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 37</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>API: POST /orders/:id/review — оставить отзыв</div>
+        <div class="task"><div class="task-dot p3c"></div>API: GET /users/:id/reviews — отзывы пользователя</div>
+        <div class="task"><div class="task-dot p3c"></div>Агрегация рейтинга: среднее + количество в профиле</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 38</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Nuxt: форма отзыва после завершения заказа (звёзды + текст)</div>
+        <div class="task"><div class="task-dot p3c"></div>Блок отзывов в профиле перевозчика (рейтинг + список)</div>
+        <div class="task"><div class="task-dot p3c"></div>Push-напоминание оставить отзыв через 2 часа после completed</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 39</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Сортировка доски заявок по рейтингу откликнувшихся</div>
+        <div class="task"><div class="task-dot p3c"></div>Статистика в профиле: кол-во рейсов, средний рейтинг, процент завершённых</div>
+        <div class="task"><div class="task-dot p3c"></div>Тест двустороннего отзыва</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 40</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p3c"></div>Финальный тест полного цикла: регистрация → заявка → гео-поиск → отклик → чат → трекинг → отзыв</div>
+        <div class="task"><div class="task-dot p3c"></div>Фикс критических багов</div>
+        <div class="task"><div class="task-dot p3c"></div>Буфер: всё незавершённое из фазы 3</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 8: <span>полный MVP-цикл сделки работает на вебе</span></div>
+  </div>
+
+</div>
+
+<!-- PHASE 4 -->
+<div class="phase-header" onclick="toggle('p4')">
+  <div class="phase-dot p4c"></div>
+  <div class="phase-title">Фаза 4 — Мобайл и запуск</div>
+  <div class="phase-badge p4bg">Неделя 9–10</div>
+  <div class="phase-toggle" id="p4-icon">▲</div>
+</div>
+<div class="phase-body" id="p4">
+
+  <div class="week-block">
+    <div class="week-label">Неделя 9</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 41</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Capacitor init в Nuxt проекте, настройка capacitor.config.ts</div>
+        <div class="task"><div class="task-dot p4c"></div>npx cap add android + npx cap add ios</div>
+        <div class="task"><div class="task-dot p4c"></div>Первый билд — проверить что открывается на эмуляторе</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 42</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Capacitor Geolocation plugin — получить текущую позицию</div>
+        <div class="task"><div class="task-dot p4c"></div>Фоновая отправка координат перевозчика (watchPosition)</div>
+        <div class="task"><div class="task-dot p4c"></div>Push notifications через Capacitor PushNotifications plugin</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 43</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Адаптивный UI: проверить все страницы на мобильном viewport</div>
+        <div class="task"><div class="task-dot p4c"></div>Bottom navigation bar для мобайла (Главная, Заявки, Чат, Профиль)</div>
+        <div class="task"><div class="task-dot p4c"></div>Touch-friendly: кнопки min 44px, формы без zoom на iOS</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 44</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Camera plugin: фото груза прямо с камеры телефона</div>
+        <div class="task"><div class="task-dot p4c"></div>Тест на реальном Android устройстве</div>
+        <div class="task"><div class="task-dot p4c"></div>Фикс мобильных багов (scroll, keyboard, safe area)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 45</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Docker Compose для продакшна: backend + postgres + redis + nginx</div>
+        <div class="task"><div class="task-dot p4c"></div>Деплой на Hostinger VPS — первый живой сервер</div>
+        <div class="task"><div class="task-dot p4c"></div>SSL через Let's Encrypt, домен через Cloudflare</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 9: <span>приложение запущено на реальном сервере и открывается на телефоне</span></div>
+  </div>
+
+  <div class="week-block">
+    <div class="week-label">Неделя 10</div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пн</span><span class="day-num">День 46</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Полное E2E тестирование: пройти весь цикл как заказчик</div>
+        <div class="task"><div class="task-dot p4c"></div>Полное E2E тестирование: пройти весь цикл как перевозчик</div>
+        <div class="task"><div class="task-dot p4c"></div>Список всех найденных багов</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Вт</span><span class="day-num">День 47</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Фикс критических багов из E2E теста</div>
+        <div class="task"><div class="task-dot p4c"></div>Производительность: индексы БД, N+1 запросы</div>
+        <div class="task"><div class="task-dot p4c"></div>Rate limiting на API (защита от спама)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Ср</span><span class="day-num">День 48</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Android APK сборка для внутреннего тестирования</div>
+        <div class="task"><div class="task-dot p4c"></div>Передать 2–3 реальным пользователям (перевозчик + заказчик)</div>
+        <div class="task"><div class="task-dot p4c"></div>Собрать первую обратную связь</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Чт</span><span class="day-num">День 49</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Фикс по фидбеку от тестовых пользователей</div>
+        <div class="task"><div class="task-dot p4c"></div>Подготовка к публикации в Google Play (store listing, скриншоты)</div>
+        <div class="task"><div class="task-dot p4c"></div>Privacy Policy страница (обязательна для магазинов)</div>
+      </div>
+    </div>
+
+    <div class="day-row">
+      <div class="day-label"><span class="day-name">Пт</span><span class="day-num">День 50</span></div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot p4c"></div>Отправка в Google Play (Internal Testing)</div>
+        <div class="task"><div class="task-dot p4c"></div>Финальная проверка безопасности: env переменные, открытые порты</div>
+        <div class="task"><div class="task-dot p4c"></div>🎉 MVP готов — первые реальные пользователи</div>
+      </div>
+    </div>
+
+    <div class="result-row">✓ Итог недели 10: <span>MVP задеплоен, APK в Google Play, первые реальные пользователи</span></div>
+  </div>
+
+</div>
+
+<div class="summary-grid">
+  <div class="sum-card">
+    <div class="sum-label">Всего дней</div>
+    <div class="sum-val">50</div>
+    <div class="sum-sub">10 рабочих недель</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">API эндпоинтов</div>
+    <div class="sum-val">~30</div>
+    <div class="sum-sub">Elysia + Eden Treaty</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">Drizzle таблиц</div>
+    <div class="sum-val">~12</div>
+    <div class="sum-sub">включая PostGIS</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">Nuxt страниц</div>
+    <div class="sum-val">~15</div>
+    <div class="sum-sub">web + mobile адаптив</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function toggle(id) {
+  const body = document.getElementById(id);
+  const icon = document.getElementById(id + '-icon');
+  if (body.classList.contains('collapsed')) {
+    body.classList.remove('collapsed');
+    icon.textContent = '▲';
+  } else {
+    body.classList.add('collapsed');
+    icon.textContent = '▼';
+  }
+}
+</script>

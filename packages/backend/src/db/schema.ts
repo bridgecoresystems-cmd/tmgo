@@ -666,3 +666,42 @@ export const vehicleCouplings = pgTable('vehicle_couplings', {
   isActive:     boolean('is_active').default(true).notNull(),
   createdAt:    timestamp('created_at').defaultNow().notNull(),
 });
+
+// ── Юридические документы ─────────────────────────────────────────
+
+export const legalDocTypeEnum = pgEnum('legal_doc_type', [
+  'agreement',
+  'privacy',
+  'rules',
+])
+
+export const legalDocLocaleEnum = pgEnum('legal_doc_locale', [
+  'ru',
+  'en',
+  'tk',
+])
+
+export const legalDocuments = pgTable('legal_documents', {
+  id:            uuid('id').primaryKey().defaultRandom(),
+  docType:       legalDocTypeEnum('doc_type').notNull(),
+  locale:        legalDocLocaleEnum('locale').notNull(),
+  version:       varchar('version', { length: 20 }).notNull().default('1.0'),
+  title:         text('title').notNull(),
+  content:       text('content').notNull(),
+  isPublished:   boolean('is_published').default(false).notNull(),
+  publishedAt:   timestamp('published_at'),
+  effectiveDate: timestamp('effective_date'),
+  createdAt:     timestamp('created_at').defaultNow().notNull(),
+  updatedAt:     timestamp('updated_at').defaultNow().notNull(),
+  updatedBy:     text('updated_by').references(() => users.id),
+})
+
+// ── Прогресс по MVP roadmap (Altyn Burgut) — админка ───────────────
+
+export const mvpRoadmapTaskProgress = pgTable('mvp_roadmap_task_progress', {
+  taskId:    varchar('task_id', { length: 48 }).primaryKey(),
+  isDone:    boolean('is_done').default(false).notNull(),
+  notes:     text('notes').default('').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  updatedBy: text('updated_by').references(() => users.id),
+})
