@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS "legal_documents" (
   "effective_date" timestamp,
   "created_at"     timestamp DEFAULT now() NOT NULL,
   "updated_at"     timestamp DEFAULT now() NOT NULL,
-  "updated_by"     text REFERENCES "user"("id")
+  "updated_by"     text REFERENCES "users"("id")
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_legal_docs_type_locale"
