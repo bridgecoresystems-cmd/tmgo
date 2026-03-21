@@ -32,25 +32,25 @@
                 :custom-request="handleAvatarUpload"
                 :show-file-list="false"
               >
-                <n-button quaternary size="small" class="avatar-upload-btn">Изменить фото</n-button>
+                <n-button quaternary size="small" class="avatar-upload-btn">{{ $t('admin.profile.changePhoto') }}</n-button>
               </n-upload>
             </div>
             <div>
-              <n-h2 style="margin: 0">{{ session?.user?.name || 'Администратор' }}</n-h2>
+              <n-h2 style="margin: 0">{{ session?.user?.name || $t('admin.profile.administrator') }}</n-h2>
               <n-text depth="3">Super Admin</n-text>
             </div>
-            <n-tag type="success" round :bordered="false">Активен</n-tag>
+            <n-tag type="success" round :bordered="false">{{ $t('admin.profile.active') }}</n-tag>
 
             <n-divider />
 
             <div class="profile-details">
               <div class="detail-item">
-                <n-text depth="3">Email:</n-text>
+                <n-text depth="3">{{ $t('common.email') }}:</n-text>
                 <n-text strong>{{ session?.user?.email }}</n-text>
               </div>
               <div class="detail-item">
-                <n-text depth="3">Телефон:</n-text>
-                <n-text strong>{{ session?.user?.phone || 'Не указан' }}</n-text>
+                <n-text depth="3">{{ $t('admin.profile.phone') }}</n-text>
+                <n-text strong>{{ session?.user?.phone || $t('admin.profile.notSpecified') }}</n-text>
               </div>
             </div>
           </n-space>
@@ -60,51 +60,51 @@
       <!-- Правая колонка: Формы редактирования -->
       <n-gi :span="2">
         <n-tabs type="line" animated>
-          <n-tab-pane name="basic" tab="Основные данные">
+          <n-tab-pane name="basic" :tab="$t('admin.profile.basicData')">
             <n-form class="mt-20" style="max-width: 400px">
-              <n-form-item label="Полное имя">
-                <n-input v-model:value="profileForm.name" placeholder="Введите имя" />
+              <n-form-item :label="$t('admin.profile.fullName')">
+                <n-input v-model:value="profileForm.name" :placeholder="$t('admin.profile.enterName')" />
               </n-form-item>
-              <n-form-item label="Email">
+              <n-form-item :label="$t('common.email')">
                 <n-input :value="profileForm.email" disabled />
               </n-form-item>
-              <n-form-item label="Номер телефона">
+              <n-form-item :label="$t('admin.profile.phoneNumber')">
                 <n-input v-model:value="profileForm.phone" placeholder="+993 ..." />
               </n-form-item>
               <n-button type="primary" :loading="basicLoading" @click="handleUpdateProfile">
-                Сохранить изменения
+                {{ $t('admin.profile.saveChanges') }}
               </n-button>
             </n-form>
           </n-tab-pane>
 
-          <n-tab-pane name="security" tab="Безопасность">
+          <n-tab-pane name="security" :tab="$t('admin.profile.security')">
             <n-form class="mt-20" style="max-width: 400px">
-              <n-form-item label="Текущий пароль">
+              <n-form-item :label="$t('admin.profile.currentPassword')">
                 <n-input
                   v-model:value="passwordForm.currentPassword"
                   type="password"
                   show-password-on="click"
-                  placeholder="Введите текущий пароль"
+                  :placeholder="$t('admin.profile.enterCurrentPassword')"
                 />
               </n-form-item>
-              <n-form-item label="Новый пароль">
+              <n-form-item :label="$t('admin.profile.newPassword')">
                 <n-input
                   v-model:value="passwordForm.newPassword"
                   type="password"
                   show-password-on="click"
-                  placeholder="Минимум 6 символов"
+                  :placeholder="$t('admin.profile.minChars')"
                 />
               </n-form-item>
-              <n-form-item label="Подтвердите пароль">
+              <n-form-item :label="$t('admin.profile.confirmPassword')">
                 <n-input
                   v-model:value="passwordForm.confirmPassword"
                   type="password"
                   show-password-on="click"
-                  placeholder="Повторите новый пароль"
+                  :placeholder="$t('admin.profile.repeatNewPassword')"
                 />
               </n-form-item>
               <n-button type="primary" :loading="passwordLoading" @click="handleChangePassword">
-                Обновить пароль
+                {{ $t('admin.profile.updatePassword') }}
               </n-button>
             </n-form>
           </n-tab-pane>
@@ -118,6 +118,8 @@
 import { useMessage } from 'naive-ui'
 
 definePageMeta({ layout: 'admin' })
+
+const { t } = useI18n()
 
 const { apiBase } = useApiBase()
 const { session, fetchSession } = useAuth()
@@ -187,10 +189,10 @@ async function handleAvatarUpload({
     if (import.meta.dev) console.log('[Profile] upload-avatar response:', res)
     await fetchSession()
     if (import.meta.dev) console.log('[Profile] after fetchSession, user.image:', session.value?.user?.image)
-    message.success('Фото обновлено')
+    message.success(t('client.profile.photoUpdated'))
     onFinish()
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка загрузки')
+    message.error(e?.data?.error || t('common.uploadError'))
     onError(e)
   }
 }
@@ -207,9 +209,9 @@ async function handleUpdateProfile() {
       },
     })
     await fetchSession()
-    message.success('Профиль обновлён')
+    message.success(t('client.profile.profileUpdated'))
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка сохранения')
+    message.error(e?.data?.error || t('common.saveError'))
   } finally {
     basicLoading.value = false
   }
@@ -217,11 +219,11 @@ async function handleUpdateProfile() {
 
 async function handleChangePassword() {
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    message.error('Пароли не совпадают')
+    message.error(t('client.profile.passwordsMismatch'))
     return
   }
   if (passwordForm.newPassword.length < 6) {
-    message.error('Пароль должен быть не менее 6 символов')
+    message.error(t('client.profile.passwordTooShort'))
     return
   }
   passwordLoading.value = true
@@ -234,12 +236,12 @@ async function handleChangePassword() {
         newPassword: passwordForm.newPassword,
       },
     })
-    message.success('Пароль обновлён')
+    message.success(t('client.profile.passwordUpdated'))
     passwordForm.currentPassword = ''
     passwordForm.newPassword = ''
     passwordForm.confirmPassword = ''
   } catch (e: any) {
-    message.error(e?.data?.error || 'Ошибка смены пароля')
+    message.error(e?.data?.error || t('client.profile.passwordChangeError'))
   } finally {
     passwordLoading.value = false
   }

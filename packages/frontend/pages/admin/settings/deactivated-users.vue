@@ -1,17 +1,17 @@
 <template>
   <div>
-    <UiBackBtn to="/admin/settings" label="Настройки" />
+    <UiBackBtn to="/admin/settings" :label="$t('admin.settingsPage.title')" />
 
     <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
       {{ loadError }}
       <template #footer>
-        <n-button size="small" @click="loadUsers">Повторить</n-button>
+        <n-button size="small" @click="loadUsers">{{ $t('admin.deactivatedPage.retry') }}</n-button>
       </template>
     </n-alert>
 
-    <n-h4 style="margin: 0 0 16px 0;">Удалённые пользователи</n-h4>
+    <n-h4 style="margin: 0 0 16px 0;">{{ $t('admin.deactivatedPage.title') }}</n-h4>
     <n-text depth="3" style="display: block; margin-bottom: 20px;">
-      Пользователи, деактивированные администратором. Данные сохранены. Можно восстановить.
+      {{ $t('admin.deactivatedPage.subtitle') }}
     </n-text>
 
     <n-data-table
@@ -32,6 +32,7 @@ import type { DataTableColumns } from 'naive-ui'
 
 definePageMeta({ layout: 'admin',  })
 
+const { t } = useI18n()
 const { apiBase } = useApiBase()
 const message = useMessage()
 const search = ref('')
@@ -49,9 +50,9 @@ const roleColors: Record<string, string> = {
 function getVerificationTag(status: string | null) {
   const s = status ?? 'not_verified'
   const labels: Record<string, string> = {
-    not_verified: 'Не верифицирован',
-    waiting_verification: 'Ожидает',
-    verified: 'Верифицирован',
+    not_verified: t('admin.deactivatedPage.verificationNotVerified'),
+    waiting_verification: t('admin.deactivatedPage.verificationWaiting'),
+    verified: t('admin.deactivatedPage.verificationVerified'),
   }
   const types: Record<string, string> = {
     not_verified: 'default',
@@ -63,41 +64,41 @@ function getVerificationTag(status: string | null) {
 
 const deletingId = ref<string | null>(null)
 
-const columns: DataTableColumns = [
+const columns = computed<DataTableColumns>(() => [
   {
-    title: 'Имя',
+    title: t('admin.deactivatedPage.columnName'),
     key: 'name',
     ellipsis: true,
     render: (row) => row.driverName || row.name || row.email || '—',
   },
-  { title: 'Email', key: 'email', ellipsis: true },
+  { title: t('admin.deactivatedPage.columnEmail'), key: 'email', ellipsis: true },
   {
-    title: 'Роль',
+    title: t('admin.deactivatedPage.columnRole'),
     key: 'role',
     render: (row) => h(NTag, { type: roleColors[row.role as string] || 'default', size: 'small' }, { default: () => row.role }),
   },
   {
-    title: 'Верификация',
+    title: t('admin.deactivatedPage.columnVerification'),
     key: 'verification_status',
     width: 140,
     render: (row: any) => row.role === 'driver' ? getVerificationTag(row.verification_status ?? null) : '—',
   },
   {
-    title: 'Дата регистрации',
+    title: t('admin.deactivatedPage.columnRegisteredAt'),
     key: 'createdAt',
     render: (row) => new Date(row.createdAt as string).toLocaleDateString('ru-RU'),
   },
   {
-    title: 'Действия',
+    title: t('admin.deactivatedPage.columnActions'),
     key: 'actions',
     width: 200,
     render: (row: any) =>
       h(NPopconfirm, {
         onPositiveClick: () => handleDeletePermanent(String(row.id)),
-        positiveText: 'Удалить',
-        negativeText: 'Отмена',
+        positiveText: t('admin.deactivatedPage.deletePermanent'),
+        negativeText: t('admin.deactivatedPage.deleteCancel'),
       }, {
-        default: () => 'Удалить навсегда? Все данные будут безвозвратно потеряны.',
+        default: () => t('admin.deactivatedPage.deleteConfirm'),
         trigger: () =>
           h(NButton, {
             size: 'small',
@@ -105,10 +106,10 @@ const columns: DataTableColumns = [
             quaternary: true,
             loading: deletingId.value === row.id,
             onClick: (e: Event) => e.stopPropagation(),
-          }, { default: () => 'Удалить навсегда' }),
+          }, { default: () => t('admin.deactivatedPage.deletePermanent') }),
       }),
   },
-]
+])
 
 const filteredUsers = computed(() => {
   let list = Array.isArray(users.value) ? users.value : []
@@ -126,10 +127,10 @@ async function handleDeletePermanent(id: string) {
   deletingId.value = id
   try {
     await $fetch(`${apiBase}/admin/users/${id}`, { method: 'DELETE', credentials: 'include' })
-    message.success('Пользователь удалён навсегда')
+    message.success(t('admin.deactivatedPage.userDeleted'))
     users.value = users.value.filter((u) => u.id !== id)
   } catch (e: any) {
-    message.error(e?.data?.error || e?.data?.message || e?.message || 'Ошибка удаления')
+    message.error(e?.data?.error || e?.data?.message || e?.message || t('common.error'))
   } finally {
     deletingId.value = null
   }
@@ -142,7 +143,7 @@ async function loadUsers() {
     const data = await $fetch<any[]>(`${apiBase}/admin/users?inactive_only=1`, { credentials: 'include' })
     users.value = Array.isArray(data) ? data : []
   } catch (e: any) {
-    loadError.value = e?.data?.message || e?.message || 'Ошибка загрузки'
+    loadError.value = e?.data?.message || e?.message || t('admin.deactivatedPage.loadError')
     message.error(loadError.value)
   } finally {
     loading.value = false

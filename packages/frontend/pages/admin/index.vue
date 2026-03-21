@@ -19,17 +19,17 @@
 
     <n-grid :cols="2" :x-gap="24" :y-gap="24" class="mt-24" responsive="screen">
       <n-gi>
-        <n-card title="Последние заказы" class="shadow-sm">
+        <n-card :title="$t('admin.adminIndex.recentOrders')" class="shadow-sm">
           <template #header-extra>
-            <n-button text type="primary" @click="navigateTo('/admin/orders')">Все заказы</n-button>
+            <n-button text type="primary" @click="navigateTo('/admin/orders')">{{ $t('admin.adminIndex.allOrders') }}</n-button>
           </template>
           <n-table :bordered="false" :single-line="false">
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Маршрут</th>
-                <th>Статус</th>
-                <th>Сумма</th>
+                <th>{{ $t('admin.adminIndex.columnRoute') }}</th>
+                <th>{{ $t('admin.adminIndex.columnStatus') }}</th>
+                <th>{{ $t('admin.adminIndex.columnAmount') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -48,9 +48,9 @@
         </n-card>
       </n-gi>
       <n-gi>
-        <n-card title="Новые пользователи" class="shadow-sm">
+        <n-card :title="$t('admin.adminIndex.newUsers')" class="shadow-sm">
           <template #header-extra>
-            <n-button text type="primary" @click="navigateTo('/admin/users')">Все пользователи</n-button>
+            <n-button text type="primary" @click="navigateTo('/admin/users')">{{ $t('admin.adminIndex.allUsers') }}</n-button>
           </template>
           <n-list hoverable clickable>
             <n-list-item v-for="user in recentUsers" :key="user.email">
@@ -77,12 +77,14 @@ definePageMeta({
   layout: 'admin'
 })
 
-const stats = [
-  { title: 'Всего заказов', value: 124, icon: '📦', trend: 12 },
-  { title: 'Активные рейсы', value: 18, icon: '🚛', trend: 5 },
-  { title: 'Выручка (мес)', value: '45,200', icon: '💰', trend: 8 },
-  { title: 'Новые клиенты', value: 32, icon: '👥', trend: -2 }
-]
+const { t } = useI18n()
+
+const stats = computed(() => [
+  { title: t('admin.adminIndex.statTotalOrders'), value: 124, icon: '📦', trend: 12 },
+  { title: t('admin.adminIndex.statActiveTrips'), value: 18, icon: '🚛', trend: 5 },
+  { title: t('admin.adminIndex.statRevenue'), value: '45,200', icon: '💰', trend: 8 },
+  { title: t('admin.adminIndex.statNewClients'), value: 32, icon: '👥', trend: -2 }
+])
 
 const recentOrders = [
   { id: '1024', route: 'Ашхабад → Мары', status: 'В пути', price: '1,200' },

@@ -3,13 +3,13 @@
     <n-alert v-if="loadError" type="error" closable style="margin-bottom: 16px">
       {{ loadError }}
       <template #footer>
-        <n-button size="small" @click="loadMessages">Повторить</n-button>
+        <n-button size="small" @click="loadMessages">{{ t('admin.mailing.retry') }}</n-button>
       </template>
     </n-alert>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <n-h3 style="margin: 0;">Рассылки</n-h3>
+      <n-h3 style="margin: 0;">{{ t('admin.mailing.title') }}</n-h3>
       <n-button type="primary" @click="showCreate = true">
-        Создать рассылку
+        {{ t('admin.mailing.create') }}
       </n-button>
     </div>
 
@@ -23,22 +23,22 @@
     />
   </div>
 
-  <n-modal v-model:show="showCreate" preset="card" title="Создать рассылку" style="width: 500px">
+  <n-modal v-model:show="showCreate" preset="card" :title="t('admin.mailing.modalTitle')" style="width: 500px">
     <n-form ref="formRef" :model="form" :rules="rules">
-      <n-form-item label="Заголовок" path="title" required>
-        <n-input v-model:value="form.title" placeholder="Тема сообщения" />
+      <n-form-item :label="t('admin.mailing.labelTitle')" path="title" required>
+        <n-input v-model:value="form.title" :placeholder="t('admin.mailing.placeholderSubject')" />
       </n-form-item>
-      <n-form-item label="Получатели" path="recipient_type">
+      <n-form-item :label="t('admin.mailing.labelRecipients')" path="recipient_type">
         <n-select v-model:value="form.recipient_type" :options="recipientOptions" />
       </n-form-item>
-      <n-form-item label="Текст" path="content" required>
-        <n-input v-model:value="form.content" type="textarea" placeholder="Текст рассылки" :rows="5" />
+      <n-form-item :label="t('admin.mailing.labelText')" path="content" required>
+        <n-input v-model:value="form.content" type="textarea" :placeholder="t('admin.mailing.placeholderText')" :rows="5" />
       </n-form-item>
     </n-form>
     <template #footer>
       <n-space justify="end">
         <UiCancelBtn @click="showCreate = false" />
-        <UiSaveBtn :loading="creating" :label="'Создать'" @click="handleCreate" />
+        <UiSaveBtn :loading="creating" :label="t('admin.mailing.createBtn')" @click="handleCreate" />
       </n-space>
     </template>
   </n-modal>
@@ -51,6 +51,7 @@ import type { DataTableColumns } from 'naive-ui'
 
 definePageMeta({ layout: 'admin',  })
 
+const { t } = useI18n()
 const { apiBase: API } = useApiBase()
 const message = useMessage()
 const loading = ref(true)
@@ -67,47 +68,41 @@ const form = reactive({
   recipient_type: 'all',
 })
 
-const recipientOptions = [
-  { label: 'Все (заказчики и перевозчики)', value: 'all' },
-  { label: 'Только заказчики', value: 'client' },
-  { label: 'Только перевозчики', value: 'driver' },
-]
+const recipientOptions = computed(() => [
+  { label: t('admin.mailing.recipientAll'), value: 'all' },
+  { label: t('admin.mailing.recipientClient'), value: 'client' },
+  { label: t('admin.mailing.recipientDriver'), value: 'driver' },
+])
 
-const rules = {
-  title: { required: true, message: 'Введите заголовок', trigger: 'blur' },
-  content: { required: true, message: 'Введите текст', trigger: 'blur' },
-}
+const rules = computed(() => ({
+  title: { required: true, message: t('admin.mailing.validationTitle'), trigger: 'blur' },
+  content: { required: true, message: t('admin.mailing.validationContent'), trigger: 'blur' },
+}))
 
-const recipientLabels: Record<string, string> = {
-  all: 'Все',
-  client: 'Заказчики',
-  driver: 'Перевозчики',
-}
-
-const columns: DataTableColumns<any> = [
-  { title: 'Заголовок', key: 'title', ellipsis: true },
+const columns = computed<DataTableColumns<any>>(() => [
+  { title: t('admin.mailing.columnTitle'), key: 'title', ellipsis: true },
   {
-    title: 'Получатели',
+    title: t('admin.mailing.columnRecipients'),
     key: 'recipient_type_display',
     width: 140,
   },
   {
-    title: 'Статус',
+    title: t('admin.mailing.columnStatus'),
     key: 'is_sent',
     width: 120,
     render: (row) => h(NTag, {
       type: row.is_sent ? 'success' : 'warning',
       size: 'small',
-    }, () => row.is_sent ? 'Отправлено' : 'Черновик'),
+    }, () => row.is_sent ? t('admin.mailing.statusSent') : t('admin.mailing.statusDraft')),
   },
   {
-    title: 'Получателей',
+    title: t('admin.mailing.columnRecipientsCount'),
     key: 'total_recipients',
     width: 100,
     render: (row) => row.total_recipients || '—',
   },
   {
-    title: 'Создано',
+    title: t('admin.mailing.columnCreatedAt'),
     key: 'created_at',
     width: 160,
     render: (row) => new Date(row.created_at).toLocaleString('ru-RU'),
@@ -125,7 +120,7 @@ const columns: DataTableColumns<any> = [
           e.stopPropagation()
           handleSend(row.id)
         },
-      }, () => 'Отправить'),
+      }, () => t('admin.mailing.btnSend')),
       h(NButton, {
         size: 'small',
         quaternary: true,
@@ -134,10 +129,10 @@ const columns: DataTableColumns<any> = [
           e.stopPropagation()
           handleDelete(row.id)
         },
-      }, () => 'Удалить'),
+      }, () => t('admin.mailing.btnDelete')),
     ]),
   },
-]
+])
 
 async function loadMessages() {
   loadError.value = null
@@ -146,7 +141,7 @@ async function loadMessages() {
     const data = await $fetch<any[]>(`${API || ''}/admin/mailing`, { credentials: 'include' })
     messages.value = Array.isArray(data) ? data : []
   } catch (e: any) {
-    const err = e?.data?.message || e?.message || 'Ошибка загрузки'
+    const err = e?.data?.message || e?.message || t('admin.mailing.loadError')
     loadError.value = err
     message.error(err)
     if (import.meta.dev) console.error('Admin mailing fetch failed:', e)
@@ -164,7 +159,7 @@ async function handleCreate() {
       credentials: 'include',
       body: form,
     })
-    message.success('Рассылка создана')
+    message.success(t('admin.mailing.created'))
     showCreate.value = false
     form.title = ''
     form.content = ''
@@ -181,29 +176,28 @@ async function handleSend(id: number) {
   try {
     sending.value = id
     await $fetch(`${API}/admin/mailing/${id}/send`, { method: 'POST', credentials: 'include' })
-    message.success('Рассылка отправлена')
+    message.success(t('admin.mailing.sent'))
     await loadMessages()
   } catch (e: any) {
-    message.error('Ошибка отправки')
+    message.error(t('admin.mailing.sendError'))
   } finally {
     sending.value = null
   }
 }
 
 async function handleDelete(id: number) {
-  if (!confirm('Удалить рассылку?')) return
+  if (!confirm(t('admin.mailing.deleteConfirm'))) return
   try {
     await $fetch(`${API}/admin/mailing/${id}`, { method: 'DELETE', credentials: 'include' })
-    message.success('Удалено')
+    message.success(t('admin.mailing.deleted'))
     await loadMessages()
   } catch {
-    message.error('Ошибка удаления')
+    message.error(t('admin.mailing.deleteError'))
   }
 }
 
 function openDetail(row: any) {
   // Можно открыть модалку с деталями или отдельную страницу
-  // Пока просто показываем контент в alert для демо
   if (row.content) {
     // navigateTo(`/admin/mailing/${row.id}`)
   }

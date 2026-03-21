@@ -2,12 +2,12 @@
   <div class="admin-orders">
     <div class="page-actions-top">
       <n-space>
-        <n-input v-model:value="searchQuery" placeholder="Поиск по ID или маршруту..." clearable>
+        <n-input v-model:value="searchQuery" :placeholder="t('admin.ordersPage.searchPlaceholder')" clearable>
           <template #prefix>🔍</template>
         </n-input>
         <n-select
           v-model:value="statusFilter"
-          placeholder="Статус"
+          :placeholder="t('admin.ordersPage.statusPlaceholder')"
           :options="statusOptions"
           style="width: 160px"
           clearable
@@ -15,7 +15,7 @@
       </n-space>
       <n-button type="primary">
         <template #icon>➕</template>
-        Создать заказ
+        {{ t('admin.ordersPage.createOrder') }}
       </n-button>
     </div>
 
@@ -28,17 +28,17 @@
     />
 
     <!-- Модалка деталей заказа -->
-    <n-modal v-model:show="showDetailModal" preset="card" title="Детали заказа" style="width: 600px">
+    <n-modal v-model:show="showDetailModal" preset="card" :title="t('admin.ordersPage.modalTitle')" style="width: 600px">
       <div v-if="selectedOrder">
         <n-descriptions label-placement="left" bordered :column="1">
-          <n-descriptions-item label="ID заказа">#{{ selectedOrder.id }}</n-descriptions-item>
-          <n-descriptions-item label="Заказчик">{{ selectedOrder.client }}</n-descriptions-item>
-          <n-descriptions-item label="Перевозчик">{{ selectedOrder.carrier || 'Не назначен' }}</n-descriptions-item>
-          <n-descriptions-item label="Маршрут">{{ selectedOrder.route }}</n-descriptions-item>
-          <n-descriptions-item label="Груз">{{ selectedOrder.cargoType }} ({{ selectedOrder.weight }} т)</n-descriptions-item>
-          <n-descriptions-item label="Цена">{{ selectedOrder.price }} TMT</n-descriptions-item>
-          <n-descriptions-item label="Дата создания">{{ selectedOrder.date }}</n-descriptions-item>
-          <n-descriptions-item label="Статус">
+          <n-descriptions-item :label="t('admin.ordersPage.labelOrderId')">#{{ selectedOrder.id }}</n-descriptions-item>
+          <n-descriptions-item :label="t('admin.ordersPage.labelClient')">{{ selectedOrder.client }}</n-descriptions-item>
+          <n-descriptions-item :label="t('admin.ordersPage.labelCarrier')">{{ selectedOrder.carrier || t('admin.ordersPage.notAssigned') }}</n-descriptions-item>
+          <n-descriptions-item :label="t('admin.ordersPage.labelRoute')">{{ selectedOrder.route }}</n-descriptions-item>
+          <n-descriptions-item :label="t('admin.ordersPage.labelCargo')">{{ selectedOrder.cargoType }} ({{ selectedOrder.weight }} т)</n-descriptions-item>
+          <n-descriptions-item :label="t('admin.ordersPage.labelPrice')">{{ selectedOrder.price }} TMT</n-descriptions-item>
+          <n-descriptions-item :label="t('admin.ordersPage.labelCreatedAt')">{{ selectedOrder.date }}</n-descriptions-item>
+          <n-descriptions-item :label="t('admin.ordersPage.labelStatus')">
             <n-tag :type="getStatusType(selectedOrder.status)">{{ selectedOrder.status }}</n-tag>
           </n-descriptions-item>
         </n-descriptions>
@@ -55,18 +55,19 @@ definePageMeta({
   layout: 'admin'
 })
 
+const { t } = useI18n()
 const message = useMessage()
 const searchQuery = ref('')
 const statusFilter = ref(null)
 const showDetailModal = ref(false)
 const selectedOrder = ref<any>(null)
 
-const statusOptions = [
-  { label: 'В пути', value: 'В пути' },
-  { label: 'Выполнен', value: 'Выполнен' },
-  { label: 'Ожидание', value: 'Ожидание' },
-  { label: 'Отменен', value: 'Отменен' }
-]
+const statusOptions = computed(() => [
+  { label: t('admin.ordersPage.statusInTransit'), value: t('admin.ordersPage.statusInTransit') },
+  { label: t('admin.ordersPage.statusDone'), value: t('admin.ordersPage.statusDone') },
+  { label: t('admin.ordersPage.statusPending'), value: t('admin.ordersPage.statusPending') },
+  { label: t('admin.ordersPage.statusCancelled'), value: t('admin.ordersPage.statusCancelled') }
+])
 
 const orders = [
   { id: '1024', client: 'ООО "ТрансЛогистик"', carrier: 'Аман Аманов', route: 'Ашхабад → Мары', status: 'В пути', price: '1,200', date: '12.03.2026', cargoType: 'Запчасти', weight: '2.5' },
@@ -86,20 +87,20 @@ const getStatusType = (status: string) => {
   }
 }
 
-const columns = [
-  { title: 'ID', key: 'id', width: 80 },
-  { title: 'Заказчик', key: 'client' },
-  { title: 'Маршрут', key: 'route' },
+const columns = computed(() => [
+  { title: t('admin.ordersPage.columnId'), key: 'id', width: 80 },
+  { title: t('admin.ordersPage.columnClient'), key: 'client' },
+  { title: t('admin.ordersPage.columnRoute'), key: 'route' },
   {
-    title: 'Статус',
+    title: t('admin.ordersPage.columnStatus'),
     key: 'status',
     render(row: any) {
       return h(NTag, { type: getStatusType(row.status), round: true, size: 'small' }, { default: () => row.status })
     }
   },
-  { title: 'Сумма', key: 'price', render(row: any) { return `${row.price} TMT` } },
+  { title: t('admin.ordersPage.columnAmount'), key: 'price', render(row: any) { return `${row.price} TMT` } },
   {
-    title: 'Действия',
+    title: t('admin.ordersPage.columnActions'),
     key: 'actions',
     render(row: any) {
       return h(NSpace, {}, {
@@ -110,7 +111,7 @@ const columns = [
       })
     }
   }
-]
+])
 
 const filteredOrders = computed(() => {
   return orders.filter(o => {
