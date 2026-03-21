@@ -10,5 +10,5 @@ CREATE TABLE IF NOT EXISTS "profile_edit_requests" (
   "driver_comment" text,
   "requested_at" timestamp DEFAULT now() NOT NULL,
   "resolved_at" timestamp with time zone,
-  "resolved_by_id" text REFERENCES "users"("id")
+  "resolved_by_id" uuid REFERENCES "users"("id")
 );

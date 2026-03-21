@@ -590,7 +590,7 @@ export const profileEditRequests = pgTable('profile_edit_requests', {
   fieldValue: text('field_value'),
   requestedAt: timestamp('requested_at').defaultNow().notNull(),
   resolvedAt: timestamp('resolved_at', { withTimezone: true, mode: 'date' }),
-  resolvedById: text('resolved_by_id').references(() => users.id),
+  resolvedById: uuid('resolved_by_id'),
 });
 
 // --- Чат по заказу ---
@@ -693,7 +693,7 @@ export const legalDocuments = pgTable('legal_documents', {
   effectiveDate: timestamp('effective_date'),
   createdAt:     timestamp('created_at').defaultNow().notNull(),
   updatedAt:     timestamp('updated_at').defaultNow().notNull(),
-  updatedBy:     text('updated_by').references(() => users.id),
+  updatedBy:     uuid('updated_by'),
 })
 
 // ── Прогресс по MVP roadmap (Altyn Burgut) — админка ───────────────
@@ -703,5 +703,5 @@ export const mvpRoadmapTaskProgress = pgTable('mvp_roadmap_task_progress', {
   isDone:    boolean('is_done').default(false).notNull(),
   notes:     text('notes').default('').notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  updatedBy: text('updated_by').references(() => users.id),
+  updatedBy: uuid('updated_by'),
 })
