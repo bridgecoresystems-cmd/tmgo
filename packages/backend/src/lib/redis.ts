@@ -1,4 +1,11 @@
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+/**
+ * Redis URL: Railway often injects REDIS_URL from the Redis plugin; some setups use REDIS_PRIVATE_URL.
+ * In production, if neither is set, BullMQ is disabled (no default to localhost — there is no local Redis on Railway).
+ */
+const explicitRedis = process.env.REDIS_URL || process.env.REDIS_PRIVATE_URL;
+const REDIS_URL =
+  explicitRedis ||
+  (process.env.NODE_ENV === 'production' ? '' : 'redis://localhost:6379');
 
 function parseRedisUrl(url: string): { host: string; port: number; username?: string; password?: string; db?: number } {
   try {
@@ -15,24 +22,33 @@ function parseRedisUrl(url: string): { host: string; port: number; username?: st
   }
 }
 
-const parsed = parseRedisUrl(REDIS_URL);
+const parsed = REDIS_URL ? parseRedisUrl(REDIS_URL) : null;
+
+/** True when Redis URL is available (BullMQ can run). */
+export function isRedisConfigured(): boolean {
+  return parsed !== null;
+}
 
 /** Connection options for BullMQ Queue (maxRetriesPerRequest: 20 by default). */
-export const queueConnection = {
-  ...parsed,
-  maxRetriesPerRequest: 20,
-  enableReadyCheck: true,
-  retryStrategy(times: number) {
-    return Math.min(times * 100, 3000);
-  },
-};
+export const queueConnection = parsed
+  ? {
+      ...parsed,
+      maxRetriesPerRequest: 20,
+      enableReadyCheck: true,
+      retryStrategy(times: number) {
+        return Math.min(times * 100, 3000);
+      },
+    }
+  : null;
 
 /** Connection options for BullMQ Worker — maxRetriesPerRequest: null required for blocking. */
-export const workerConnection = {
-  ...parsed,
-  maxRetriesPerRequest: null as number | null,
-  enableReadyCheck: true,
-  retryStrategy(times: number) {
-    return Math.min(times * 100, 3000);
-  },
-};
+export const workerConnection = parsed
+  ? {
+      ...parsed,
+      maxRetriesPerRequest: null as number | null,
+      enableReadyCheck: true,
+      retryStrategy(times: number) {
+        return Math.min(times * 100, 3000);
+      },
+    }
+  : null;

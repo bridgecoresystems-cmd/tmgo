@@ -6,7 +6,11 @@
 import { startWorker } from '../lib/queues';
 
 startWorker()
-  .then(() => {
+  .then((worker) => {
+    if (!worker) {
+      console.error('[BullMQ] Redis not configured — set REDIS_URL (or REDIS_PRIVATE_URL).');
+      process.exit(1);
+    }
     console.log('[BullMQ] Worker running. Press Ctrl+C to stop.');
   })
   .catch((err) => {

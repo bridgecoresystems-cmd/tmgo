@@ -1,5 +1,5 @@
 import { Queue, Worker } from 'bullmq';
-import { queueConnection, workerConnection } from './redis';
+import { isRedisConfigured, queueConnection, workerConnection } from './redis';
 import { checkExpiringDocuments } from './document-expiry';
 
 const QUEUE_NAME = 'tmgo-jobs';
@@ -10,6 +10,9 @@ let queueInstance: Queue | null = null;
 
 /** Queue for adding jobs. Reuses connection. */
 export function getQueue(): Queue {
+  if (!queueConnection) {
+    throw new Error('Redis is not configured (set REDIS_URL or REDIS_PRIVATE_URL)');
+  }
   if (!queueInstance) {
     queueInstance = new Queue(QUEUE_NAME, { connection: queueConnection });
   }
@@ -17,7 +20,14 @@ export function getQueue(): Queue {
 }
 
 /** Start worker and schedule repeatable jobs. Call once at app startup. */
-export async function startWorker(): Promise<Worker> {
+export async function startWorker(): Promise<Worker | undefined> {
+  if (!isRedisConfigured() || !queueConnection || !workerConnection) {
+    console.warn(
+      '[BullMQ] Redis not configured — background worker skipped. On Railway: add a Redis service and set REDIS_URL (or reference REDIS_PRIVATE_URL).',
+    );
+    return undefined;
+  }
+
   const queue = getQueue();
 
   const worker = new Worker(
