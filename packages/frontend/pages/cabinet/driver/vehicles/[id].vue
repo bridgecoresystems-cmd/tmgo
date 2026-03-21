@@ -388,7 +388,7 @@
                         type="date"
                         clearable
                         style="width:200px"
-                        @update:value="(v: number | null) => { form.insuranceExpiresAt = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                        @update:value="(v: number | null) => { form.insuranceExpiresAt = v ? formatDateOnlyFromMs(v) : null }"
                       />
                     </n-form-item>
                   </n-gi>
@@ -613,7 +613,9 @@ const insuranceExpiresLabel = computed(() => {
 const insuranceTagType = computed(() => {
   const d = vehicle.value?.insuranceExpiresAt
   if (!d) return 'default'
-  const days = Math.ceil((new Date(d).getTime() - Date.now()) / 86400000)
+  const ms = dateOnlyToPickerMs(String(d))
+  if (ms == null) return 'default'
+  const days = Math.ceil((ms - Date.now()) / 86400000)
   if (days < 0) return 'error'
   if (days < 30) return 'warning'
   return 'success'
@@ -647,7 +649,7 @@ const form = reactive({
 })
 
 const insuranceExpiresTs = computed({
-  get: () => (form.insuranceExpiresAt ? new Date(form.insuranceExpiresAt).getTime() : null),
+  get: () => (dateOnlyToPickerMs(form.insuranceExpiresAt)),
   set: () => {},
 })
 

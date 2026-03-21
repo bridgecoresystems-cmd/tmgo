@@ -145,7 +145,7 @@ async function loadDoc() {
     form.version = data.version
     form.isPublished = data.isPublished
     form.updatedAt = data.updatedAt
-    effectiveDateTs.value = data.effectiveDate ? new Date(data.effectiveDate).getTime() : null
+    effectiveDateTs.value = dateOnlyToPickerMs(data.effectiveDate)
     docExists.value = true
   } catch (e: any) {
     if (e?.statusCode === 404 || e?.status === 404) {
@@ -170,7 +170,7 @@ async function saveDraft() {
         title: form.title,
         content: form.content,
         version: form.version,
-        effectiveDate: effectiveDateTs.value ? new Date(effectiveDateTs.value).toISOString() : null,
+        effectiveDate: effectiveDateTs.value != null ? formatDateOnlyFromMs(effectiveDateTs.value) : null,
       },
     })
     form.updatedAt = data.updatedAt
@@ -196,7 +196,7 @@ async function publish() {
         title: form.title,
         content: form.content,
         version: form.version,
-        effectiveDate: effectiveDateTs.value ? new Date(effectiveDateTs.value).toISOString() : null,
+        effectiveDate: effectiveDateTs.value != null ? formatDateOnlyFromMs(effectiveDateTs.value) : null,
       },
     })
     // Then publish

@@ -3,8 +3,8 @@ export type MvpRoadmapDay = { day: number; weekdayRu: string; tasks: MvpRoadmapT
 export type MvpRoadmapWeek = { label: string; days: MvpRoadmapDay[] };
 export type MvpRoadmapPhase = { id: string; title: string; badge: string; weeks: MvpRoadmapWeek[] };
 
-/** Понедельник недели «День 1» плана (12 марта 2026 — четверг той же недели). */
-export const MVP_ROADMAP_FIRST_MONDAY_ISO = '2026-03-10';
+/** Первый день плана в календаре (рабочий день; дальше только Пн–Пт, выходные пропускаются). */
+export const MVP_ROADMAP_DAY1_ISO = '2026-03-12';
 
 export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
   {
@@ -987,18 +987,26 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
   }
 ] as const satisfies MvpRoadmapPhase[];
 
-/** Календарная дата для дня плана (1..50), Пн–Пт от первого понедельника (локальный пояс). */
+function addOneBusinessDayLocal(d: Date): void {
+  d.setDate(d.getDate() + 1);
+  let w = d.getDay();
+  while (w === 0 || w === 6) {
+    d.setDate(d.getDate() + 1);
+    w = d.getDay();
+  }
+}
+
+/** Календарная дата для дня плана (1..50): цепочка рабочих дней от {@link MVP_ROADMAP_DAY1_ISO} (локальный пояс). */
 export function calendarDateForRoadmapDay(dayNum: number): Date {
   if (dayNum < 1 || dayNum > 50) {
     throw new RangeError('Roadmap day must be 1..50');
   }
-  const [y, mo, d] = MVP_ROADMAP_FIRST_MONDAY_ISO.split('-').map(Number);
-  const base = new Date(y, mo - 1, d, 12, 0, 0, 0);
-  const i = dayNum - 1;
-  const week = Math.floor(i / 5);
-  const dow = i % 5;
-  base.setDate(base.getDate() + week * 7 + dow);
-  return base;
+  const [y, mo, d] = MVP_ROADMAP_DAY1_ISO.split('-').map(Number);
+  const out = new Date(y, mo - 1, d, 12, 0, 0, 0);
+  for (let n = 1; n < dayNum; n++) {
+    addOneBusinessDayLocal(out);
+  }
+  return out;
 }
 
 export function formatRoadmapCalendarDate(dayNum: number, locale = 'ru-RU'): string {

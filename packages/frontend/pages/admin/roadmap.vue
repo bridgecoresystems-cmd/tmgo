@@ -51,7 +51,7 @@
               </div>
               <div class="day-row" :class="{ 'is-today': day.day === todayPlanDay }">
                 <div class="day-label">
-                  <span class="day-name">{{ day.weekdayRu }}</span>
+                  <span class="day-name">{{ formatRoadmapWeekdayShort(day.day) }}</span>
                   <span class="day-num">{{ t('roadmap.dayN', { n: day.day }) }}</span>
                   <span class="day-cal">{{ formatDayCal(day.day) }}</span>
                 </div>
@@ -137,6 +137,11 @@ function formatDayCal(dayNum: number): string {
     day: 'numeric',
     month: 'short',
   })
+}
+
+function formatRoadmapWeekdayShort(dayNum: number): string {
+  const d = calendarDateForRoadmapDay(dayNum)
+  return d.toLocaleDateString(localeForDate(), { weekday: 'short' })
 }
 
 const firstDayMonthLabel = computed(() => {

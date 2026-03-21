@@ -48,11 +48,11 @@
         </n-form-item>
         <n-form-item :label="t('driver.citizenships.acquiredAt')">
           <n-date-picker
-            :value="addForm.acquired_at ? new Date(addForm.acquired_at).getTime() : null"
+            :value="dateOnlyToPickerMs(addForm.acquired_at)"
             type="date"
             clearable
             style="width: 100%"
-            @update:value="(v: number | null) => { addForm.acquired_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
+            @update:value="(v: number | null) => { addForm.acquired_at = v ? formatDateOnlyFromMs(v) : null }"
           />
         </n-form-item>
       </n-form>

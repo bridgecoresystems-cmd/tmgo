@@ -30,7 +30,7 @@
     <n-layout-content :class="['main-content', { 'main-content--no-pad-bottom': pageHasOwnFooter }]">
       <slot />
     </n-layout-content>
-    <!-- Скрываем на / и /auth: футер внутри страницы (иначе fixed-footer layout перекрывает контент) -->
+    <!-- Скрываем на /, /auth, /legal/*: футер внутри страницы (липкий низ экрана / низ документа) -->
     <n-layout-footer v-if="!pageHasOwnFooter" bordered class="footer">
       {{ $t('layout.footer') }}
     </n-layout-footer>
@@ -54,7 +54,9 @@ const userOptions = computed(() => [
 
 const route = useRoute()
 /** Страницы, где копирайт в конце контента, а не в n-layout-footer */
-const pageHasOwnFooter = computed(() => route.path === '/' || route.path === '/auth')
+const pageHasOwnFooter = computed(
+  () => route.path === '/' || route.path === '/auth' || route.path.startsWith('/legal/'),
+)
 
 const goHome = () => navigateTo('/')
 const goToAuth = (mode: string) => navigateTo(`/auth?mode=${mode}`)

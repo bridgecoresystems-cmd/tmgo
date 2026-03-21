@@ -42,12 +42,12 @@
             <n-form-item :label="t('driver.card.dateOfBirth')">
               <div class="field-with-request">
               <n-date-picker
-                :value="form.date_of_birth ? new Date(form.date_of_birth).getTime() : null"
+                :value="dateOnlyToPickerMs(form.date_of_birth)"
                 type="date"
                 clearable
                 style="width: 100%"
                 :disabled="!isFieldEditable('date_of_birth')"
-                @update:value="(v: number | null) => { form.date_of_birth = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                @update:value="(v: number | null) => { form.date_of_birth = v ? formatDateOnlyFromMs(v) : null }"
               />
                 <n-button v-if="showRequestBtn('date_of_birth')" quaternary size="small" type="info" :loading="requestingFieldKey === 'date_of_birth'" @click="requestChange('date_of_birth')">{{ t('driver.card.requestChange') }}</n-button>
                 <n-button v-else-if="showApproveBtn('date_of_birth')" size="small" type="success" :loading="approvingFieldKey === 'date_of_birth'" @click="approveRequestByField('date_of_birth')">{{ t('driver.card.allow') }}</n-button>
@@ -218,22 +218,22 @@
                   <n-form-item :label="t('driver.card.passportIssueDate')">
                     <n-date-picker
                       v-if="!isDriverContext"
-                      :value="form.passport_issue_date ? new Date(form.passport_issue_date).getTime() : null"
+                      :value="dateOnlyToPickerMs(form.passport_issue_date)"
                       type="date"
                       clearable
                       style="width: 100%"
-                      @update:value="(v: number | null) => { form.passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                      @update:value="(v: number | null) => { form.passport_issue_date = v ? formatDateOnlyFromMs(v) : null }"
                     />
                     <n-input v-else :value="form.passport_issue_date" disabled />
                   </n-form-item>
                   <n-form-item :label="t('driver.card.passportExpiryDate')">
                     <n-date-picker
                       v-if="!isDriverContext"
-                      :value="form.passport_expiry_date ? new Date(form.passport_expiry_date).getTime() : null"
+                      :value="dateOnlyToPickerMs(form.passport_expiry_date)"
                       type="date"
                       clearable
                       style="width: 100%"
-                      @update:value="(v: number | null) => { form.passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                      @update:value="(v: number | null) => { form.passport_expiry_date = v ? formatDateOnlyFromMs(v) : null }"
                     />
                     <n-input v-else :value="form.passport_expiry_date" disabled />
                   </n-form-item>
@@ -292,22 +292,22 @@
             </n-form-item>
             <n-form-item :label="t('driver.card.passportIssueDate')">
               <n-date-picker
-                :value="form.passport_issue_date ? new Date(form.passport_issue_date).getTime() : null"
+                :value="dateOnlyToPickerMs(form.passport_issue_date)"
                 type="date"
                 clearable
                 style="width: 100%"
                 :disabled="!isFieldEditable('passport_issue_date')"
-                @update:value="(v: number | null) => { form.passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                @update:value="(v: number | null) => { form.passport_issue_date = v ? formatDateOnlyFromMs(v) : null }"
               />
             </n-form-item>
             <n-form-item :label="t('driver.card.passportExpiryDate')">
               <n-date-picker
-                :value="form.passport_expiry_date ? new Date(form.passport_expiry_date).getTime() : null"
+                :value="dateOnlyToPickerMs(form.passport_expiry_date)"
                 type="date"
                 clearable
                 style="width: 100%"
                 :disabled="!isFieldEditable('passport_expiry_date')"
-                @update:value="(v: number | null) => { form.passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                @update:value="(v: number | null) => { form.passport_expiry_date = v ? formatDateOnlyFromMs(v) : null }"
               />
             </n-form-item>
             <n-form-item :label="t('driver.card.passportIssuedBy')">
@@ -368,22 +368,22 @@
               </n-form-item>
               <n-form-item :label="t('driver.card.passportIssueDate')">
                 <n-date-picker
-                  :value="form.extra_passports[0].passport_issue_date ? new Date(form.extra_passports[0].passport_issue_date).getTime() : null"
+                  :value="dateOnlyToPickerMs(form.extra_passports[0].passport_issue_date)"
                   type="date"
                   clearable
                   style="width: 100%"
                   :disabled="isPassport2Locked"
-                  @update:value="(v: number | null) => { form.extra_passports[0].passport_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                  @update:value="(v: number | null) => { form.extra_passports[0].passport_issue_date = v ? formatDateOnlyFromMs(v) : null }"
                 />
               </n-form-item>
               <n-form-item :label="t('driver.card.passportExpiryDate')">
                 <n-date-picker
-                  :value="form.extra_passports[0].passport_expiry_date ? new Date(form.extra_passports[0].passport_expiry_date).getTime() : null"
+                  :value="dateOnlyToPickerMs(form.extra_passports[0].passport_expiry_date)"
                   type="date"
                   clearable
                   style="width: 100%"
                   :disabled="isPassport2Locked"
-                  @update:value="(v: number | null) => { form.extra_passports[0].passport_expiry_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                  @update:value="(v: number | null) => { form.extra_passports[0].passport_expiry_date = v ? formatDateOnlyFromMs(v) : null }"
                 />
               </n-form-item>
               <n-form-item :label="t('driver.card.passportIssuedBy')">
@@ -460,20 +460,20 @@
             </n-form-item>
             <n-form-item :label="t('driver.card.passportIssueDate')">
               <n-date-picker
-                :value="form.license_issue_date ? new Date(form.license_issue_date).getTime() : null"
+                :value="dateOnlyToPickerMs(form.license_issue_date)"
                 type="date"
                 clearable
                 style="width: 100%"
-                @update:value="(v: number | null) => { form.license_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                @update:value="(v: number | null) => { form.license_issue_date = v ? formatDateOnlyFromMs(v) : null }"
               />
             </n-form-item>
             <n-form-item :label="t('driver.card.passportExpiryDate')">
               <n-date-picker
-                :value="form.license_expiry ? new Date(form.license_expiry).getTime() : null"
+                :value="dateOnlyToPickerMs(form.license_expiry)"
                 type="date"
                 clearable
                 style="width: 100%"
-                @update:value="(v: number | null) => { form.license_expiry = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                @update:value="(v: number | null) => { form.license_expiry = v ? formatDateOnlyFromMs(v) : null }"
               />
             </n-form-item>
             <n-form-item :label="t('driver.card.adrIssuedBy')">
@@ -515,11 +515,11 @@
             </n-form-item>
             <n-form-item :label="t('driver.documents.validUntil')">
               <n-date-picker
-                :value="form.last_medical_examination_date ? new Date(form.last_medical_examination_date).getTime() : null"
+                :value="dateOnlyToPickerMs(form.last_medical_examination_date)"
                 type="date"
                 clearable
                 style="width: 100%"
-                @update:value="(v: number | null) => { form.last_medical_examination_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                @update:value="(v: number | null) => { form.last_medical_examination_date = v ? formatDateOnlyFromMs(v) : null }"
               />
             </n-form-item>
             <n-form-item :label="t('driver.card.hireSource')">
@@ -553,20 +553,20 @@
             </n-form-item>
             <n-form-item :label="t('driver.documents.issueDate')">
               <n-date-picker
-                :value="form.permission_issue_date ? new Date(form.permission_issue_date).getTime() : null"
+                :value="dateOnlyToPickerMs(form.permission_issue_date)"
                 type="date"
                 clearable
                 style="width: 100%"
-                @update:value="(v: number | null) => { form.permission_issue_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                @update:value="(v: number | null) => { form.permission_issue_date = v ? formatDateOnlyFromMs(v) : null }"
               />
             </n-form-item>
             <n-form-item :label="t('driver.card.intlLicenseValidity')">
               <n-date-picker
-                :value="form.permission_validity_date ? new Date(form.permission_validity_date).getTime() : null"
+                :value="dateOnlyToPickerMs(form.permission_validity_date)"
                 type="date"
                 clearable
                 style="width: 100%"
-                @update:value="(v: number | null) => { form.permission_validity_date = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                @update:value="(v: number | null) => { form.permission_validity_date = v ? formatDateOnlyFromMs(v) : null }"
               />
             </n-form-item>
             <n-form-item :label="t('driver.card.medicalCertificate')">

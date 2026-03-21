@@ -1,3 +1,5 @@
+import { formatDateOnlyFromMs } from '~/utils/dateOnly'
+
 /**
  * Оповещения водителя: документы с истекающим сроком (< 30 дней).
  * Не показываем алерт по старому паспорту/ВУ, если есть более новый документ (добавлен через «Добавить документы»).
@@ -53,7 +55,7 @@ export function useDriverAlerts() {
             id: idSuffix ? `${type}-${idSuffix}` : `${type}-${dateStr}`,
             type,
             title,
-            expiryDate: d.toISOString().slice(0, 10),
+            expiryDate: formatDateOnlyFromMs(d.getTime()) ?? '',
             daysLeft: days,
             isExpired: days < 0,
           })
@@ -101,7 +103,7 @@ export function useDriverAlerts() {
             id: 'medical-expiry',
             type: 'medical',
             title: t('driver.alerts.medicalExpiry'),
-            expiryDate: medExpiry.toISOString().slice(0, 10),
+            expiryDate: formatDateOnlyFromMs(medExpiry.getTime()) ?? '',
             daysLeft: days,
             isExpired: days < 0,
           })

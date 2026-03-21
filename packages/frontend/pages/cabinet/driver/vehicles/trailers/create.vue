@@ -169,7 +169,7 @@
               <n-date-picker
                 v-model:value="insuranceTs"
                 type="date" clearable style="max-width:200px"
-                @update:value="(v: number | null) => { form.insuranceExpiresAt = v ? new Date(v).toISOString().slice(0,10) : null }"
+                @update:value="(v: number | null) => { form.insuranceExpiresAt = v ? formatDateOnlyFromMs(v) : null }"
               />
             </n-form-item>
           </n-gi>
@@ -275,7 +275,7 @@ const form = reactive({
 })
 
 const insuranceTs = computed({
-  get: () => form.insuranceExpiresAt ? new Date(form.insuranceExpiresAt).getTime() : null,
+  get: () => dateOnlyToPickerMs(form.insuranceExpiresAt),
   set: () => {},
 })
 

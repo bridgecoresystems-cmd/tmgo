@@ -1501,7 +1501,7 @@
     "tasksDone": "tasks",
     "dayN": "Day {n}",
     "todayPlan": "Today on the plan",
-    "anchorHint": "Day 1 = Monday 10 Mar 2026 (week of your 12 Mar start). Dates are working Mon–Fri.",
+    "anchorHint": "Day 1 = Thursday 12 Mar 2026. Following days are the next working days (Sat–Sun skipped).",
     "notesPlaceholder": "Note / backend status…",
     "saving": "Saving…",
     "saved": "Saved",

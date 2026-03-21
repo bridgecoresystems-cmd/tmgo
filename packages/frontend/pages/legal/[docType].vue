@@ -1,32 +1,35 @@
 <template>
   <div class="legal-page">
-    <div class="legal-container">
-      <n-spin v-if="loading" style="display:block;text-align:center;padding:60px 0" />
+    <div class="legal-main">
+      <div class="legal-container">
+        <n-spin v-if="loading" style="display:block;text-align:center;padding:60px 0" />
 
-      <n-result
-        v-else-if="notFound"
-        status="404"
-        :title="t('legalDocs.public.notAvailable')"
-        :description="t('legalDocs.public.notAvailableDesc')"
-      >
-        <template #footer>
-          <n-button @click="navigateTo('/')">{{ t('common.backToHome') }}</n-button>
-        </template>
-      </n-result>
+        <n-result
+          v-else-if="notFound"
+          status="404"
+          :title="t('legalDocs.public.notAvailable')"
+          :description="t('legalDocs.public.notAvailableDesc')"
+        >
+          <template #footer>
+            <n-button @click="navigateTo('/')">{{ t('common.backToHome') }}</n-button>
+          </template>
+        </n-result>
 
-      <article v-else class="legal-article">
-        <header class="legal-header">
-          <h1 class="legal-title">{{ doc.title }}</h1>
-          <div class="legal-meta">
-            <n-tag size="small" type="success">v{{ doc.version }}</n-tag>
-            <n-text depth="3" style="font-size:13px;" v-if="doc.effectiveDate">
-              {{ t('legalDocs.public.effectiveFrom') }}: {{ new Date(doc.effectiveDate).toLocaleDateString('ru-RU') }}
-            </n-text>
-          </div>
-        </header>
-        <div class="legal-content" v-html="renderedContent" />
-      </article>
+        <article v-else class="legal-article">
+          <header class="legal-header">
+            <h1 class="legal-title">{{ doc.title }}</h1>
+            <div class="legal-meta">
+              <n-tag size="small" type="success">v{{ doc.version }}</n-tag>
+              <n-text depth="3" style="font-size:13px;" v-if="doc.effectiveDate">
+                {{ t('legalDocs.public.effectiveFrom') }}: {{ new Date(doc.effectiveDate).toLocaleDateString('ru-RU') }}
+              </n-text>
+            </div>
+          </header>
+          <div class="legal-content" v-html="renderedContent" />
+        </article>
+      </div>
     </div>
+    <footer class="page-footer">{{ $t('layout.footer') }}</footer>
   </div>
 </template>
 
@@ -80,14 +83,36 @@ useSeoMeta({
 </script>
 
 <style scoped>
+/* Как auth.vue: мало контента — футер внизу экрана; много — скролл, футер внизу страницы */
 .legal-page {
-  background: #fff;
+  display: flex;
+  flex-direction: column;
   min-height: calc(100vh - 80px);
+  min-height: calc(100dvh - 80px);
+  box-sizing: border-box;
+  background: #fff;
+}
+.legal-main {
+  flex: 1 1 auto;
+  width: 100%;
 }
 .legal-container {
   max-width: 860px;
   margin: 0 auto;
   padding: 48px 24px;
+}
+.page-footer {
+  flex-shrink: 0;
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  min-height: 60px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+  font-size: 14px;
+  color: #666;
+  border-top: 1px solid #e8e8e8;
 }
 .legal-header {
   margin-bottom: 32px;

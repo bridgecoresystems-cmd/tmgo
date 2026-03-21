@@ -113,10 +113,10 @@
                   </n-space>
                 </template>
                 <n-date-picker
-                  :value="form.date_of_birth ? new Date(form.date_of_birth).getTime() : null"
+                  :value="dateOnlyToPickerMs(form.date_of_birth)"
                   type="date"
                   clearable
-                  @update:value="(v) => { form.date_of_birth = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                  @update:value="(v) => { form.date_of_birth = v ? formatDateOnlyFromMs(v) : null }"
                 />
               </n-form-item>
 
@@ -306,17 +306,17 @@
                 <n-form-item :label="t('driver.card.validityDates')" :required="pi === 0">
                   <n-space align="center">
                     <n-date-picker
-                      :value="p.issued_at ? new Date(p.issued_at).getTime() : null"
+                      :value="dateOnlyToPickerMs(p.issued_at)"
                       type="date"
                       :placeholder="t('driver.documents.issueDate')"
-                      @update:value="(v) => { p.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                      @update:value="(v) => { p.issued_at = v ? formatDateOnlyFromMs(v) : null }"
                     />
                     <n-text depth="3">—</n-text>
                     <n-date-picker
-                      :value="p.expires_at ? new Date(p.expires_at).getTime() : null"
+                      :value="dateOnlyToPickerMs(p.expires_at)"
                       type="date"
                       :placeholder="t('driver.documents.expiryDate')"
-                      @update:value="(v) => { p.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                      @update:value="(v) => { p.expires_at = v ? formatDateOnlyFromMs(v) : null }"
                     />
                   </n-space>
                 </n-form-item>
@@ -378,17 +378,17 @@
                 <n-form-item :label="t('driver.card.licenseValidityDates')" :required="li === 0">
                   <n-space align="center">
                     <n-date-picker
-                      :value="lic.issued_at ? new Date(lic.issued_at).getTime() : null"
+                      :value="dateOnlyToPickerMs(lic.issued_at)"
                       type="date"
                       :placeholder="t('driver.documents.issueDate')"
-                      @update:value="(v) => { lic.issued_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                      @update:value="(v) => { lic.issued_at = v ? formatDateOnlyFromMs(v) : null }"
                     />
                     <n-text depth="3">—</n-text>
                     <n-date-picker
-                      :value="lic.expires_at ? new Date(lic.expires_at).getTime() : null"
+                      :value="dateOnlyToPickerMs(lic.expires_at)"
                       type="date"
                       :placeholder="t('driver.documents.expiryDate')"
-                      @update:value="(v) => { lic.expires_at = v ? new Date(v).toISOString().slice(0, 10) : null }"
+                      @update:value="(v) => { lic.expires_at = v ? formatDateOnlyFromMs(v) : null }"
                     />
                   </n-space>
                 </n-form-item>
@@ -467,17 +467,17 @@
                 <n-form-item :label="t('driver.card.visaDateRange')">
                   <n-space align="center">
                     <n-date-picker
-                      :value="v.issued_at ? new Date(v.issued_at).getTime() : null"
+                      :value="dateOnlyToPickerMs(v.issued_at)"
                       type="date"
                       :placeholder="t('driver.documents.startDate')"
-                      @update:value="(val) => { v.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                      @update:value="(val) => { v.issued_at = val ? formatDateOnlyFromMs(val) : null }"
                     />
                     <n-text depth="3">—</n-text>
                     <n-date-picker
-                      :value="v.expires_at ? new Date(v.expires_at).getTime() : null"
+                      :value="dateOnlyToPickerMs(v.expires_at)"
                       type="date"
                       :placeholder="t('driver.documents.expiryDate')"
-                      @update:value="(val) => { v.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                      @update:value="(val) => { v.expires_at = val ? formatDateOnlyFromMs(val) : null }"
                     />
                   </n-space>
                 </n-form-item>
@@ -516,18 +516,18 @@
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.issueDate')">
                   <n-date-picker
-                    :value="m.issued_at ? new Date(m.issued_at).getTime() : null"
+                    :value="dateOnlyToPickerMs(m.issued_at)"
                     type="date"
                     :placeholder="t('driver.documents.issueDate')"
-                    @update:value="(val) => { m.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    @update:value="(val) => { m.issued_at = val ? formatDateOnlyFromMs(val) : null }"
                   />
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.expiryDate')">
                   <n-date-picker
-                    :value="m.expires_at ? new Date(m.expires_at).getTime() : null"
+                    :value="dateOnlyToPickerMs(m.expires_at)"
                     type="date"
                     :placeholder="t('driver.documents.expiryDate')"
-                    @update:value="(val) => { m.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    @update:value="(val) => { m.expires_at = val ? formatDateOnlyFromMs(val) : null }"
                   />
                 </n-form-item>
                 <n-form-item :label="t('driver.card.scanMedical')">
@@ -568,18 +568,18 @@
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.receiptDate')">
                   <n-date-picker
-                    :value="tm.issued_at ? new Date(tm.issued_at).getTime() : null"
+                    :value="dateOnlyToPickerMs(tm.issued_at)"
                     type="date"
                     :placeholder="t('driver.documents.receiptDate')"
-                    @update:value="(val) => { tm.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    @update:value="(val) => { tm.issued_at = val ? formatDateOnlyFromMs(val) : null }"
                   />
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.expiryDate')">
                   <n-date-picker
-                    :value="tm.expires_at ? new Date(tm.expires_at).getTime() : null"
+                    :value="dateOnlyToPickerMs(tm.expires_at)"
                     type="date"
                     :placeholder="t('driver.documents.expiryDate')"
-                    @update:value="(val) => { tm.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    @update:value="(val) => { tm.expires_at = val ? formatDateOnlyFromMs(val) : null }"
                   />
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.docScan')">
@@ -620,18 +620,18 @@
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.issueDate')">
                   <n-date-picker
-                    :value="tc.issued_at ? new Date(tc.issued_at).getTime() : null"
+                    :value="dateOnlyToPickerMs(tc.issued_at)"
                     type="date"
                     :placeholder="t('driver.documents.issueDate')"
-                    @update:value="(val) => { tc.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    @update:value="(val) => { tc.issued_at = val ? formatDateOnlyFromMs(val) : null }"
                   />
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.expiryDate')">
                   <n-date-picker
-                    :value="tc.expires_at ? new Date(tc.expires_at).getTime() : null"
+                    :value="dateOnlyToPickerMs(tc.expires_at)"
                     type="date"
                     :placeholder="t('driver.documents.expiryDate')"
-                    @update:value="(val) => { tc.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    @update:value="(val) => { tc.expires_at = val ? formatDateOnlyFromMs(val) : null }"
                   />
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.docScan')">
@@ -679,18 +679,18 @@
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.issueDate')">
                   <n-date-picker
-                    :value="a.issued_at ? new Date(a.issued_at).getTime() : null"
+                    :value="dateOnlyToPickerMs(a.issued_at)"
                     type="date"
                     :placeholder="t('driver.documents.issueDate')"
-                    @update:value="(val) => { a.issued_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    @update:value="(val) => { a.issued_at = val ? formatDateOnlyFromMs(val) : null }"
                   />
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.expiryDate')">
                   <n-date-picker
-                    :value="a.expires_at ? new Date(a.expires_at).getTime() : null"
+                    :value="dateOnlyToPickerMs(a.expires_at)"
                     type="date"
                     :placeholder="t('driver.documents.expiryDate')"
-                    @update:value="(val) => { a.expires_at = val ? new Date(val).toISOString().slice(0, 10) : null }"
+                    @update:value="(val) => { a.expires_at = val ? formatDateOnlyFromMs(val) : null }"
                   />
                 </n-form-item>
                 <n-form-item :label="t('driver.documents.docScan')">
