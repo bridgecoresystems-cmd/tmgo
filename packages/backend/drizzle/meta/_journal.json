@@ -141,6 +141,13 @@
       "when": 1773267400000,
       "tag": "0024_mvp_roadmap_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1773267500000,
+      "tag": "0025_users_and_better_auth",
+      "breakpoints": true
     }
   ]
 }

@@ -14,12 +14,12 @@ import {
 
 // --- Better Auth required tables ---
 
-export const users = pgTable('user', {
-  id: text('id').primaryKey(),
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
-  image: text('image'),
+  image: text('avatar_url'),
   phone: text('phone'),
   role: text('role')
     .$type<'client' | 'driver' | 'dispatcher' | 'admin'>()
@@ -38,7 +38,7 @@ export const sessions = pgTable('session', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
-  userId: text('user_id')
+  userId: uuid('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
 });
@@ -47,7 +47,7 @@ export const accounts = pgTable('account', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
-  userId: text('user_id')
+  userId: uuid('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   accessToken: text('access_token'),
@@ -169,7 +169,7 @@ export const vehicleModels = pgTable('vehicle_models', {
 
 export const carrierProfiles = pgTable('carrier_profiles', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id')
+  userId: uuid('user_id')
     .notNull()
     .unique()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -467,7 +467,7 @@ export const vehicles = pgTable('vehicles', {
 
 export const orders = pgTable('orders', {
   id: uuid('id').primaryKey().defaultRandom(),
-  clientId: text('client_id')
+  clientId: uuid('client_id')
     .references(() => users.id)
     .notNull(),
   carrierId: uuid('carrier_id').references(() => carrierProfiles.id),
@@ -551,7 +551,7 @@ export const mailingMessages = pgTable('mailing_message', {
   title: text('title').notNull(),
   content: text('content').notNull(),
   recipientType: text('recipient_type').notNull().default('all'),
-  createdById: text('created_by_id')
+  createdById: uuid('created_by_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   scheduledAt: timestamp('scheduled_at', { withTimezone: true, mode: 'date' }),
@@ -566,7 +566,7 @@ export const mailingRecipients = pgTable('mailing_recipient', {
   messageId: integer('message_id')
     .notNull()
     .references(() => mailingMessages.id, { onDelete: 'cascade' }),
-  recipientId: text('recipient_id')
+  recipientId: uuid('recipient_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   isRead: boolean('is_read').default(false).notNull(),
@@ -600,7 +600,7 @@ export const orderMessages = pgTable('order_messages', {
   orderId: uuid('order_id')
     .references(() => orders.id)
     .notNull(),
-  senderId: text('sender_id')
+  senderId: uuid('sender_id')
     .references(() => users.id)
     .notNull(),
   message: text('message').notNull(),

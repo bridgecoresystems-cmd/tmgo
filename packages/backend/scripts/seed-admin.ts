@@ -37,7 +37,7 @@ async function seedAdmin() {
     cost: 10,
   });
 
-  const userId = generateId();
+  const userId = crypto.randomUUID();
 
   await db.insert(users).values({
     id: userId,
