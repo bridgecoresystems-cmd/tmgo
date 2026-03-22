@@ -148,6 +148,13 @@
       "when": 1773267500000,
       "tag": "0025_users_and_better_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1773267600000,
+      "tag": "0026_cities",
+      "breakpoints": true
     }
   ]
 }
