@@ -3,6 +3,7 @@ node_modules/
 .output/
 dist/
 .env
+packages/frontend/.env.production
 bun.lockb
 *.log
 .claude/
