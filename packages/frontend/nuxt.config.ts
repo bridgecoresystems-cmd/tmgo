@@ -1,9 +1,47 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const _dirname = dirname(fileURLToPath(import.meta.url))
+
+/** Парсинг .env без зависимости от vite — чтобы generate всегда подхватывал NUXT_PUBLIC_* из .env.production */
+function loadEnvFile(filePath: string): Record<string, string> {
+  const out: Record<string, string> = {}
+  if (!existsSync(filePath)) return out
+  for (const line of readFileSync(filePath, 'utf-8').split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eq = trimmed.indexOf('=')
+    if (eq === -1) continue
+    const key = trimmed.slice(0, eq).trim()
+    let val = trimmed.slice(eq + 1).trim()
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1)
+    }
+    out[key] = val
+  }
+  return out
+}
+
+const isProdBuild =
+  process.env.NODE_ENV === 'production' ||
+  process.env.npm_lifecycle_event === 'generate' ||
+  process.argv.some((a) => a === 'generate')
+const dotEnv = isProdBuild ? loadEnvFile(resolve(_dirname, '.env.production')) : {}
+const apiBase =
+  process.env.NUXT_PUBLIC_API_BASE || dotEnv.NUXT_PUBLIC_API_BASE || 'http://localhost:8000'
+const wsUrl =
+  process.env.NUXT_PUBLIC_WS_URL || dotEnv.NUXT_PUBLIC_WS_URL || 'ws://localhost:8000'
+
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000',
-      wsUrl: process.env.NUXT_PUBLIC_WS_URL || 'ws://localhost:8000',
+      apiBase,
+      wsUrl,
     },
   },
   devServer: {
