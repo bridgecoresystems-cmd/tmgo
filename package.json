@@ -12,6 +12,7 @@
     "build": "bun run build:backend && bun run build:frontend",
     "build:backend": "cd packages/backend && bun run build",
     "build:frontend": "cd packages/frontend && bun run build",
+    "generate:frontend": "cd packages/frontend && bun run generate",
     "db:generate": "cd packages/backend && bun run db:generate",
     "db:migrate": "cd packages/backend && bun run db:migrate",
     "db:push": "cd packages/backend && bun run db:push",
