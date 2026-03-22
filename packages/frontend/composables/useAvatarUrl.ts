@@ -13,13 +13,10 @@ export function useAvatarUrl(image: string | null | undefined) {
 
   const path = image.startsWith('/') ? image : `/${image}`
 
-  if (path.startsWith('/api/')) {
-    if (import.meta.client) {
-      const nuxtDev = import.meta.dev && window.location.port === '3000'
-      if (nuxtDev) return `${apiBase}${path}`
-      return path
-    }
-    return `${apiBase}${path}`
+  if (import.meta.client) {
+    const nuxtDev = import.meta.dev && window.location.port === '3000'
+    if (nuxtDev) return `${apiBase}${path}`
+    return path
   }
 
   return `${apiBase}${path}`
