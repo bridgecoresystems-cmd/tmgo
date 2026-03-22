@@ -1,0 +1,19 @@
+[Unit]
+Description=TMGO Nuxt frontend (Bun)
+After=network.target tmgo-backend.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/tmgo/packages/frontend
+Environment=NODE_ENV=production
+Environment=HOST=0.0.0.0
+Environment=PORT=3000
+Environment=NITRO_HOST=0.0.0.0
+Environment=NITRO_PORT=3000
+ExecStart=/root/.bun/bin/bun run .output/server/index.mjs
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

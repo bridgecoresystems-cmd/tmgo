@@ -31,6 +31,9 @@ const signInRateLimit = rateLimit({
 });
 
 const isProduction = process.env.NODE_ENV === 'production';
+/** Secure cookies only work over HTTPS — allow HTTP on IP / без SSL. */
+const useSecureSessionCookie =
+  isProduction && (process.env.BETTER_AUTH_URL || '').startsWith('https');
 
 async function getUserIdFromToken(request: Request): Promise<string | null> {
   const token = getToken(request);
@@ -43,7 +46,7 @@ async function getUserIdFromToken(request: Request): Promise<string | null> {
     .limit(1);
   return session?.userId ?? null;
 }
-const COOKIE_OPTS = `HttpOnly; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 30}${isProduction ? '; Secure' : ''}`;
+const COOKIE_OPTS = `HttpOnly; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 30}${useSecureSessionCookie ? '; Secure' : ''}`;
 const COOKIE_CLEAR = `better-auth.session_token=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`;
 
 function generateId(len = 32) {

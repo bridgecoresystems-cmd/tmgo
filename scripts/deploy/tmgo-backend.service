@@ -1,0 +1,15 @@
+[Unit]
+Description=TMGO Elysia API (Bun)
+After=network.target postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/tmgo/packages/backend
+EnvironmentFile=/opt/tmgo/packages/backend/.env
+ExecStart=/root/.bun/bin/bun run dist/index.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
