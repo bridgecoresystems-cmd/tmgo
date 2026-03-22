@@ -1,17 +1,26 @@
 /**
- * URL аватара для отображения. Пути `/api/auth/avatars/...` ведём на backend (NUXT_PUBLIC_API_BASE).
- * На статическом хостинге (Hostinger) нет Nitro-прокси `/api/avatar/` — только прямой URL API.
+ * URL аватара для отображения. В БД хранится `/api/auth/avatars/...`.
+ *
+ * Продакшен (один домен за nginx): относительный путь — тот же origin, что и страница
+ * (важно для www vs apex и Cloudflare; иначе img с apiBase на apex при открытии с www).
+ *
+ * Dev (Nuxt :3000, API :8000): полный apiBase, иначе браузер стучится в :3000.
  */
 export function useAvatarUrl(image: string | null | undefined) {
   const { apiBase } = useApiBase()
-  const result = (() => {
-    if (!image) return ''
-    if (image.startsWith('http')) return image
-    if (image.startsWith('/')) return `${apiBase}${image}`
-    return `${apiBase}/${image}`
-  })()
-  if (import.meta.dev) {
-    console.log('[useAvatarUrl]', { image, result, apiBase })
+  if (!image) return ''
+  if (image.startsWith('http')) return image
+
+  const path = image.startsWith('/') ? image : `/${image}`
+
+  if (path.startsWith('/api/')) {
+    if (import.meta.client) {
+      const nuxtDev = import.meta.dev && window.location.port === '3000'
+      if (nuxtDev) return `${apiBase}${path}`
+      return path
+    }
+    return `${apiBase}${path}`
   }
-  return result
+
+  return `${apiBase}${path}`
 }
