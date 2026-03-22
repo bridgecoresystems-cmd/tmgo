@@ -1,0 +1,36 @@
+# Деплой на свой VPS по SSH при push в master.
+#
+# Secrets (Settings → Secrets and variables → Actions):
+#   DEPLOY_HOST       — IP или hostname VPS (например 187.124.172.243)
+#   DEPLOY_USER       — пользователь SSH (часто root или deploy)
+#   DEPLOY_SSH_KEY    — приватный ключ (PEM), пара которого в ~/.ssh/authorized_keys на VPS
+#
+# На сервере один раз:
+#   - git clone в /opt/tmgo (или поменяй путь ниже)
+#   - Deploy key (read-only) в GitHub для git pull на VPS, либо HTTPS + credential
+#   - systemd unit для бэкенда (bun), nginx на статику + proxy :8000
+#
+# Ручной деплой на VPS: cd /opt/tmgo && git pull --ff-only origin master && ./scripts/deploy.sh
+
+name: Deploy VPS
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH — git pull + deploy
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /opt/tmgo
+            git pull --ff-only origin master
+            ./scripts/deploy.sh
