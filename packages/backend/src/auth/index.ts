@@ -43,7 +43,10 @@ export const auth = betterAuth({
     },
   },
 
-  trustedOrigins: [process.env.FRONTEND_URL || 'http://localhost:3000'],
+  trustedOrigins: (process.env.FRONTEND_URL || 'http://localhost:3000')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
 });
 
 export type Auth = typeof auth;
