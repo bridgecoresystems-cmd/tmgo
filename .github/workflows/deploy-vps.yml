@@ -1,16 +1,13 @@
-# Деплой на свой VPS по SSH при push в master.
+# Деплой на VPS при push в master.
 #
-# Secrets (Settings → Secrets and variables → Actions):
-#   DEPLOY_HOST       — IP или hostname VPS (например 187.124.172.243)
-#   DEPLOY_USER       — пользователь SSH (часто root или deploy)
-#   DEPLOY_SSH_KEY    — приватный ключ (PEM), пара которого в ~/.ssh/authorized_keys на VPS
+# GitHub Secrets (Settings → Secrets and variables → Actions):
+#   DEPLOY_HOST         — IP сервера (187.124.172.243)
+#   DEPLOY_USER         — пользователь SSH (root)
+#   DEPLOY_SSH_KEY      — приватный ключ (id_ed25519_tmgo_actions)
+#   NUXT_PUBLIC_API_BASE  — https://bcs301.site
+#   NUXT_PUBLIC_WS_URL    — wss://bcs301.site
 #
-# На сервере один раз:
-#   - git clone в /opt/tmgo (или поменяй путь ниже)
-#   - Deploy key (read-only) в GitHub для git pull на VPS, либо HTTPS + credential
-#   - systemd unit для бэкенда (bun), nginx на статику + proxy :8000
-#
-# Ручной деплой на VPS: cd /opt/tmgo && git pull --ff-only origin master && ./scripts/deploy.sh
+# Схема: сборка на Actions runner (7 GB RAM) → rsync артефактов на VPS → restart сервисов
 
 name: Deploy VPS
 
@@ -22,8 +19,49 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: SSH — git pull + deploy
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build backend
+        run: bun run build:backend
+
+      - name: Build frontend (SSR)
+        env:
+          NUXT_PUBLIC_API_BASE: ${{ secrets.NUXT_PUBLIC_API_BASE }}
+          NUXT_PUBLIC_WS_URL: ${{ secrets.NUXT_PUBLIC_WS_URL }}
+        run: bun run build:frontend
+
+      - name: Copy backend build to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "packages/backend/dist/"
+          target: "/opt/tmgo/packages/backend/"
+          strip_components: 2
+
+      - name: Copy frontend build to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "packages/frontend/.output/"
+          target: "/opt/tmgo/packages/frontend/"
+          strip_components: 2
+
+      - name: Run migrations + restart services
         uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -33,4 +71,8 @@ jobs:
             set -euo pipefail
             cd /opt/tmgo
             git pull --ff-only origin master
-            ./scripts/deploy.sh
+            cd packages/backend
+            bun run db:migrate
+            systemctl restart tmgo-backend
+            systemctl restart tmgo-frontend
+            echo "Deploy done ✓"
