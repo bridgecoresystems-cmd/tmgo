@@ -1,9 +1,9 @@
 # Деплой на VPS при push в master.
 #
 # GitHub Secrets (Settings → Secrets and variables → Actions):
-#   DEPLOY_HOST     — IP сервера (187.124.172.243)
-#   DEPLOY_USER     — пользователь SSH (root)
-#   DEPLOY_SSH_KEY  — приватный ключ (id_ed25519_tmgo_actions)
+#   DEPLOY_HOST         — IP сервера (187.124.172.243)
+#   DEPLOY_USER         — пользователь SSH (root)
+#   DEPLOY_SSH_KEY_B64  — приватный ключ закодированный в base64 (одна строка)
 
 name: Deploy VPS
 
@@ -17,14 +17,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY_B64 }}" | base64 -d > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            set -euo pipefail
-            cd /opt/tmgo
-            git pull --ff-only origin master
-            ./scripts/deploy.sh
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+              'set -euo pipefail
+               cd /opt/tmgo
+               git pull --ff-only origin master
+               ./scripts/deploy.sh'
