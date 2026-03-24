@@ -7,7 +7,7 @@
 #   NUXT_PUBLIC_API_BASE  — https://bcs301.site
 #   NUXT_PUBLIC_WS_URL    — wss://bcs301.site
 #
-# Схема: сборка на Actions runner (7 GB RAM) → scp архивов на VPS → extract + migrate + restart
+# Схема: сборка на Actions runner (7 GB RAM) → rsync артефактов на VPS → migrate + restart
 
 name: Deploy VPS
 
@@ -41,30 +41,26 @@ jobs:
           NUXT_PUBLIC_WS_URL: ${{ secrets.NUXT_PUBLIC_WS_URL }}
         run: bun run build:frontend
 
-      - name: Package artifacts
+      - name: Setup SSH
         run: |
-          tar -czf backend-dist.tar.gz -C packages/backend dist
-          tar -czf frontend-output.tar.gz -C packages/frontend .output
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Copy backend artifact to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "backend-dist.tar.gz"
-          target: "/tmp/"
+      - name: Sync artifacts to VPS
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            packages/backend/dist/ \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/tmgo/packages/backend/dist/
 
-      - name: Copy frontend artifact to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "frontend-output.tar.gz"
-          target: "/tmp/"
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            packages/frontend/.output/ \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/tmgo/packages/frontend/.output/
 
-      - name: Extract + migrate + restart
+      - name: Migrate + restart
         uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -73,16 +69,8 @@ jobs:
           script: |
             set -euo pipefail
             cd /opt/tmgo
-
             git pull --ff-only origin master
-
-            tar -xzf /tmp/backend-dist.tar.gz  -C /opt/tmgo/packages/backend/
-            tar -xzf /tmp/frontend-output.tar.gz -C /opt/tmgo/packages/frontend/
-            rm -f /tmp/backend-dist.tar.gz /tmp/frontend-output.tar.gz
-
             cd packages/backend && bun run db:migrate
-
             systemctl restart tmgo-backend
             systemctl restart tmgo-frontend
-
             echo "Deploy done ✓"
