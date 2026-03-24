@@ -43,16 +43,25 @@ jobs:
 
       - name: Package artifacts
         run: |
-          tar -czf /tmp/backend-dist.tar.gz -C packages/backend dist
-          tar -czf /tmp/frontend-output.tar.gz -C packages/frontend .output
+          tar -czf backend-dist.tar.gz -C packages/backend dist
+          tar -czf frontend-output.tar.gz -C packages/frontend .output
 
-      - name: Copy artifacts to VPS
+      - name: Copy backend artifact to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "/tmp/backend-dist.tar.gz,/tmp/frontend-output.tar.gz"
+          source: "backend-dist.tar.gz"
+          target: "/tmp/"
+
+      - name: Copy frontend artifact to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "frontend-output.tar.gz"
           target: "/tmp/"
 
       - name: Extract + migrate + restart
