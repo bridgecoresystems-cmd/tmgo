@@ -1,107 +1,122 @@
 <template>
-  <div class="onboarding-page">
-    <n-card :bordered="false" class="shadow-sm onboarding-card">
-      <n-steps :current="currentStep" :status="currentStatus">
-        <n-step :title="t('client.dashboard.contactData')" :description="t('client.dashboard.contactSubtitle')" />
-        <n-step :title="t('client.dashboard.documentsStep')" :description="t('client.dashboard.documentsSubtitle')" />
-        <n-step :title="t('client.dashboard.completion')" :description="t('client.dashboard.completionSubtitle')" />
-      </n-steps>
+  <div>
+    <!-- Verification prompt -->
+    <n-alert
+      v-if="profileStatus === 'none'"
+      type="warning"
+      :title="t('client.dashboard.verifyTitle')"
+      style="margin-bottom: 20px; border-radius: 12px; cursor: pointer;"
+      @click="navigateTo('/cabinet/client/verification')"
+    >
+      {{ t('client.dashboard.verifyText') }}
+      <template #action>
+        <n-button type="warning" size="small" @click.stop="navigateTo('/cabinet/client/verification')">
+          {{ t('client.dashboard.verifyBtn') }}
+        </n-button>
+      </template>
+    </n-alert>
 
-      <div class="step-content mt-40">
-        <div v-if="currentStep === 1">
-          <n-form :model="form" ref="formRef">
-            <n-grid :cols="2" :x-gap="24">
-              <n-gi>
-                <n-form-item :label="t('client.dashboard.fullName')" path="name">
-                  <n-input v-model:value="form.name" :placeholder="t('client.dashboard.fullNamePlaceholder')" />
-                </n-form-item>
-              </n-gi>
-              <n-gi>
-                <n-form-item :label="t('client.dashboard.phoneNumber')" path="phone">
-                  <n-input v-model:value="form.phone" placeholder="+993 ..." />
-                </n-form-item>
-              </n-gi>
-            </n-grid>
-            <n-button type="primary" size="large" @click="nextStep">{{ t('client.dashboard.next') }}</n-button>
-          </n-form>
-        </div>
+    <n-alert
+      v-else-if="profileStatus === 'pending'"
+      type="info"
+      :title="t('client.dashboard.pendingTitle')"
+      style="margin-bottom: 20px; border-radius: 12px;"
+    >
+      {{ t('client.dashboard.pendingText') }}
+    </n-alert>
 
-        <div v-if="currentStep === 2">
-          <n-alert :title="t('client.dashboard.security')" type="info" class="mb-20">
-            {{ t('client.dashboard.securityInfo') }}
-          </n-alert>
-          <n-grid :cols="2" :x-gap="24">
-            <n-gi>
-              <n-form-item :label="t('client.dashboard.passportSeriesNumber')">
-                <n-input v-model:value="form.passport" placeholder="I-AS 123456" />
-              </n-form-item>
-              <n-upload action="#" :default-upload="false">
-                <n-button>{{ t('client.dashboard.uploadPassport') }}</n-button>
-              </n-upload>
-            </n-gi>
-          </n-grid>
-          <n-space class="mt-20">
-            <n-button @click="prevStep">{{ t('client.dashboard.back') }}</n-button>
-            <n-button type="primary" size="large" @click="nextStep">{{ t('client.dashboard.sendForVerification') }}</n-button>
-          </n-space>
-        </div>
+    <n-alert
+      v-else-if="profileStatus === 'rejected'"
+      type="error"
+      :title="t('client.dashboard.rejectedTitle')"
+      style="margin-bottom: 20px; border-radius: 12px;"
+      closable
+    >
+      {{ profile?.rejectionReason ?? t('client.dashboard.rejectedText') }}
+      <template #action>
+        <n-button type="error" size="small" @click="navigateTo('/cabinet/client/verification')">
+          {{ t('client.dashboard.resubmitBtn') }}
+        </n-button>
+      </template>
+    </n-alert>
 
-        <div v-if="currentStep === 3" class="text-center py-40">
-          <n-result
-            status="success"
-            :title="t('client.dashboard.dataSent')"
-            :description="t('client.dashboard.dataDescription')"
-          >
-            <template #footer>
-              <n-button @click="navigateTo('/')">{{ t('client.dashboard.toMain') }}</n-button>
-            </template>
-          </n-result>
-        </div>
-      </div>
+    <!-- Dashboard cards -->
+    <n-grid :cols="isMobile ? 1 : 3" :x-gap="16" :y-gap="16" style="margin-bottom: 24px;">
+      <n-gi>
+        <n-card hoverable style="border-radius: 12px; cursor: pointer;" @click="navigateTo('/cabinet/client/orders')">
+          <n-statistic :label="t('client.dashboard.myOrders')" :value="stats.totalOrders" />
+        </n-card>
+      </n-gi>
+      <n-gi>
+        <n-card hoverable style="border-radius: 12px; cursor: pointer;" @click="navigateTo('/cabinet/client/orders?status=published,negotiating')">
+          <n-statistic :label="t('client.dashboard.activeOrders')" :value="stats.activeOrders" />
+        </n-card>
+      </n-gi>
+      <n-gi>
+        <n-card hoverable style="border-radius: 12px; cursor: pointer;" @click="navigateTo('/cabinet/client/orders?status=completed')">
+          <n-statistic :label="t('client.dashboard.completedOrders')" :value="stats.completedOrders" />
+        </n-card>
+      </n-gi>
+    </n-grid>
+
+    <!-- Quick actions -->
+    <n-card :title="t('client.dashboard.quickActions')" style="border-radius: 12px; margin-bottom: 24px;">
+      <n-space>
+        <n-button type="primary" @click="navigateTo('/cabinet/client/orders/create')">
+          {{ t('client.dashboard.createOrder') }}
+        </n-button>
+        <n-button @click="navigateTo('/cabinet/client/orders')">
+          {{ t('client.dashboard.viewOrders') }}
+        </n-button>
+      </n-space>
     </n-card>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useMessage } from 'naive-ui'
+
+definePageMeta({ layout: 'cabinet-client' })
+
 const { t } = useI18n()
-definePageMeta({ layout: 'cabinet-client',  })
+const { apiBase: API } = useApiBase()
+const route = useRoute()
+const message = useMessage()
 
-const { session } = useAuth()
+const isMobile = ref(false)
+const profile = ref<any>(null)
+const profileStatus = ref<'none' | 'unverified' | 'pending' | 'verified' | 'rejected'>('none')
+const stats = reactive({ totalOrders: 0, activeOrders: 0, completedOrders: 0 })
 
-const currentStep = ref(1)
-const currentStatus = ref<'process' | 'finish' | 'error' | 'wait'>('process')
-
-const form = reactive({
-  name: '',
-  phone: '',
-  passport: '',
-})
-
-onMounted(() => {
-  form.name = session.value?.user?.name || ''
-})
-
-const nextStep = () => {
-  if (currentStep.value < 3) currentStep.value++
+async function loadProfile() {
+  try {
+    const data = await $fetch<any>(`${API}/cabinet/client/profile`, { credentials: 'include' })
+    profile.value = data.profile
+    profileStatus.value = data.profile?.verificationStatus ?? 'unverified'
+  } catch (e: any) {
+    if (e?.status === 404 || e?.statusCode === 404) {
+      profileStatus.value = 'none'
+    }
+  }
 }
 
-const prevStep = () => {
-  if (currentStep.value > 1) currentStep.value--
+async function loadStats() {
+  try {
+    const data = await $fetch<any>(`${API}/cabinet/orders/my`, { credentials: 'include' })
+    const orders = data.orders ?? []
+    stats.totalOrders = orders.length
+    stats.activeOrders = orders.filter((o: any) => ['published', 'negotiating', 'confirmed', 'pickup', 'in_transit', 'delivering'].includes(o.order?.status ?? o.status)).length
+    stats.completedOrders = orders.filter((o: any) => (o.order?.status ?? o.status) === 'completed').length
+  } catch { /* ignore */ }
 }
+
+onMounted(async () => {
+  await loadProfile()
+  loadStats()
+
+  if (route.query.profile_created === 'true') {
+    message.success(t('client.dashboard.profileCreated'))
+    navigateTo('/cabinet/client', { replace: true })
+  }
+})
 </script>
-
-<style scoped>
-.mt-40 { margin-top: 40px; }
-.mb-20 { margin-bottom: 20px; }
-.py-40 { padding: 40px 0; }
-.text-center { text-align: center; }
-
-.onboarding-card {
-  border-radius: 20px;
-  padding: 40px;
-}
-
-.shadow-sm {
-  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-}
-</style>

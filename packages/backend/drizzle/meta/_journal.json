@@ -204,6 +204,13 @@
       "when": 1773268300000,
       "tag": "0028_client_profiles_orders_redesign",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1773268400000,
+      "tag": "0029_extend_client_profiles",
+      "breakpoints": true
     }
   ]
 }

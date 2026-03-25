@@ -84,6 +84,7 @@ import {
   MapOutline,
   MailOutline,
   PersonOutline,
+  ShieldCheckmarkOutline,
 } from '@vicons/ionicons5'
 
 const { t } = useI18n()
@@ -104,6 +105,7 @@ const menuOptions: MenuOption[] = [
   { label: t('layout.cabinet.menuMyOrders'), key: '/cabinet/client/orders', icon: renderIcon(CubeOutline) },
   { label: t('layout.cabinet.menuCarrierServices'), key: '/cabinet/client/services', icon: renderIcon(MapOutline) },
   { label: t('layout.cabinet.menuMailing'), key: '/cabinet/client/mailing', icon: renderIcon(MailOutline) },
+  { label: t('layout.cabinet.menuVerification'), key: '/cabinet/client/verification', icon: renderIcon(ShieldCheckmarkOutline) },
   { label: t('layout.cabinet.menuProfile'), key: '/cabinet/client/profile', icon: renderIcon(PersonOutline) },
 ]
 

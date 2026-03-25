@@ -131,6 +131,14 @@ export const clientIndividual = pgTable('client_individual', {
   docFileUrl: varchar('doc_file_url', { length: 500 }),
   docVerifiedAt: timestamp('doc_verified_at'),
 
+  phone: varchar('phone', { length: 30 }),
+  addressPostal: varchar('address_postal', { length: 20 }),
+  addressRegion: varchar('address_region', { length: 100 }),
+  addressCity: varchar('address_city', { length: 100 }),
+  addressDistrict: varchar('address_district', { length: 100 }),
+  addressStreet: varchar('address_street', { length: 200 }),
+  addressHouse: varchar('address_house', { length: 50 }),
+
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
@@ -142,13 +150,27 @@ export const clientCompany = pgTable('client_company', {
     .references(() => clientProfiles.id, { onDelete: 'cascade' }),
 
   companyName: varchar('company_name', { length: 300 }).notNull(),
+  shortName: varchar('short_name', { length: 200 }),
   legalForm: varchar('legal_form', { length: 50 }),
   taxId: varchar('tax_id', { length: 50 }),
   regNumber: varchar('reg_number', { length: 50 }),
 
+  website: varchar('website', { length: 300 }),
+  phone: varchar('phone', { length: 30 }),
+  additionalEmail: varchar('additional_email', { length: 200 }),
+
   bankName: varchar('bank_name', { length: 200 }),
   bankAccount: varchar('bank_account', { length: 50 }),
+  bankCode: varchar('bank_code', { length: 50 }),
   bankSwift: varchar('bank_swift', { length: 20 }),
+  bankCorrAccount: varchar('bank_corr_account', { length: 50 }),
+
+  addressPostal: varchar('address_postal', { length: 20 }),
+  addressRegion: varchar('address_region', { length: 100 }),
+  addressCity: varchar('address_city', { length: 100 }),
+  addressDistrict: varchar('address_district', { length: 100 }),
+  addressStreet: varchar('address_street', { length: 200 }),
+  addressHouse: varchar('address_house', { length: 50 }),
 
   docFileUrl: varchar('doc_file_url', { length: 500 }),
   docVerifiedAt: timestamp('doc_verified_at'),
