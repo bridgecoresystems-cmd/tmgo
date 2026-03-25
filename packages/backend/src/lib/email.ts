@@ -1,12 +1,22 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendInstance: Resend | null = null;
+
+function getResend(): Resend {
+  if (!resendInstance) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is not set');
+    }
+    resendInstance = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendInstance;
+}
 
 export async function sendVerificationEmail(to: string, token: string) {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   const verifyUrl = `${frontendUrl}/verify-email?token=${token}`;
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'AltynBurgut <noreply@altynburgut.com>',
     to,
     subject: 'Подтвердите ваш email — AltynBurgut',
