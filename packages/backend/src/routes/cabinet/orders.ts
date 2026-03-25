@@ -1,9 +1,18 @@
 import { Elysia, t } from 'elysia';
 import { db } from '../../db';
-import { orders, cities, orderResponses, carrierProfiles, vehicles, users } from '../../db/schema';
-import { eq, desc, and, ne } from 'drizzle-orm';
+import {
+  orders, orderCargo, orderBids, orderStatusLog, clientProfiles,
+} from '../../db/schema';
+import { eq, and, inArray, ne, sql, desc } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
-import { createTripSnapshot } from '../../lib/trip-snapshot';
+
+// Разрешённые переходы статусов для перевозчика
+const CARRIER_TRANSITIONS: Record<string, string> = {
+  confirmed: 'pickup',
+  pickup: 'in_transit',
+  in_transit: 'delivering',
+  delivering: 'delivered',
+};
 
 export const cabinetOrdersRoutes = new Elysia({ prefix: '/cabinet/orders' })
   .derive(async ({ request, set }) => {
@@ -12,298 +21,442 @@ export const cabinetOrdersRoutes = new Elysia({ prefix: '/cabinet/orders' })
       set.status = 401;
       throw new Error('Unauthorized');
     }
-    if (user.role !== 'client') {
-      set.status = 403;
-      throw new Error('Forbidden: only clients can create orders');
-    }
     return { user };
   })
-  .get('/', async ({ user }) => {
-    const rows = await db
-      .select({
-        id: orders.id,
-        status: orders.status,
-        fromAddress: orders.fromAddress,
-        toAddress: orders.toAddress,
-        price: orders.price,
-        currency: orders.currency,
-        cargoName: orders.cargoName,
-        cargoDescription: orders.cargoDescription,
-        createdAt: orders.createdAt,
-        fromCityName: cities.name,
-      })
+
+  // GET /cabinet/orders — доска заявок (для перевозчиков, публичные статусы)
+  .get('/', async ({ query }) => {
+    const params = query as {
+      status?: string;
+      fromCountry?: string;
+      toCountry?: string;
+      fromCity?: string;
+      toCity?: string;
+      cargoType?: string;
+      page?: string;
+      limit?: string;
+    };
+
+    const page = Math.max(1, parseInt(params.page ?? '1'));
+    const limit = Math.min(50, Math.max(1, parseInt(params.limit ?? '20')));
+    const offset = (page - 1) * limit;
+    const statusFilter = (params.status ?? 'published,negotiating').split(',');
+
+    const rows = await db.select({
+      id: orders.id,
+      orderType: orders.orderType,
+      status: orders.status,
+      title: orders.title,
+      price: orders.price,
+      currency: orders.currency,
+      priceType: orders.priceType,
+      fromCountry: orders.fromCountry,
+      fromRegion: orders.fromRegion,
+      fromCity: orders.fromCity,
+      toCountry: orders.toCountry,
+      toRegion: orders.toRegion,
+      toCity: orders.toCity,
+      readyDate: orders.readyDate,
+      deadlineDate: orders.deadlineDate,
+      publishedAt: orders.publishedAt,
+      expiresAt: orders.expiresAt,
+      createdAt: orders.createdAt,
+      cargoType: orderCargo.cargoType,
+      weightKg: orderCargo.weightKg,
+      volumeM3: orderCargo.volumeM3,
+      packaging: orderCargo.packaging,
+      tempControlled: orderCargo.tempControlled,
+    })
       .from(orders)
-      .leftJoin(cities, eq(orders.fromCityId, cities.id))
-      .where(eq(orders.clientId, user.id))
-      .orderBy(desc(orders.createdAt));
+      .leftJoin(orderCargo, eq(orderCargo.orderId, orders.id))
+      .where(inArray(orders.status, statusFilter))
+      .orderBy(desc(orders.createdAt))
+      .limit(limit)
+      .offset(offset);
 
-    return rows.map((r) => ({
-      id: r.id,
-      status: r.status,
-      from_city: r.fromCityName || r.fromAddress,
-      to_city: r.toAddress,
-      price: r.price,
-      currency: r.currency,
-      cargo_name: r.cargoName,
-      cargo_description: r.cargoDescription,
-      created_at: r.createdAt?.toISOString(),
-    }));
-  })
-  .post('/', async ({ user, body, set }) => {
-    const fromCityId = body.from_city_id as string;
-    const toCityId = body.to_city_id as string;
-    const price = parseFloat(body.price as string);
-    const cargoName = (body.cargo_name as string)?.trim() || null;
-    const cargoDescription = (body.cargo_description as string)?.trim() || null;
+    const bidsCount = await db.select({
+      orderId: orderBids.orderId,
+      count: sql<number>`count(*)::int`,
+    })
+      .from(orderBids)
+      .where(inArray(orderBids.orderId, rows.map(r => r.id)))
+      .groupBy(orderBids.orderId);
 
-    if (!fromCityId || !toCityId || isNaN(price) || price <= 0) {
-      set.status = 400;
-      return { error: 'from_city_id, to_city_id and price are required' };
-    }
-
-    const [fromCity] = await db.select().from(cities).where(eq(cities.id, fromCityId)).limit(1);
-    const [toCity] = await db.select().from(cities).where(eq(cities.id, toCityId)).limit(1);
-
-    if (!fromCity || !toCity) {
-      set.status = 400;
-      return { error: 'Invalid city' };
-    }
-
-    const pickupDate = new Date();
-    pickupDate.setDate(pickupDate.getDate() + 1);
-
-    const [created] = await db
-      .insert(orders)
-      .values({
-        clientId: user.id,
-        fromCityId,
-        toCityId,
-        fromAddress: fromCity.name,
-        toAddress: toCity.name,
-        pickupDate,
-        cargoType: 'general',
-        weight: '1',
-        cargoName,
-        cargoDescription,
-        price: price.toString(),
-        currency: 'TMT',
-        status: 'PENDING',
-      })
-      .returning();
+    const bidsMap = new Map(bidsCount.map(b => [b.orderId, b.count]));
 
     return {
-      id: created.id,
-      status: created.status,
-      from_city: fromCity.name,
-      to_city: toCity.name,
-      price: created.price,
-      currency: created.currency,
-      created_at: created.createdAt?.toISOString(),
+      orders: rows.map(r => ({ ...r, bidsCount: bidsMap.get(r.id) ?? 0 })),
+      page,
+      limit,
     };
+  })
+
+  // GET /cabinet/orders/my — мои заказы (для заказчика)
+  .get('/my', async ({ user, query, set }) => {
+    const [profile] = await db.select().from(clientProfiles)
+      .where(eq(clientProfiles.userId, user.id)).limit(1);
+    if (!profile) {
+      set.status = 404;
+      return { error: 'profile_required' };
+    }
+
+    const params = query as { status?: string; page?: string; limit?: string };
+    const page = Math.max(1, parseInt(params.page ?? '1'));
+    const limit = Math.min(50, Math.max(1, parseInt(params.limit ?? '20')));
+    const offset = (page - 1) * limit;
+
+    const whereClause = params.status
+      ? and(eq(orders.clientProfileId, profile.id), inArray(orders.status, params.status.split(',')))
+      : eq(orders.clientProfileId, profile.id);
+
+    const rows = await db.select()
+      .from(orders)
+      .leftJoin(orderCargo, eq(orderCargo.orderId, orders.id))
+      .where(whereClause)
+      .orderBy(desc(orders.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return { orders: rows, page, limit };
+  })
+
+  // POST /cabinet/orders — создать заявку (draft)
+  .post('/', async ({ user, body, set }) => {
+    const [profile] = await db.select().from(clientProfiles)
+      .where(eq(clientProfiles.userId, user.id)).limit(1);
+    if (!profile) {
+      set.status = 400;
+      return { error: 'profile_required' };
+    }
+
+    const [order] = await db.insert(orders).values({
+      clientProfileId: profile.id,
+      title: body.title,
+      fromCountry: body.fromCountry,
+      fromRegion: body.fromRegion ?? null,
+      fromCity: body.fromCity,
+      toCountry: body.toCountry,
+      toRegion: body.toRegion ?? null,
+      toCity: body.toCity,
+      readyDate: body.readyDate,
+      deadlineDate: body.deadlineDate ?? null,
+      price: body.price?.toString() ?? null,
+      currency: body.currency ?? 'USD',
+      status: 'draft',
+    }).returning();
+
+    const [cargo] = await db.insert(orderCargo).values({
+      orderId: order.id,
+      cargoType: body.cargo.cargoType,
+      weightKg: body.cargo.weightKg?.toString() ?? null,
+      volumeM3: body.cargo.volumeM3?.toString() ?? null,
+      packaging: body.cargo.packaging ?? null,
+      tempControlled: body.cargo.tempControlled ?? false,
+      tempMin: body.cargo.tempMin?.toString() ?? null,
+      tempMax: body.cargo.tempMax?.toString() ?? null,
+      notes: body.cargo.notes ?? null,
+    }).returning();
+
+    return { order, cargo, clientVerified: profile.verificationStatus === 'verified' };
   }, {
     body: t.Object({
-      from_city_id: t.String(),
-      to_city_id: t.String(),
-      price: t.Union([t.String(), t.Number()]),
-      cargo_name: t.Optional(t.String()),
-      cargo_description: t.Optional(t.String()),
+      title: t.String(),
+      fromCountry: t.String({ minLength: 2, maxLength: 2 }),
+      fromRegion: t.Optional(t.String()),
+      fromCity: t.String(),
+      toCountry: t.String({ minLength: 2, maxLength: 2 }),
+      toRegion: t.Optional(t.String()),
+      toCity: t.String(),
+      readyDate: t.String(),
+      deadlineDate: t.Optional(t.String()),
+      price: t.Optional(t.Number()),
+      currency: t.Optional(t.String()),
+      cargo: t.Object({
+        cargoType: t.String(),
+        weightKg: t.Optional(t.Number()),
+        volumeM3: t.Optional(t.Number()),
+        packaging: t.Optional(t.String()),
+        tempControlled: t.Optional(t.Boolean()),
+        tempMin: t.Optional(t.Number()),
+        tempMax: t.Optional(t.Number()),
+        notes: t.Optional(t.String()),
+      }),
     }),
   })
+
+  // GET /cabinet/orders/:id — получить заказ
   .get('/:id', async ({ user, params, set }) => {
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(and(eq(orders.clientId, user.id), eq(orders.id, params.id)))
-      .limit(1);
+    const [profile] = await db.select().from(clientProfiles)
+      .where(eq(clientProfiles.userId, user.id)).limit(1);
+
+    const [order] = await db.select().from(orders)
+      .where(eq(orders.id, params.id)).limit(1);
     if (!order) {
       set.status = 404;
-      return { error: 'Not found' };
+      return { error: 'not_found' };
     }
 
-    const [fromCity] = order.fromCityId
-      ? await db.select().from(cities).where(eq(cities.id, order.fromCityId)).limit(1)
-      : [null];
-    const [toCity] = order.toCityId
-      ? await db.select().from(cities).where(eq(cities.id, order.toCityId)).limit(1)
-      : [null];
+    const [cargo] = await db.select().from(orderCargo)
+      .where(eq(orderCargo.orderId, order.id)).limit(1);
 
-    const responses = await db
-      .select()
-      .from(orderResponses)
-      .where(eq(orderResponses.orderId, params.id));
+    const statusLogs = await db.select().from(orderStatusLog)
+      .where(eq(orderStatusLog.orderId, order.id))
+      .orderBy(desc(orderStatusLog.createdAt));
 
-    const pendingResponses: any[] = [];
-    const acceptedResponses: any[] = [];
+    // Ставки видны только владельцу заказа
+    const isOwner = profile && order.clientProfileId === profile.id;
+    const bids = isOwner
+      ? await db.select().from(orderBids).where(eq(orderBids.orderId, order.id))
+      : [];
 
-    for (const r of responses) {
-      const [carrier] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.id, r.carrierId)).limit(1);
-      const [vehicle] = await db.select().from(vehicles).where(eq(vehicles.id, r.vehicleId)).limit(1);
-      const [carrierUser] = carrier ? await db.select().from(users).where(eq(users.id, carrier.userId)).limit(1) : [null];
-      const item = {
-        id: r.id,
-        carrier_id: r.carrierId,
-        vehicle_id: r.vehicleId,
-        vehicle_plate: vehicle?.plateNumber,
-        vehicle_type: vehicle?.type,
-        company_name: carrier?.companyName,
-        driver_name: carrierUser?.name,
-        status: r.status,
-        created_at: r.createdAt?.toISOString(),
-      };
-      if (r.status === 'PENDING') pendingResponses.push(item);
-      else if (r.status === 'ACCEPTED') acceptedResponses.push(item);
-    }
-
-    return {
-      id: order.id,
-      status: order.status,
-      from_city_id: order.fromCityId,
-      to_city_id: order.toCityId,
-      from_city: fromCity?.name || order.fromAddress,
-      to_city: toCity?.name || order.toAddress,
-      from_address: order.fromAddress,
-      to_address: order.toAddress,
-      price: order.price,
-      currency: order.currency,
-      cargo_name: order.cargoName,
-      cargo_description: order.cargoDescription,
-      created_at: order.createdAt?.toISOString(),
-      pending_responses: pendingResponses,
-      accepted_responses: acceptedResponses,
-    };
+    return { order, cargo, bids, statusLogs };
   })
-  .post('/:id/responses/:responseId/accept', async ({ user, params, set }) => {
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(and(eq(orders.clientId, user.id), eq(orders.id, params.id)))
-      .limit(1);
-    if (!order) {
-      set.status = 404;
-      return { error: 'Order not found' };
-    }
-    if (order.carrierId) {
-      set.status = 400;
-      return { error: 'Order already has an accepted driver' };
-    }
 
-    const [resp] = await db
-      .select()
-      .from(orderResponses)
-      .where(and(eq(orderResponses.orderId, params.id), eq(orderResponses.id, params.responseId), eq(orderResponses.status, 'PENDING')))
-      .limit(1);
-    if (!resp) {
-      set.status = 404;
-      return { error: 'Response not found' };
-    }
+  // PATCH /cabinet/orders/:id/publish — опубликовать заявку
+  .patch('/:id/publish', async ({ user, params, set }) => {
+    const [profile] = await db.select().from(clientProfiles)
+      .where(eq(clientProfiles.userId, user.id)).limit(1);
+    if (!profile) { set.status = 400; return { error: 'profile_required' }; }
 
-    const snapshot = await createTripSnapshot(resp.carrierId);
+    const [order] = await db.select().from(orders)
+      .where(and(eq(orders.id, params.id), eq(orders.clientProfileId, profile.id))).limit(1);
+    if (!order) { set.status = 404; return { error: 'not_found' }; }
+    if (order.status !== 'draft') { set.status = 400; return { error: 'only_draft_can_be_published' }; }
 
-    await db.transaction(async (tx) => {
-      await tx.update(orders).set({
-        carrierId: resp.carrierId,
-        vehicleId: resp.vehicleId,
-        status: 'ACCEPTED',
-        snapshotPassportId: snapshot.passportId,
-        snapshotLicenseId: snapshot.driversLicenseId,
-        snapshotVehicleId: snapshot.vehicleId,
-        snapshotCreatedAt: snapshot.snapshotAt,
-        updatedAt: new Date(),
-      }).where(eq(orders.id, params.id));
-      await tx.update(orderResponses).set({ status: 'ACCEPTED' }).where(eq(orderResponses.id, params.responseId));
-      await tx.update(orderResponses).set({ status: 'REJECTED' }).where(and(eq(orderResponses.orderId, params.id), eq(orderResponses.status, 'PENDING'), ne(orderResponses.id, params.responseId)));
+    // expiresAt = readyDate + 7 дней
+    const readyDate = new Date(order.readyDate);
+    const expiresAt = new Date(readyDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+
+    const [updated] = await db.update(orders).set({
+      status: 'published',
+      publishedAt: now,
+      expiresAt,
+      updatedAt: now,
+    }).where(eq(orders.id, order.id)).returning();
+
+    await db.insert(orderStatusLog).values({
+      orderId: order.id,
+      changedBy: user.id,
+      oldStatus: 'draft',
+      newStatus: 'published',
     });
 
-    return { message: 'Driver accepted', order_id: params.id };
+    return { order: updated };
   })
-  .post('/:id/responses/:responseId/reject', async ({ user, params, set }) => {
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(and(eq(orders.clientId, user.id), eq(orders.id, params.id)))
-      .limit(1);
-    if (!order) {
-      set.status = 404;
-      return { error: 'Order not found' };
-    }
 
-    const [resp] = await db
-      .select()
-      .from(orderResponses)
-      .where(and(eq(orderResponses.orderId, params.id), eq(orderResponses.id, params.responseId), eq(orderResponses.status, 'PENDING')))
-      .limit(1);
-    if (!resp) {
-      set.status = 404;
-      return { error: 'Response not found' };
-    }
-
-    await db.update(orderResponses).set({ status: 'REJECTED' }).where(eq(orderResponses.id, params.responseId));
-    return { message: 'Response rejected', order_id: params.id };
-  })
-  .patch('/:id', async ({ user, params, body, set }) => {
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(and(eq(orders.clientId, user.id), eq(orders.id, params.id)))
-      .limit(1);
-    if (!order) {
-      set.status = 404;
-      return { error: 'Not found' };
-    }
-    if (order.status !== 'PENDING') {
+  // POST /cabinet/orders/:id/bids — сделать ставку (для перевозчика)
+  .post('/:id/bids', async ({ user, params, body, set }) => {
+    const [order] = await db.select().from(orders)
+      .where(eq(orders.id, params.id)).limit(1);
+    if (!order) { set.status = 404; return { error: 'not_found' }; }
+    if (!['published', 'negotiating'].includes(order.status)) {
       set.status = 400;
-      return { error: 'Can only edit orders with PENDING status' };
+      return { error: 'order_not_accepting_bids' };
     }
 
-    const fromCityId = body.from_city_id as string | undefined;
-    const toCityId = body.to_city_id as string | undefined;
-    const price = body.price != null ? parseFloat(String(body.price)) : undefined;
-    const cargoName = body.cargo_name !== undefined ? ((body.cargo_name as string)?.trim() || null) : undefined;
-    const cargoDescription = body.cargo_description !== undefined ? ((body.cargo_description as string)?.trim() || null) : undefined;
+    // Проверяем что перевозчик не является владельцем заказа
+    const [clientProfile] = await db.select().from(clientProfiles)
+      .where(eq(clientProfiles.userId, user.id)).limit(1);
+    if (clientProfile && order.clientProfileId === clientProfile.id) {
+      set.status = 400;
+      return { error: 'cannot_bid_on_own_order' };
+    }
 
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (fromCityId) {
-      const [fromCity] = await db.select().from(cities).where(eq(cities.id, fromCityId)).limit(1);
-      if (fromCity) {
-        updateData.fromCityId = fromCityId;
-        updateData.fromAddress = fromCity.name;
+    // Получаем carrier_profile_id из carrierProfiles
+    const { carrierProfiles } = await import('../../db/schema');
+    const [carrierProfile] = await db.select().from(carrierProfiles)
+      .where(eq(carrierProfiles.userId, user.id)).limit(1);
+    if (!carrierProfile) { set.status = 400; return { error: 'carrier_profile_required' }; }
+
+    // Если уже есть ставка — обновляем
+    const [existingBid] = await db.select().from(orderBids)
+      .where(and(
+        eq(orderBids.orderId, order.id),
+        eq(orderBids.carrierProfileId, carrierProfile.id),
+      )).limit(1);
+
+    let bid;
+    if (existingBid) {
+      [bid] = await db.update(orderBids).set({
+        amount: body.amount.toString(),
+        currency: body.currency ?? 'USD',
+        comment: body.comment ?? null,
+        updatedAt: new Date(),
+      }).where(eq(orderBids.id, existingBid.id)).returning();
+    } else {
+      [bid] = await db.insert(orderBids).values({
+        orderId: order.id,
+        carrierProfileId: carrierProfile.id,
+        amount: body.amount.toString(),
+        currency: body.currency ?? 'USD',
+        comment: body.comment ?? null,
+      }).returning();
+
+      // При первой ставке меняем статус на negotiating
+      if (order.status === 'published') {
+        await db.update(orders).set({ status: 'negotiating', updatedAt: new Date() })
+          .where(eq(orders.id, order.id));
+        await db.insert(orderStatusLog).values({
+          orderId: order.id,
+          changedBy: user.id,
+          oldStatus: 'published',
+          newStatus: 'negotiating',
+        });
       }
     }
-    if (toCityId) {
-      const [toCity] = await db.select().from(cities).where(eq(cities.id, toCityId)).limit(1);
-      if (toCity) {
-        updateData.toCityId = toCityId;
-        updateData.toAddress = toCity.name;
-      }
-    }
-    if (price != null && !isNaN(price) && price > 0) updateData.price = price.toString();
-    if (cargoName !== undefined) updateData.cargoName = cargoName;
-    if (cargoDescription !== undefined) updateData.cargoDescription = cargoDescription;
 
-    const [updated] = await db
-      .update(orders)
-      .set(updateData as any)
-      .where(eq(orders.id, params.id))
-      .returning();
-
-    if (!updated) return { error: 'Update failed' };
-
-    return {
-      id: updated.id,
-      status: updated.status,
-      from_city: (updateData.fromAddress as string) || order.fromAddress,
-      to_city: (updateData.toAddress as string) || order.toAddress,
-      price: updated.price,
-      currency: updated.currency,
-      cargo_name: updated.cargoName,
-      cargo_description: updated.cargoDescription,
-    };
+    return { bid };
   }, {
     body: t.Object({
-      from_city_id: t.Optional(t.String()),
-      to_city_id: t.Optional(t.String()),
-      price: t.Optional(t.Union([t.String(), t.Number()])),
-      cargo_name: t.Optional(t.String()),
-      cargo_description: t.Optional(t.String()),
+      amount: t.Number(),
+      currency: t.Optional(t.String()),
+      comment: t.Optional(t.String()),
     }),
+  })
+
+  // PATCH /cabinet/orders/:id/bids/:bidId/accept — принять ставку (для заказчика)
+  .patch('/:id/bids/:bidId/accept', async ({ user, params, set }) => {
+    const [profile] = await db.select().from(clientProfiles)
+      .where(eq(clientProfiles.userId, user.id)).limit(1);
+    if (!profile) { set.status = 400; return { error: 'profile_required' }; }
+
+    const [order] = await db.select().from(orders)
+      .where(and(eq(orders.id, params.id), eq(orders.clientProfileId, profile.id))).limit(1);
+    if (!order) { set.status = 404; return { error: 'not_found' }; }
+    if (order.status !== 'negotiating') { set.status = 400; return { error: 'order_not_in_negotiating' }; }
+
+    const [bid] = await db.select().from(orderBids)
+      .where(and(eq(orderBids.id, params.bidId), eq(orderBids.orderId, order.id))).limit(1);
+    if (!bid) { set.status = 404; return { error: 'bid_not_found' }; }
+
+    const now = new Date();
+    await db.update(orderBids).set({ status: 'accepted', updatedAt: now })
+      .where(eq(orderBids.id, bid.id));
+    await db.update(orderBids).set({ status: 'rejected', updatedAt: now })
+      .where(and(eq(orderBids.orderId, order.id), ne(orderBids.id, bid.id)));
+
+    const [updated] = await db.update(orders).set({
+      status: 'confirmed',
+      acceptedBidId: bid.id,
+      confirmedAt: now,
+      updatedAt: now,
+    }).where(eq(orders.id, order.id)).returning();
+
+    await db.insert(orderStatusLog).values({
+      orderId: order.id,
+      changedBy: user.id,
+      oldStatus: 'negotiating',
+      newStatus: 'confirmed',
+    });
+
+    return { order: updated };
+  })
+
+  // PATCH /cabinet/orders/:id/status — обновить статус заказа (для перевозчика)
+  .patch('/:id/status', async ({ user, params, body, set }) => {
+    const { carrierProfiles } = await import('../../db/schema');
+    const [carrierProfile] = await db.select().from(carrierProfiles)
+      .where(eq(carrierProfiles.userId, user.id)).limit(1);
+    if (!carrierProfile) { set.status = 400; return { error: 'carrier_profile_required' }; }
+
+    const [order] = await db.select().from(orders)
+      .where(eq(orders.id, params.id)).limit(1);
+    if (!order) { set.status = 404; return { error: 'not_found' }; }
+
+    // Проверяем что это именно принятый перевозчик
+    if (!order.acceptedBidId) { set.status = 400; return { error: 'no_accepted_bid' }; }
+    const [acceptedBid] = await db.select().from(orderBids)
+      .where(and(eq(orderBids.id, order.acceptedBidId), eq(orderBids.carrierProfileId, carrierProfile.id))).limit(1);
+    if (!acceptedBid) { set.status = 403; return { error: 'forbidden' }; }
+
+    const allowedNext = CARRIER_TRANSITIONS[order.status];
+    if (!allowedNext || allowedNext !== body.status) {
+      set.status = 400;
+      return { error: 'invalid_status_transition', allowed: allowedNext };
+    }
+
+    const [updated] = await db.update(orders).set({
+      status: body.status,
+      updatedAt: new Date(),
+    }).where(eq(orders.id, order.id)).returning();
+
+    await db.insert(orderStatusLog).values({
+      orderId: order.id,
+      changedBy: user.id,
+      oldStatus: order.status,
+      newStatus: body.status,
+      comment: body.comment ?? null,
+      photoUrl: body.photoUrl ?? null,
+    });
+
+    return { order: updated };
+  }, {
+    body: t.Object({
+      status: t.String(),
+      comment: t.Optional(t.String()),
+      photoUrl: t.Optional(t.String()),
+    }),
+  })
+
+  // PATCH /cabinet/orders/:id/complete — завершить заказ (для заказчика)
+  .patch('/:id/complete', async ({ user, params, set }) => {
+    const [profile] = await db.select().from(clientProfiles)
+      .where(eq(clientProfiles.userId, user.id)).limit(1);
+    if (!profile) { set.status = 400; return { error: 'profile_required' }; }
+
+    const [order] = await db.select().from(orders)
+      .where(and(eq(orders.id, params.id), eq(orders.clientProfileId, profile.id))).limit(1);
+    if (!order) { set.status = 404; return { error: 'not_found' }; }
+    if (order.status !== 'delivered') { set.status = 400; return { error: 'order_not_delivered' }; }
+
+    const now = new Date();
+    const [updated] = await db.update(orders).set({
+      status: 'completed',
+      completedAt: now,
+      updatedAt: now,
+    }).where(eq(orders.id, order.id)).returning();
+
+    await db.insert(orderStatusLog).values({
+      orderId: order.id,
+      changedBy: user.id,
+      oldStatus: 'delivered',
+      newStatus: 'completed',
+    });
+
+    return { order: updated };
+  })
+
+  // PATCH /cabinet/orders/:id/cancel — отменить заказ
+  .patch('/:id/cancel', async ({ user, params, body, set }) => {
+    const [profile] = await db.select().from(clientProfiles)
+      .where(eq(clientProfiles.userId, user.id)).limit(1);
+    if (!profile) { set.status = 400; return { error: 'profile_required' }; }
+
+    const [order] = await db.select().from(orders)
+      .where(and(eq(orders.id, params.id), eq(orders.clientProfileId, profile.id))).limit(1);
+    if (!order) { set.status = 404; return { error: 'not_found' }; }
+    if (!['draft', 'published', 'negotiating'].includes(order.status)) {
+      set.status = 400;
+      return { error: 'cannot_cancel_after_confirmation' };
+    }
+
+    const [updated] = await db.update(orders).set({
+      status: 'cancelled',
+      updatedAt: new Date(),
+    }).where(eq(orders.id, order.id)).returning();
+
+    await db.insert(orderStatusLog).values({
+      orderId: order.id,
+      changedBy: user.id,
+      oldStatus: order.status,
+      newStatus: 'cancelled',
+      comment: body?.reason ?? null,
+    });
+
+    return { order: updated };
+  }, {
+    body: t.Optional(t.Object({
+      reason: t.Optional(t.String()),
+    })),
   });

@@ -1,10 +1,12 @@
 import { Queue, Worker } from 'bullmq';
 import { isRedisConfigured, queueConnection, workerConnection } from './redis';
 import { checkExpiringDocuments } from './document-expiry';
+import { expireOrders } from '../jobs/expireOrders';
 
 const QUEUE_NAME = 'tmgo-jobs';
 
 export const documentExpiryJobName = 'document-expiry-check';
+export const expireOrdersJobName = 'expire-orders';
 
 let queueInstance: Queue | null = null;
 
@@ -36,6 +38,9 @@ export async function startWorker(): Promise<Worker | undefined> {
       if (job.name === documentExpiryJobName) {
         await checkExpiringDocuments();
       }
+      if (job.name === expireOrdersJobName) {
+        await expireOrders();
+      }
     },
     { connection: workerConnection },
   );
@@ -58,6 +63,16 @@ export async function startWorker(): Promise<Worker | undefined> {
     },
   );
 
-  console.log('[BullMQ] Worker started, document-expiry-check scheduled daily at 6:00');
+  // Schedule order expiry check daily at 2:00 AM
+  await queue.add(
+    expireOrdersJobName,
+    {},
+    {
+      repeat: { pattern: '0 0 2 * * *' },
+      jobId: 'expire-orders-daily',
+    },
+  );
+
+  console.log('[BullMQ] Worker started, jobs scheduled: document-expiry at 6:00, expire-orders at 2:00');
   return worker;
 }

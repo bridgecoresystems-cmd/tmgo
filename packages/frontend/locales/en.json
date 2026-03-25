@@ -1707,5 +1707,15 @@
       "message": "Technical maintenance is underway. Everything will be back soon.",
       "hint": "This usually takes no more than 15 minutes"
     }
+  },
+  "emailVerification": {
+    "bannerTitle": "Please verify your email",
+    "bannerText": "We sent a verification link to your email address.",
+    "resendBtn": "Resend email",
+    "sentToast": "Email sent! Please check your inbox.",
+    "successToast": "Email successfully verified!"
+  },
+  "common": {
+    "error": "Something went wrong. Please try again later."
   }
 }

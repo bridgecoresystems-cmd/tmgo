@@ -1,7 +1,10 @@
 import { Elysia, t } from 'elysia';
 import { db } from '../../db';
-import { orders, carrierProfiles, cities, vehicles, orderResponses } from '../../db/schema';
-import { eq, desc, and, isNull, notInArray } from 'drizzle-orm';
+import {
+  orders, orderCargo, orderBids, orderStatusLog,
+  carrierProfiles, clientProfiles,
+} from '../../db/schema';
+import { eq, desc, and, inArray, notInArray, sql } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 
 export const cabinetDriverOrdersRoutes = new Elysia({ prefix: '/cabinet/driver/orders' })
@@ -11,193 +14,150 @@ export const cabinetDriverOrdersRoutes = new Elysia({ prefix: '/cabinet/driver/o
       set.status = 401;
       throw new Error('Unauthorized');
     }
-    let [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, user.id)).limit(1);
+    let [profile] = await db.select().from(carrierProfiles)
+      .where(eq(carrierProfiles.userId, user.id)).limit(1);
     if (!profile) {
       const [created] = await db.insert(carrierProfiles).values({ userId: user.id }).returning();
       profile = created!;
     }
     return { user, carrierProfile: profile };
   })
+
+  // GET /cabinet/driver/orders — мои заказы (где я сделал ставку)
   .get('/', async ({ carrierProfile }) => {
-    const rows = await db
-      .select({
-        id: orders.id,
-        status: orders.status,
-        fromAddress: orders.fromAddress,
-        toAddress: orders.toAddress,
-        price: orders.price,
-        currency: orders.currency,
-        cargoName: orders.cargoName,
-        orderVehicleId: orders.vehicleId,
-        responseVehicleId: orderResponses.vehicleId,
-        createdAt: orders.createdAt,
-        fromCityName: cities.name,
-      })
+    const myBids = await db.select({
+      orderId: orderBids.orderId,
+      bidStatus: orderBids.status,
+      amount: orderBids.amount,
+      currency: orderBids.currency,
+    })
+      .from(orderBids)
+      .where(eq(orderBids.carrierProfileId, carrierProfile.id));
+
+    if (myBids.length === 0) return { orders: [] };
+
+    const orderIds = myBids.map(b => b.orderId);
+    const rows = await db.select({
+      id: orders.id,
+      status: orders.status,
+      title: orders.title,
+      fromCountry: orders.fromCountry,
+      fromCity: orders.fromCity,
+      toCountry: orders.toCountry,
+      toCity: orders.toCity,
+      readyDate: orders.readyDate,
+      price: orders.price,
+      currency: orders.currency,
+      createdAt: orders.createdAt,
+    })
       .from(orders)
-      .innerJoin(orderResponses, and(eq(orderResponses.orderId, orders.id), eq(orderResponses.carrierId, carrierProfile.id)))
-      .leftJoin(cities, eq(orders.fromCityId, cities.id))
+      .where(inArray(orders.id, orderIds))
       .orderBy(desc(orders.createdAt));
 
-    const vehicleMap = new Map<string, string>();
-    for (const r of rows) {
-      const vid = r.orderVehicleId || r.responseVehicleId;
-      if (vid && !vehicleMap.has(vid)) {
-        const [v] = await db.select({ plateNumber: vehicles.plateNumber }).from(vehicles).where(eq(vehicles.id, vid)).limit(1);
-        if (v) vehicleMap.set(vid, v.plateNumber);
-      }
-    }
-
-    return rows.map((r) => ({
-      id: r.id,
-      status: r.status,
-      from_city: r.fromCityName || r.fromAddress,
-      to_city: r.toAddress,
-      cargo_name: r.cargoName,
-      vehicle_plate: vehicleMap.get(r.orderVehicleId || r.responseVehicleId!) || '—',
-      price: r.price,
-      currency: r.currency,
-      created_at: r.createdAt?.toISOString(),
-    }));
-  })
-  .get('/available', async ({ carrierProfile }) => {
-    const respondedOrderIds = await db
-      .select({ orderId: orderResponses.orderId })
-      .from(orderResponses)
-      .where(eq(orderResponses.carrierId, carrierProfile.id));
-    const ids = respondedOrderIds.map((r) => r.orderId);
-
-    const rows = await db
-      .select({
-        id: orders.id,
-        fromAddress: orders.fromAddress,
-        toAddress: orders.toAddress,
-        price: orders.price,
-        currency: orders.currency,
-        cargoName: orders.cargoName,
-        cargoDescription: orders.cargoDescription,
-        createdAt: orders.createdAt,
-        fromCityName: cities.name,
-      })
-      .from(orders)
-      .leftJoin(cities, eq(orders.fromCityId, cities.id))
-      .where(
-        ids.length > 0
-          ? and(isNull(orders.carrierId), eq(orders.status, 'PENDING'), notInArray(orders.id, ids))
-          : and(isNull(orders.carrierId), eq(orders.status, 'PENDING'))
-      )
-      .orderBy(desc(orders.createdAt));
-
-    return rows.map((r) => ({
-      id: r.id,
-      from_city: r.fromCityName || r.fromAddress,
-      to_city: r.toAddress,
-      cargo_name: r.cargoName,
-      cargo_description: r.cargoDescription,
-      price: r.price,
-      currency: r.currency,
-      created_at: r.createdAt?.toISOString(),
-    }));
-  })
-  .post('/:id/respond', async ({ carrierProfile, params, body, set }) => {
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(and(eq(orders.id, params.id), isNull(orders.carrierId), eq(orders.status, 'PENDING')))
-      .limit(1);
-
-    if (!order) {
-      set.status = 404;
-      return { error: 'Order not found or already taken' };
-    }
-
-    const [existing] = await db
-      .select()
-      .from(orderResponses)
-      .where(and(eq(orderResponses.orderId, params.id), eq(orderResponses.carrierId, carrierProfile.id)))
-      .limit(1);
-    if (existing) {
-      set.status = 400;
-      return { error: 'You already responded to this order' };
-    }
-
-    const vehicleId = body.vehicle_id as string;
-    if (!vehicleId) {
-      set.status = 400;
-      return { error: 'vehicle_id is required' };
-    }
-
-    const [vehicle] = await db
-      .select()
-      .from(vehicles)
-      .where(and(eq(vehicles.id, vehicleId), eq(vehicles.carrierId, carrierProfile.id)))
-      .limit(1);
-
-    if (!vehicle) {
-      set.status = 400;
-      return { error: 'Invalid vehicle' };
-    }
-
-    const [resp] = await db
-      .insert(orderResponses)
-      .values({
-        orderId: params.id,
-        carrierId: carrierProfile.id,
-        vehicleId,
-        status: 'PENDING',
-      })
-      .returning();
-
-    return { message: 'Response sent', response_id: resp.id, order_id: params.id };
-  }, {
-    body: t.Object({ vehicle_id: t.String() }),
-  })
-  .get('/:id', async ({ carrierProfile, params, set }) => {
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, params.id))
-      .limit(1);
-
-    if (!order) {
-      set.status = 404;
-      return { error: 'Not found' };
-    }
-
-    const [resp] = await db
-      .select()
-      .from(orderResponses)
-      .where(and(eq(orderResponses.orderId, params.id), eq(orderResponses.carrierId, carrierProfile.id)))
-      .limit(1);
-    if (!resp) {
-      set.status = 404;
-      return { error: 'Not found' };
-    }
-
-    const vehicleId = order.vehicleId || resp.vehicleId;
-    const [fromCity] = order.fromCityId
-      ? await db.select().from(cities).where(eq(cities.id, order.fromCityId)).limit(1)
-      : [null];
-    const [toCity] = order.toCityId
-      ? await db.select().from(cities).where(eq(cities.id, order.toCityId)).limit(1)
-      : [null];
-    const [vehicle] = vehicleId
-      ? await db.select().from(vehicles).where(eq(vehicles.id, vehicleId)).limit(1)
-      : [null];
+    const bidMap = new Map(myBids.map(b => [b.orderId, b]));
 
     return {
-      id: order.id,
-      status: order.status,
-      response_status: resp.status,
-      from_city_id: order.fromCityId,
-      to_city_id: order.toCityId,
-      from_city: fromCity?.name || order.fromAddress,
-      to_city: toCity?.name || order.toAddress,
-      price: order.price,
-      currency: order.currency,
-      cargo_name: order.cargoName,
-      cargo_description: order.cargoDescription,
-      vehicle_id: vehicleId,
-      vehicle_plate: vehicle?.plateNumber,
-      created_at: order.createdAt?.toISOString(),
+      orders: rows.map(r => ({
+        ...r,
+        myBidStatus: bidMap.get(r.id)?.bidStatus,
+        myBidAmount: bidMap.get(r.id)?.amount,
+        myBidCurrency: bidMap.get(r.id)?.currency,
+      })),
     };
+  })
+
+  // GET /cabinet/driver/orders/available — доступные заявки (published/negotiating)
+  .get('/available', async ({ carrierProfile, query }) => {
+    const params = query as {
+      fromCountry?: string;
+      toCountry?: string;
+      page?: string;
+      limit?: string;
+    };
+
+    const page = Math.max(1, parseInt(params.page ?? '1'));
+    const limit = Math.min(50, Math.max(1, parseInt(params.limit ?? '20')));
+    const offset = (page - 1) * limit;
+
+    // Заказы на которые уже сделал ставку — исключаем
+    const myBidOrderIds = await db.select({ orderId: orderBids.orderId })
+      .from(orderBids)
+      .where(and(
+        eq(orderBids.carrierProfileId, carrierProfile.id),
+        inArray(orderBids.status, ['pending', 'accepted']),
+      ));
+    const excludeIds = myBidOrderIds.map(b => b.orderId);
+
+    const whereBase = inArray(orders.status, ['published', 'negotiating']);
+    const where = excludeIds.length > 0
+      ? and(whereBase, notInArray(orders.id, excludeIds))
+      : whereBase;
+
+    const rows = await db.select({
+      id: orders.id,
+      status: orders.status,
+      title: orders.title,
+      fromCountry: orders.fromCountry,
+      fromRegion: orders.fromRegion,
+      fromCity: orders.fromCity,
+      toCountry: orders.toCountry,
+      toRegion: orders.toRegion,
+      toCity: orders.toCity,
+      readyDate: orders.readyDate,
+      deadlineDate: orders.deadlineDate,
+      price: orders.price,
+      currency: orders.currency,
+      priceType: orders.priceType,
+      publishedAt: orders.publishedAt,
+      expiresAt: orders.expiresAt,
+      createdAt: orders.createdAt,
+      cargoType: orderCargo.cargoType,
+      weightKg: orderCargo.weightKg,
+      volumeM3: orderCargo.volumeM3,
+      tempControlled: orderCargo.tempControlled,
+    })
+      .from(orders)
+      .leftJoin(orderCargo, eq(orderCargo.orderId, orders.id))
+      .where(where)
+      .orderBy(desc(orders.publishedAt))
+      .limit(limit)
+      .offset(offset);
+
+    const bidsCount = await db.select({
+      orderId: orderBids.orderId,
+      count: sql<number>`count(*)::int`,
+    })
+      .from(orderBids)
+      .where(inArray(orderBids.orderId, rows.map(r => r.id)))
+      .groupBy(orderBids.orderId);
+
+    const bidsMap = new Map(bidsCount.map(b => [b.orderId, b.count]));
+
+    return {
+      orders: rows.map(r => ({ ...r, bidsCount: bidsMap.get(r.id) ?? 0 })),
+      page,
+      limit,
+    };
+  })
+
+  // GET /cabinet/driver/orders/:id — детали заказа
+  .get('/:id', async ({ carrierProfile, params, set }) => {
+    const [order] = await db.select().from(orders)
+      .where(eq(orders.id, params.id)).limit(1);
+    if (!order) { set.status = 404; return { error: 'not_found' }; }
+
+    const [cargo] = await db.select().from(orderCargo)
+      .where(eq(orderCargo.orderId, order.id)).limit(1);
+
+    const [myBid] = await db.select().from(orderBids)
+      .where(and(
+        eq(orderBids.orderId, order.id),
+        eq(orderBids.carrierProfileId, carrierProfile.id),
+      )).limit(1);
+
+    const statusLogs = await db.select().from(orderStatusLog)
+      .where(eq(orderStatusLog.orderId, order.id))
+      .orderBy(desc(orderStatusLog.createdAt));
+
+    return { order, cargo, myBid: myBid ?? null, statusLogs };
   });

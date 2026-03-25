@@ -1,0 +1,90 @@
+bun add resend
+```
+
+**2. Структура проекта:**
+```
+src/
+  index.ts
+  routes/auth.ts
+  lib/email.ts
+  
+src/lib/email.ts — отправка письма:
+
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function sendVerificationEmail(to: string, token: string) {
+  await resend.emails.send({
+    from: 'onboarding@resend.dev', // или твой домен после добавления
+    to,
+    subject: 'Verify your email',
+    html: `
+      <h2>Email Verification</h2>
+      <p>Click the link below to verify your email:</p>
+      <a href="${process.env.APP_URL}/auth/verify?token=${token}">
+        Verify Email
+      </a>
+      <p>Link expires in 24 hours.</p>
+    `,
+  });
+}
+
+
+4. src/routes/auth.ts — маршруты:
+
+import Elysia, { t } from 'elysia';
+import { sendVerificationEmail } from '../lib/email';
+import { randomBytes } from 'crypto';
+
+export const authRoutes = new Elysia({ prefix: '/auth' })
+  .post('/register', async ({ body }) => {
+    const { email, password } = body;
+
+    // 1. Сохрани пользователя в БД (isVerified: false)
+    // const user = await db.user.create({ email, password, isVerified: false })
+
+    // 2. Сгенерируй токен
+    const token = randomBytes(32).toString('hex');
+    // Сохрани token + expiry в БД
+
+    // 3. Отправь письмо
+    await sendVerificationEmail(email, token);
+
+    return { message: 'Registration successful! Please check your email.' };
+  }, {
+    body: t.Object({
+      email: t.String({ format: 'email' }),
+      password: t.String({ minLength: 8 }),
+    })
+  })
+
+  .get('/verify', async ({ query }) => {
+    const { token } = query;
+
+    // 1. Найди токен в БД
+    // 2. Проверь что не истёк
+    // 3. Обнови пользователя: isVerified = true
+    // 4. Удали токен
+
+    return { message: 'Email verified successfully!' };
+  }, {
+    query: t.Object({ token: t.String() })
+  });
+  
+5. src/index.ts:
+
+import { Elysia } from 'elysia';
+import { authRoutes } from './routes/auth';
+
+const app = new Elysia()
+  .use(authRoutes)
+  .listen(3000);
+
+console.log('Server running on http://localhost:3000');
+```
+
+**6. `.env`:**
+```
+RESEND_API_KEY=re_xxxxxxxx
+APP_URL=http://localhost:3000

@@ -1707,5 +1707,15 @@
       "message": "Tehniki işler geçirilýär. Ýakyn wagtda hemme zat işlär.",
       "hint": "Bu adatça 15 minutdan köp wagt almaýar"
     }
+  },
+  "emailVerification": {
+    "bannerTitle": "Email salgyňyzy tassyklaň",
+    "bannerText": "Email salgyňyza hat iberdik. Hata geçiň.",
+    "resendBtn": "Gaýtadan iberiň",
+    "sentToast": "Hat iberildi! Poçtaňyzy barlaň.",
+    "successToast": "Email üstünlikli tassyklandy!"
+  },
+  "common": {
+    "error": "Ýalňyşlyk ýüze çykdy. Soňrak synanşyň."
   }
 }

@@ -47,6 +47,26 @@
       </n-layout-header>
 
       <n-layout-content class="cabinet-content" style="flex: 1;">
+        <!-- Email verification banner -->
+        <n-alert
+          v-if="session?.user && !session.user.emailVerified"
+          type="warning"
+          :title="t('emailVerification.bannerTitle')"
+          style="margin: 16px 24px 0; border-radius: 8px;"
+          closable
+        >
+          {{ t('emailVerification.bannerText') }}
+          <n-button
+            text
+            type="warning"
+            :loading="sendingVerification"
+            style="margin-left: 8px;"
+            @click="resendVerification"
+          >
+            {{ t('emailVerification.resendBtn') }}
+          </n-button>
+        </n-alert>
+
         <div class="content-container">
           <slot />
         </div>
@@ -60,9 +80,9 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed, type Component } from 'vue'
+import { h, ref, computed, onMounted, type Component } from 'vue'
 import type { MenuOption } from 'naive-ui'
-import { NIcon } from 'naive-ui'
+import { NIcon, useMessage } from 'naive-ui'
 import {
   HomeOutline,
   CubeOutline,
@@ -72,10 +92,34 @@ import {
 } from '@vicons/ionicons5'
 
 const { t } = useI18n()
-const { session, signOut } = useAuth()
+const { session, signOut, fetchSession } = useAuth()
 const router = useRouter()
 const route = useRoute()
+const message = useMessage()
 const collapsed = ref(false)
+const sendingVerification = ref(false)
+const { apiBase: API } = useApiBase()
+
+// Toast при успешной верификации email
+onMounted(() => {
+  if (route.query.verified === 'true') {
+    message.success(t('emailVerification.successToast'))
+    fetchSession()
+    navigateTo(route.path, { replace: true })
+  }
+})
+
+async function resendVerification() {
+  sendingVerification.value = true
+  try {
+    await $fetch(`${API}/api/auth/send-verification`, { method: 'POST', credentials: 'include' })
+    message.success(t('emailVerification.sentToast'))
+  } catch {
+    message.error(t('common.error'))
+  } finally {
+    sendingVerification.value = false
+  }
+}
 
 const activeKey = computed(() => route.path)
 const roleLabel = computed(() => session.value?.user?.role === 'driver' ? t('layout.cabinet.roleDriver') : t('layout.cabinet.roleClient'))

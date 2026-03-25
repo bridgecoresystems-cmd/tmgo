@@ -4,9 +4,10 @@ import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
 import { rateLimit } from 'elysia-rate-limit';
 import { db } from '../db';
-import { users, sessions, accounts } from '../db/schema';
+import { users, sessions, accounts, verificationTokens } from '../db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 import { getImpersonateToken, getUserFromRequest } from '../lib/auth';
+import { sendVerificationEmail } from '../lib/email';
 
 const signInRateLimit = rateLimit({
   max: 10,
@@ -157,6 +158,19 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
     set.headers['Set-Cookie'] = `better-auth.session_token=${token}; ${COOKIE_OPTS}`;
 
     const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+    // Отправляем письмо верификации (не блокируем ответ если упадёт)
+    try {
+      const verToken = await db.insert(verificationTokens).values({
+        userId,
+        type: 'email',
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      }).returning();
+      await sendVerificationEmail(user.email, verToken[0].token);
+    } catch (err) {
+      console.warn('[email] Failed to send verification email:', err);
+    }
+
     return { user };
   }, {
     body: t.Object({
@@ -270,6 +284,67 @@ export const authRoutes = new Elysia({ prefix: '/api/auth' })
       name: t.Optional(t.String()),
       phone: t.Optional(t.Nullable(t.String())),
     }),
+  })
+
+  // POST /api/auth/send-verification — отправить письмо подтверждения email
+  .post('/send-verification', async ({ request, set }) => {
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      set.status = 401;
+      return { error: 'Unauthorized' };
+    }
+    if (user.emailVerified) {
+      return { message: 'already_verified' };
+    }
+    // Удаляем старый неиспользованный токен
+    const existing = await db.select().from(verificationTokens)
+      .where(and(eq(verificationTokens.userId, user.id), eq(verificationTokens.type, 'email')))
+      .limit(1);
+    if (existing.length > 0 && !existing[0].usedAt) {
+      await db.delete(verificationTokens).where(eq(verificationTokens.id, existing[0].id));
+    }
+    const [verToken] = await db.insert(verificationTokens).values({
+      userId: user.id,
+      type: 'email',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    }).returning();
+    await sendVerificationEmail(user.email, verToken.token);
+    return { success: true };
+  })
+
+  // GET /api/auth/verify-email?token=... — обработать клик по ссылке из письма
+  .get('/verify-email', async ({ query, set }) => {
+    const token = (query as { token?: string }).token;
+    if (!token) {
+      set.status = 400;
+      return { error: 'token_required' };
+    }
+    const [verToken] = await db.select().from(verificationTokens)
+      .where(eq(verificationTokens.token, token as any))
+      .limit(1);
+    if (!verToken) {
+      set.status = 400;
+      return { error: 'token_not_found' };
+    }
+    if (verToken.expiresAt < new Date()) {
+      set.status = 400;
+      return { error: 'token_expired' };
+    }
+    if (verToken.usedAt) {
+      set.status = 400;
+      return { error: 'token_used' };
+    }
+    await db.update(verificationTokens)
+      .set({ usedAt: new Date() })
+      .where(eq(verificationTokens.id, verToken.id));
+    await db.update(users)
+      .set({ emailVerified: true, updatedAt: new Date() })
+      .where(eq(users.id, verToken.userId));
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    set.status = 302;
+    set.headers['Location'] = `${frontendUrl}/cabinet?verified=true`;
+    return null;
   })
 
   // GET /api/auth/avatars/:filename - отдача аватара

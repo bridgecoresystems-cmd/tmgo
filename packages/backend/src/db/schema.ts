@@ -10,6 +10,8 @@ import {
   decimal,
   boolean,
   jsonb,
+  date,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 // --- Better Auth required tables ---
@@ -21,6 +23,7 @@ export const users = pgTable('users', {
   emailVerified: boolean('email_verified').notNull().default(false),
   image: text('avatar_url'),
   phone: text('phone'),
+  phoneVerified: boolean('phone_verified').default(false),
   role: text('role')
     .$type<'client' | 'driver' | 'dispatcher' | 'admin'>()
     .notNull()
@@ -68,6 +71,89 @@ export const verifications = pgTable('verification', {
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// --- Email verification tokens ---
+
+export const verificationTokens = pgTable('verification_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  token: uuid('token').notNull().unique().defaultRandom(),
+  type: varchar('type', { length: 20 }).notNull().default('email'),
+  // type: 'email' | 'password_reset'
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
+});
+
+// --- Client profiles ---
+
+export const clientProfiles = pgTable('client_profiles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  clientType: varchar('client_type', { length: 20 }).notNull(),
+  // 'individual' | 'company'
+
+  countryCode: varchar('country_code', { length: 2 }).notNull(),
+  // 'TM' | 'UZ' | 'KZ' | 'KG' | 'TJ' | 'IR' | 'TR' | 'AE' | 'RU' | 'BY'
+
+  displayName: varchar('display_name', { length: 200 }),
+
+  verificationStatus: varchar('verification_status', { length: 20 })
+    .notNull()
+    .default('unverified'),
+  // 'unverified' | 'pending' | 'verified' | 'rejected'
+
+  verifiedAt: timestamp('verified_at'),
+  rejectionReason: text('rejection_reason'),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const clientIndividual = pgTable('client_individual', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  profileId: uuid('profile_id')
+    .notNull()
+    .unique()
+    .references(() => clientProfiles.id, { onDelete: 'cascade' }),
+
+  firstName: varchar('first_name', { length: 100 }),
+  lastName: varchar('last_name', { length: 100 }),
+  middleName: varchar('middle_name', { length: 100 }),
+
+  docType: varchar('doc_type', { length: 30 }),
+  docNumber: varchar('doc_number', { length: 50 }),
+  docFileUrl: varchar('doc_file_url', { length: 500 }),
+  docVerifiedAt: timestamp('doc_verified_at'),
+
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const clientCompany = pgTable('client_company', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  profileId: uuid('profile_id')
+    .notNull()
+    .unique()
+    .references(() => clientProfiles.id, { onDelete: 'cascade' }),
+
+  companyName: varchar('company_name', { length: 300 }).notNull(),
+  legalForm: varchar('legal_form', { length: 50 }),
+  taxId: varchar('tax_id', { length: 50 }),
+  regNumber: varchar('reg_number', { length: 50 }),
+
+  bankName: varchar('bank_name', { length: 200 }),
+  bankAccount: varchar('bank_account', { length: 50 }),
+  bankSwift: varchar('bank_swift', { length: 20 }),
+
+  docFileUrl: varchar('doc_file_url', { length: 500 }),
+  docVerifiedAt: timestamp('doc_verified_at'),
+
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 // --- Cities ---
@@ -463,41 +549,121 @@ export const vehicles = pgTable('vehicles', {
   currentLng: decimal('current_lng', { precision: 10, scale: 7 }),
 });
 
-// --- Заказы ---
+// --- Заказы (новая схема) ---
 
 export const orders = pgTable('orders', {
   id: uuid('id').primaryKey().defaultRandom(),
-  clientId: uuid('client_id')
-    .references(() => users.id)
-    .notNull(),
-  carrierId: uuid('carrier_id').references(() => carrierProfiles.id),
-  vehicleId: uuid('vehicle_id').references(() => vehicles.id),
-  status: text('status')
-    .$type<'PENDING' | 'ACCEPTED' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED'>()
-    .default('PENDING')
-    .notNull(),
-  fromCityId: uuid('from_city_id').references(() => cities.id),
-  toCityId: uuid('to_city_id').references(() => cities.id),
-  fromAddress: text('from_address').notNull(),
-  toAddress: text('to_address').notNull(),
-  pickupDate: timestamp('pickup_date').notNull(),
-  deliveryDate: timestamp('delivery_date'),
-  cargoType: text('cargo_type').notNull(),
-  cargoName: text('cargo_name'),
-  cargoDescription: text('cargo_description'),
-  weight: decimal('weight', { precision: 10, scale: 2 }).notNull(),
-  volume: decimal('volume', { precision: 10, scale: 2 }),
-  temperatureRequired: text('temperature_required'),
-  price: decimal('price', { precision: 12, scale: 2 }).notNull(),
-  currency: varchar('currency', { length: 3 }).default('USD').notNull(),
-  paymentMethod: text('payment_method'),
-  // Snapshot на момент начала рейса
-  snapshotPassportId: uuid('snapshot_passport_id'),   // FK → driver_documents
-  snapshotLicenseId: uuid('snapshot_license_id'),     // FK → driver_documents
-  snapshotVehicleId: uuid('snapshot_vehicle_id'),     // FK → driver_vehicles
-  snapshotCreatedAt: timestamp('snapshot_created_at'),
+  clientProfileId: uuid('client_profile_id')
+    .notNull()
+    .references(() => clientProfiles.id),
+
+  orderType: varchar('order_type', { length: 20 }).notNull().default('open'),
+  // 'open' | 'direct'
+
+  status: varchar('status', { length: 20 }).notNull().default('draft'),
+  // 'draft' | 'published' | 'negotiating' | 'confirmed' | 'pickup'
+  // 'in_transit' | 'delivering' | 'delivered' | 'completed'
+  // 'cancelled' | 'expired' | 'disputed'
+
+  title: varchar('title', { length: 300 }).notNull(),
+
+  price: decimal('price', { precision: 12, scale: 2 }),
+  currency: varchar('currency', { length: 3 }).notNull().default('USD'),
+  priceType: varchar('price_type', { length: 20 }).notNull().default('negotiable'),
+  // 'fixed' | 'negotiable'
+
+  fromCountry: varchar('from_country', { length: 2 }).notNull(),
+  fromRegion: varchar('from_region', { length: 100 }),
+  fromCity: varchar('from_city', { length: 100 }).notNull(),
+
+  toCountry: varchar('to_country', { length: 2 }).notNull(),
+  toRegion: varchar('to_region', { length: 100 }),
+  toCity: varchar('to_city', { length: 100 }).notNull(),
+
+  readyDate: date('ready_date').notNull(),
+  deadlineDate: date('deadline_date'),
+
+  // Заполняется когда заказчик выбирает ставку — без FK constraint (circular ref)
+  acceptedBidId: uuid('accepted_bid_id'),
+
+  publishedAt: timestamp('published_at'),
+  confirmedAt: timestamp('confirmed_at'),
+  completedAt: timestamp('completed_at'),
+  expiresAt: timestamp('expires_at'),
+  // = readyDate + 7 дней, вычисляется при публикации
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// --- Груз заказа ---
+
+export const orderCargo = pgTable('order_cargo', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderId: uuid('order_id')
+    .notNull()
+    .unique()
+    .references(() => orders.id, { onDelete: 'cascade' }),
+
+  cargoType: varchar('cargo_type', { length: 100 }).notNull(),
+  weightKg: decimal('weight_kg', { precision: 10, scale: 2 }),
+  volumeM3: decimal('volume_m3', { precision: 10, scale: 3 }),
+
+  packaging: varchar('packaging', { length: 50 }),
+  // 'bulk' | 'boxes' | 'pallets' | 'container' | 'other'
+
+  tempControlled: boolean('temp_controlled').default(false),
+  tempMin: decimal('temp_min', { precision: 5, scale: 1 }),
+  tempMax: decimal('temp_max', { precision: 5, scale: 1 }),
+
+  notes: text('notes'),
+
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// --- Ставки перевозчиков на заказ ---
+
+export const orderBids = pgTable('order_bids', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderId: uuid('order_id')
+    .notNull()
+    .references(() => orders.id, { onDelete: 'cascade' }),
+  carrierProfileId: uuid('carrier_profile_id').notNull(),
+  // FK на carrier_profiles — без constraint чтобы избежать circular
+
+  amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
+  currency: varchar('currency', { length: 3 }).notNull().default('USD'),
+
+  status: varchar('status', { length: 20 }).notNull().default('pending'),
+  // 'pending' | 'accepted' | 'rejected' | 'withdrawn'
+
+  comment: text('comment'),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  // Один перевозчик = одна ставка на заказ
+  uniqueCarrierBid: uniqueIndex('order_bids_unique_carrier').on(table.orderId, table.carrierProfileId),
+}));
+
+// --- Лог статусов заказа ---
+
+export const orderStatusLog = pgTable('order_status_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderId: uuid('order_id')
+    .notNull()
+    .references(() => orders.id, { onDelete: 'cascade' }),
+  changedBy: uuid('changed_by')
+    .references(() => users.id),
+  // null = система (BullMQ)
+
+  oldStatus: varchar('old_status', { length: 20 }).notNull(),
+  newStatus: varchar('new_status', { length: 20 }).notNull(),
+  comment: text('comment'),
+  photoUrl: varchar('photo_url', { length: 500 }),
+  // Фото прикрепляется при delivering → delivered
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // --- Отклики перевозчиков на заказ ---

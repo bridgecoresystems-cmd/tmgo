@@ -30,6 +30,7 @@ import { adminDriversVerifyRoutes } from './routes/admin/drivers-verify';
 import { adminLegalDocsRoutes, publicLegalDocsRoutes } from './routes/admin/legal-docs';
 import { adminMvpRoadmapRoutes } from './routes/admin/mvp-roadmap';
 import { cabinetClientServicesRoutes } from './routes/cabinet/client-services';
+import { cabinetClientProfileRoutes } from './routes/cabinet/client-profile';
 import { cabinetChatRoutes } from './routes/cabinet/chat';
 import { cabinetProfileRoutes } from './routes/cabinet/profile';
 import { startWorker } from './lib/queues';
@@ -110,6 +111,7 @@ const app = new Elysia()
   .use(cabinetMailingRoutes)
   .use(cabinetOrdersRoutes)
   .use(cabinetClientServicesRoutes)
+  .use(cabinetClientProfileRoutes)
   .use(cabinetDriverVehiclesRoutes)
   .use(cabinetDriverTrailersRoutes)
   .use(cabinetDriverCouplingsRoutes)
