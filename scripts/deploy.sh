@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
-# TMGO: деплой на VPS (SSR режим).
+# TMGO: деплой на VPS через Docker Compose.
 #
 # Использование:
 #   ./scripts/deploy.sh
 #
-# На сервере один раз:
-#   - packages/backend/.env          — DATABASE_URL, REDIS_URL, BETTER_AUTH_*, и т.д.
-#   - packages/frontend/.env.production — NUXT_PUBLIC_API_BASE, NUXT_PUBLIC_WS_URL
+# На сервере один раз создать /opt/tmgo/.env со всеми переменными:
+#   POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
+#   BETTER_AUTH_SECRET, BETTER_AUTH_URL, FRONTEND_URL
+#   CHAT_ATTACHMENT_SECRET, RESEND_API_KEY
+#   NUXT_PUBLIC_API_BASE, NUXT_PUBLIC_WS_URL
+#   BACKEND_PORT=8020, FRONTEND_PORT=3020
 
 set -euo pipefail
 
@@ -15,22 +18,9 @@ cd "$ROOT"
 
 echo "[deploy] ROOT=$ROOT"
 
-echo "[deploy] install dependencies"
-bun install --frozen-lockfile
-
-echo "[deploy] db:migrate"
-bun run db:migrate
-
-echo "[deploy] build backend"
-bun run build:backend
-
-echo "[deploy] build frontend (SSR)"
-bun run build:frontend
-
-echo "[deploy] restart tmgo-backend"
-systemctl restart tmgo-backend
-
-echo "[deploy] restart tmgo-frontend"
-systemctl restart tmgo-frontend
+echo "[deploy] docker compose build & up"
+docker compose up --build -d
 
 echo "[deploy] done ✓"
+echo "[deploy] backend:  http://localhost:${BACKEND_PORT:-8020}"
+echo "[deploy] frontend: http://localhost:${FRONTEND_PORT:-3020}"

@@ -1,7 +1,7 @@
 # Деплой на VPS при push в master.
 #
 # GitHub Secrets (Settings → Secrets and variables → Actions):
-#   DEPLOY_HOST         — IP сервера (187.124.172.243)
+#   DEPLOY_HOST         — IP сервера
 #   DEPLOY_USER         — пользователь SSH (root)
 #   DEPLOY_SSH_KEY_B64  — приватный ключ закодированный в base64 (одна строка)
 

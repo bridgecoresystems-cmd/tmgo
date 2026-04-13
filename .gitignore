@@ -10,3 +10,9 @@ bun.lockb
 
 packages/backend/public/
 packages/backend/storage/
+
+# Mobile — Android/iOS проекты не коммитим (большие, генерируются через cap add)
+packages/mobile/android/
+packages/mobile/ios/
+packages/frontend/android/
+packages/frontend/ios/

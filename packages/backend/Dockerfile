@@ -1,20 +1,17 @@
 FROM oven/bun:1 AS base
 WORKDIR /app
 
-# Copy root package files for workspace
+# Copy workspace manifests
 COPY package.json bun.lock* ./
 COPY packages/backend/package.json ./packages/backend/
-COPY packages/shared/package.json ./packages/shared/ 2>/dev/null || true
+COPY packages/shared/package.json ./packages/shared/
 
-# Install all dependencies from root
-RUN bun install
+RUN bun install --frozen-lockfile
 
-# Copy source code
+# Copy source
 COPY packages/backend ./packages/backend
-COPY packages/shared ./packages/shared 2>/dev/null || true
+COPY packages/shared ./packages/shared
 
-WORKDIR /app/packages/backend
+EXPOSE 8000
 
-EXPOSE 3000
-
-CMD ["bun", "run", "src/index.ts"]
+CMD ["sh", "-c", "cd /app/packages/backend && bunx drizzle-kit migrate && cd /app && bun run packages/backend/src/index.ts"]
