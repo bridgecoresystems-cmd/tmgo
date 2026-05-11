@@ -1,0 +1,160 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773265849846,
+      "tag": "0000_secret_psylocke",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773265950000,
+      "tag": "0002_driver_card",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773266000000,
+      "tag": "0003_driver_main_info",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773266050000,
+      "tag": "0004_passport_data",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773266100000,
+      "tag": "0005_driver_license",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773266150000,
+      "tag": "0006_permitting_docs",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773266200000,
+      "tag": "0007_additional_emails",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773266250000,
+      "tag": "0008_name_split",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773266300000,
+      "tag": "0009_admin_edited_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773266400000,
+      "tag": "0010_verification_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1773266500000,
+      "tag": "0011_user_is_active",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1773266600000,
+      "tag": "0012_user_phone",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1773266700000,
+      "tag": "0013_profile_edit_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1773266800000,
+      "tag": "0014_profile_edit_requests_field_value",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1773266900000,
+      "tag": "0015_extra_passports",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1773267000000,
+      "tag": "0016_passport_is_active",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1773267100000,
+      "tag": "0017_driver_card_v2_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1773267200000,
+      "tag": "0018_carrier_profiles_missing_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1773267300000,
+      "tag": "0019_hidden_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1773267400000,
+      "tag": "0024_mvp_roadmap_progress",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1773267500000,
+      "tag": "0025_users_and_better_auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1773267600000,
+      "tag": "0026_cities",
+      "breakpoints": true
+    }
+  ]
+}
