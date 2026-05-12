@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Package, MapPin, Calendar, Weight, Thermometer, Box } from 'lucide-vue-next'
+import { ArrowLeft, Package, Calendar, Weight, Thermometer, Box } from 'lucide-vue-next'
 import { getDriverOrderById, placeBid, BID_STATUS_LABEL, BID_STATUS_COLOR, STATUS_LABEL, STATUS_COLOR } from '@/api/cabinet'
 
 const route  = useRoute()

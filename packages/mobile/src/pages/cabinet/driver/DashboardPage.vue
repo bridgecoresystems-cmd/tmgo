@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Package, CheckCircle, Clock, ChevronRight, Search } from 'lucide-vue-next'
-import { getDriverMyBids, getDriverAvailableOrders, BID_STATUS_COLOR, BID_STATUS_LABEL, STATUS_COLOR, STATUS_LABEL } from '@/api/cabinet'
+import { Package, CheckCircle, Clock, Search } from 'lucide-vue-next'
+import { getDriverMyBids, getDriverAvailableOrders, BID_STATUS_COLOR, BID_STATUS_LABEL } from '@/api/cabinet'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()

@@ -129,6 +129,9 @@ function selectToCity(city: string) {
 watch(fromCountry, () => { fromCity.value = ''; fromCitySuggestions.value = [] })
 watch(toCountry,   () => { toCity.value   = ''; toCitySuggestions.value   = [] })
 
+function clearFromSugg() { setTimeout(() => fromCitySuggestions.value = [], 200) }
+function clearToSugg()   { setTimeout(() => toCitySuggestions.value   = [], 200) }
+
 // ─────────────────────────────────────────────────────────────────────────────
 function swapCities() {
   const tc = fromCountry.value; const tx = fromCity.value
@@ -180,8 +183,8 @@ let L:          any = null
 
 async function initMap() {
   if (!mapEl.value || leafletMap) return
-  L = (await import('leaflet')).default
-  await import('leaflet/dist/leaflet.css')
+  L = (await import('leaflet') as any).default
+  await import('leaflet/dist/leaflet.css' as any)
   delete (L.Icon.Default.prototype as any)._getIconUrl
   L.Icon.Default.mergeOptions({
     iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -355,7 +358,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
               placeholder="Начните вводить..."
               autocomplete="off"
               @input="onFromCityInput"
-              @blur="setTimeout(() => fromCitySuggestions = [], 200)"
+              @blur="clearFromSugg"
             />
             <button v-if="fromCity" class="clear-input" @click="fromCity = ''; fromCitySuggestions = []">×</button>
           </div>
@@ -412,7 +415,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
               placeholder="Начните вводить..."
               autocomplete="off"
               @input="onToCityInput"
-              @blur="setTimeout(() => toCitySuggestions = [], 200)"
+              @blur="clearToSugg"
             />
             <button v-if="toCity" class="clear-input" @click="toCity = ''; toCitySuggestions = []">×</button>
           </div>
@@ -578,7 +581,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
   flex-direction: column;
   min-height: 100vh;
   background: #f2f4f7;
-  padding-bottom: 100px;
+  padding-bottom: 180px;
 }
 
 .header {
@@ -682,7 +685,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 .empty-icon { font-size: 2.5rem; }
 .empty-text { color: #999; font-size: 0.9rem; text-align: center; }
 
-.search-btn-wrap { position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 16px; padding-bottom: calc(10px + var(--safe-area-bottom)); background: white; border-top: 1px solid #eee; z-index: 100; }
+.search-btn-wrap { position: fixed; bottom: calc(var(--tabbar-height) + var(--safe-area-bottom)); left: 0; right: 0; padding: 10px 16px; padding-bottom: 10px; background: white; border-top: 1px solid #eee; z-index: 100; }
 .route-summary { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #666; margin-bottom: 6px; overflow: hidden; white-space: nowrap; }
 .route-summary span { overflow: hidden; text-overflow: ellipsis; flex: 1; }
 .route-arrow { flex-shrink: 0; color: #1a5bc4; }

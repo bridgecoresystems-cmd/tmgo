@@ -2,14 +2,14 @@
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, SlidersHorizontal, Package, MapPin, List, Map } from 'lucide-vue-next'
-import { searchOrders, type Order } from '@/api/orders'
+import { apiSearchCargo, type CargoOrder } from '@/api/cargo'
 
 const router = useRouter()
 const route  = useRoute()
 
 const loading  = ref(true)
 const error    = ref('')
-const orders   = ref<Order[]>([])
+const orders   = ref<CargoOrder[]>([])
 const total    = ref(0)
 const viewMode = ref<'list' | 'map'>('list')
 const locating = ref(false)
@@ -42,7 +42,7 @@ const activeFilters = computed(() => {
 
 // ── Координаты городов ────────────────────────────────────────────────────────
 const CITY_COORDS: Record<string, [number, number]> = {
-  'Ашхабад': [37.9601, 58.3261], 'Мары': [37.5932, 61.8401],
+  'Ашхабад': [37.9601, 58.3261], 'Ашгабат': [37.9601, 58.3261], 'Мары': [37.5932, 61.8401],
   'Туркменабад': [39.0869, 63.5681], 'Дашогуз': [41.8361, 59.9667],
   'Туркменбашы': [40.0622, 52.9736], 'Балканабад': [39.5142, 54.3681],
   'Ташкент': [41.2995, 69.2401], 'Самарканд': [39.6542, 66.9597],
@@ -75,9 +75,9 @@ function getCityCoords(city: string): [number, number] | null {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function formatWeight(w: string | null) {
+function formatWeight(w: string | number | null) {
   if (!w) return ''
-  const n = parseFloat(w)
+  const n = typeof w === 'string' ? parseFloat(w) : w
   return n >= 1000 ? `${(n / 1000).toFixed(1)} т` : `${n} кг`
 }
 
@@ -91,7 +91,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const res = await searchOrders({
+    const data = await apiSearchCargo({
       fromCity:    fromCity.value    || undefined,
       fromCountry: fromCountry.value || undefined,
       toCity:      toCity.value      || undefined,
@@ -104,10 +104,10 @@ async function load() {
       packaging:   (q.packaging as string) || undefined,
       readyFrom:   (q.readyFrom as string) || undefined,
     })
-    orders.value = res.orders
-    total.value  = res.total
-  } catch {
-    error.value = 'Не удалось загрузить грузы'
+    orders.value = data
+    total.value  = data.length
+  } catch (e: any) {
+    error.value = 'Не удалось загрузить грузы: ' + e.message
   } finally {
     loading.value = false
   }
@@ -125,8 +125,8 @@ async function initMap() {
   if (!mapEl.value) return
   if (leafletMap) { updateMarkers(); return }
 
-  L = (await import('leaflet')).default
-  await import('leaflet/dist/leaflet.css')
+  L = (await import('leaflet') as any).default
+  await import('leaflet/dist/leaflet.css' as any)
 
   delete (L.Icon.Default.prototype as any)._getIconUrl
   L.Icon.Default.mergeOptions({
@@ -143,7 +143,6 @@ async function initMap() {
     maxZoom: 18,
   }).addTo(leafletMap)
 
-  // Клик на карте → выбор откуда/куда и поиск
   leafletMap.on('click', async (e: any) => {
     if (!pickMode.value) return
     const { lat, lng } = e.latlng

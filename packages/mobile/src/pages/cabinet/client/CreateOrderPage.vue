@@ -95,6 +95,9 @@ function onToCity(e: Event) {
 watch(() => form.fromCountry, () => { form.fromCity = ''; fromSugg.value = [] })
 watch(() => form.toCountry,   () => { form.toCity   = ''; toSugg.value   = [] })
 
+function clearFromSugg() { setTimeout(() => fromSugg.value = [], 200) }
+function clearToSugg()   { setTimeout(() => toSugg.value   = [], 200) }
+
 const canStep2 = computed(() =>
   form.title && form.fromCountry && form.fromCity && form.toCountry && form.toCity && form.readyDate
 )
@@ -189,7 +192,7 @@ const today = new Date().toISOString().split('T')[0]
               <div class="inp-clear">
                 <input :value="form.fromCity" class="field-input" placeholder="Начните вводить..."
                   autocomplete="off" @input="onFromCity"
-                  @blur="setTimeout(() => fromSugg = [], 200)" />
+                  @blur="clearFromSugg" />
                 <button v-if="form.fromCity" class="clear-x" @click="form.fromCity = ''">×</button>
               </div>
             </div>
@@ -221,7 +224,7 @@ const today = new Date().toISOString().split('T')[0]
               <div class="inp-clear">
                 <input :value="form.toCity" class="field-input" placeholder="Начните вводить..."
                   autocomplete="off" @input="onToCity"
-                  @blur="setTimeout(() => toSugg = [], 200)" />
+                  @blur="clearToSugg" />
                 <button v-if="form.toCity" class="clear-x" @click="form.toCity = ''">×</button>
               </div>
             </div>
