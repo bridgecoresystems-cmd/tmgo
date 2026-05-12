@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { MapPin, Navigation, ArrowUpDown, List, Map } from 'lucide-vue-next'
+import { MapPin, Navigation, ArrowUpDown, List, Map, X, Check, ChevronRight } from 'lucide-vue-next'
 
 const router = useRouter()
 
@@ -20,6 +20,9 @@ const weightMax = ref('')
 const volumeMin = ref('')
 const volumeMax = ref('')
 const packaging = ref('')
+
+const showCountryPicker = ref(false)
+const pickingCountryFor = ref<'from' | 'to' | null>(null)
 
 const COUNTRIES = [
   { code: 'TM', name: 'Туркменистан', flag: '🇹🇲' },
@@ -45,6 +48,20 @@ const PACKAGING = [
 function countryLabel(code: string) {
   const c = COUNTRIES.find(c => c.code === code)
   return c ? `${c.flag} ${c.name}` : ''
+}
+
+function openCountryPicker(type: 'from' | 'to') {
+  pickingCountryFor.value = type
+  showCountryPicker.value = true
+}
+
+function selectCountry(code: string) {
+  if (pickingCountryFor.value === 'from') {
+    fromCountry.value = code
+  } else {
+    toCountry.value = code
+  }
+  showCountryPicker.value = false
 }
 
 // ── Nominatim city autocomplete ───────────────────────────────────────────────
@@ -310,15 +327,13 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 
       <div class="section-label">Откуда</div>
 
-      <div class="field-row">
+      <div class="field-row clickable" @click="openCountryPicker('from')">
         <div class="field-icon"><Navigation :size="16" class="icon-primary" /></div>
         <div class="field-content">
           <span class="field-label">Страна</span>
-          <div class="select-wrap">
-            <select v-model="fromCountry" class="native-select">
-              <option value="">Любая страна</option>
-              <option v-for="c in COUNTRIES" :key="c.code" :value="c.code">{{ c.flag }} {{ c.name }}</option>
-            </select>
+          <div class="value-display">
+            {{ fromCountry ? countryLabel(fromCountry) : 'Любая страна' }}
+            <ChevronRight :size="16" class="chevron" />
           </div>
         </div>
       </div>
@@ -369,15 +384,13 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 
       <div class="section-label">Куда</div>
 
-      <div class="field-row">
+      <div class="field-row clickable" @click="openCountryPicker('to')">
         <div class="field-icon"><MapPin :size="16" class="icon-accent" /></div>
         <div class="field-content">
           <span class="field-label">Страна</span>
-          <div class="select-wrap">
-            <select v-model="toCountry" class="native-select">
-              <option value="">Любая страна</option>
-              <option v-for="c in COUNTRIES" :key="c.code" :value="c.code">{{ c.flag }} {{ c.name }}</option>
-            </select>
+          <div class="value-display">
+            {{ toCountry ? countryLabel(toCountry) : 'Любая страна' }}
+            <ChevronRight :size="16" class="chevron" />
           </div>
         </div>
       </div>
@@ -517,6 +530,45 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
       </div>
       <button class="btn-search" @click="search">НАЙТИ ГРУЗЫ</button>
     </div>
+
+    <!-- ── COUNTRY PICKER MODAL ── -->
+    <Transition name="slide-up">
+      <div v-if="showCountryPicker" class="modal-overlay" @click.self="showCountryPicker = false">
+        <div class="bottom-sheet">
+          <div class="sheet-header">
+            <div class="handle" />
+            <div class="header-main">
+              <h3>Выберите страну</h3>
+              <button class="close-sheet" @click="showCountryPicker = false">
+                <X :size="20" />
+              </button>
+            </div>
+          </div>
+          <div class="sheet-content">
+            <button class="country-item" :class="{ selected: !fromCountry && pickingCountryFor === 'from' || !toCountry && pickingCountryFor === 'to' }" @click="selectCountry('')">
+              <div class="country-info">
+                <span class="flag">🌍</span>
+                <span class="name">Любая страна</span>
+              </div>
+              <Check v-if="!fromCountry && pickingCountryFor === 'from' || !toCountry && pickingCountryFor === 'to'" :size="18" class="check-icon" />
+            </button>
+            <button 
+              v-for="c in COUNTRIES" 
+              :key="c.code" 
+              class="country-item"
+              :class="{ selected: (pickingCountryFor === 'from' ? fromCountry : toCountry) === c.code }"
+              @click="selectCountry(c.code)"
+            >
+              <div class="country-info">
+                <span class="flag">{{ c.flag }}</span>
+                <span class="name">{{ c.name }}</span>
+              </div>
+              <Check v-if="(pickingCountryFor === 'from' ? fromCountry : toCountry) === c.code" :size="18" class="check-icon" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -552,11 +604,22 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 
 .field-row { display: flex; align-items: flex-start; padding: 10px 14px; gap: 10px; min-height: 52px; }
 .field-row.two-col { padding: 10px 0; gap: 0; }
+.field-row.clickable:active { background: #f8f9fa; }
 
 .field-icon { width: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1rem; padding-top: 16px; }
 .field-content { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .field-label { font-size: 0.68rem; color: #999; font-weight: 400; display: flex; align-items: center; gap: 4px; }
-.loading-dot { color: #1a5bc4; font-weight: 700; }
+
+.value-display {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #222;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+}
+.chevron { color: #ccc; }
 
 .field-input { border: none; outline: none; font-size: 0.95rem; font-weight: 500; color: #222; background: transparent; width: 100%; min-width: 0; padding: 2px 0; }
 .field-input::placeholder { color: #bbb; font-weight: 400; }
@@ -619,7 +682,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 .empty-icon { font-size: 2.5rem; }
 .empty-text { color: #999; font-size: 0.9rem; text-align: center; }
 
-.search-btn-wrap { position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 16px; padding-bottom: calc(10px + var(--safe-area-bottom)); background: white; border-top: 1px solid #eee; }
+.search-btn-wrap { position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 16px; padding-bottom: calc(10px + var(--safe-area-bottom)); background: white; border-top: 1px solid #eee; z-index: 100; }
 .route-summary { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #666; margin-bottom: 6px; overflow: hidden; white-space: nowrap; }
 .route-summary span { overflow: hidden; text-overflow: ellipsis; flex: 1; }
 .route-arrow { flex-shrink: 0; color: #1a5bc4; }
@@ -629,47 +692,73 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 .icon-primary { color: #1a5bc4; }
 .icon-accent  { color: #d0021b; }
 
-/* View toggle in header */
-.view-toggle { display: flex; background: #f0f0f0; border-radius: 8px; padding: 2px; gap: 2px; margin-left: auto; flex-shrink: 0; }
-.toggle-btn { background: none; border: none; padding: 5px 9px; border-radius: 6px; color: #999; cursor: pointer; display: flex; align-items: center; transition: all 0.2s; }
-.toggle-btn.active { background: #fff; color: #1a5bc4; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-
-/* Map */
-.map-toolbar {
-  background: white; border-bottom: 1px solid #eee;
-  padding: 10px 14px; display: flex; align-items: center;
-  justify-content: space-between; gap: 8px;
-}
-.toolbar-picks { display: flex; gap: 6px; flex: 1; min-width: 0; }
-.btn-pick {
-  flex: 1; min-width: 0;
-  background: #f0f4ff; border: 1px solid #d0daf5; border-radius: 8px;
-  padding: 7px 10px; font-size: 0.78rem; font-weight: 600; color: #1a5bc4;
-  cursor: pointer; transition: all 0.2s; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis; text-align: left;
-}
-.btn-pick-to { color: #d0021b; background: #fff0f0; border-color: #f5d0d0; }
-.btn-pick.active {
-  background: #1a5bc4; color: #fff; border-color: #1a5bc4;
-  animation: pulse 1.2s infinite;
-}
-.btn-pick-to.active { background: #d0021b; border-color: #d0021b; }
-.btn-pick:disabled { opacity: 0.6; cursor: not-allowed; }
-
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(26,91,196,0.4); }
-  50%       { box-shadow: 0 0 0 5px rgba(26,91,196,0); }
+/* Modal / Bottom Sheet */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
 }
 
-.btn-near-me {
-  background: #1a5bc4; color: #fff; border: none; border-radius: 8px;
-  padding: 7px 12px; font-size: 1rem; cursor: pointer; flex-shrink: 0;
-}
-.btn-near-me:disabled { background: #aaa; cursor: not-allowed; }
-
-.map-container {
+.bottom-sheet {
   width: 100%;
-  height: calc(100vh - 160px);
-  min-height: 400px;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  padding-bottom: var(--safe-area-bottom);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
 }
+
+.sheet-header {
+  padding: 12px 16px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.handle {
+  width: 40px;
+  height: 4px;
+  background: #ddd;
+  border-radius: 2px;
+  margin: 0 auto 12px;
+}
+
+.header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-main h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.close-sheet { background: #f0f0f0; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+.sheet-content {
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.country-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #f9f9f9;
+}
+.country-item:active { background: #f0f4ff; }
+.country-item.selected { background: #f0f4ff; }
+
+.country-info { display: flex; align-items: center; gap: 12px; }
+.country-info .flag { font-size: 1.4rem; }
+.country-info .name { font-size: 0.95rem; font-weight: 500; color: #222; }
+
+.check-icon { color: #1a5bc4; }
+
+/* Animations */
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }
+.slide-up-enter-from, .slide-up-leave-to { transform: translateY(100%); opacity: 0; }
 </style>
