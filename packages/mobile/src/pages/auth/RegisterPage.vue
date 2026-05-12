@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Eye, EyeOff, Truck, Package } from 'lucide-vue-next'
+import { Eye, EyeOff, Truck, Package, ArrowLeft } from 'lucide-vue-next'
 import { apiSignUp } from '@/api/auth'
 import { useAuth } from '@/composables/useAuth'
 import { roleHome } from '@/router'
 
 const router  = useRouter()
 const { setUser } = useAuth()
-
-const step = ref<1 | 2>(1)
 
 const email    = ref('')
 const password = ref('')
@@ -21,17 +19,13 @@ const role     = ref<'client' | 'driver'>('client')
 const loading = ref(false)
 const error   = ref('')
 
-function goStep2() {
+async function submit() {
   error.value = ''
   if (!email.value) { error.value = 'Введите email'; return }
   if (!/\S+@\S+\.\S+/.test(email.value)) { error.value = 'Некорректный email'; return }
   if (password.value.length < 6) { error.value = 'Пароль минимум 6 символов'; return }
   if (password.value !== confirm.value) { error.value = 'Пароли не совпадают'; return }
-  step.value = 2
-}
 
-async function submit() {
-  error.value = ''
   loading.value = true
   try {
     const user = await apiSignUp(email.value.trim(), password.value, role.value)
@@ -39,7 +33,6 @@ async function submit() {
     router.replace(roleHome(user.role))
   } catch (e: any) {
     error.value = e.message || 'Ошибка регистрации'
-    step.value = 1
   } finally {
     loading.value = false
   }
@@ -48,25 +41,44 @@ async function submit() {
 
 <template>
   <div class="page">
+    <header class="header">
+      <button class="back-btn" @click="router.back()">
+        <ArrowLeft :size="24" />
+      </button>
+      <h1 class="header-title">Регистрация</h1>
+    </header>
 
-    <!-- Step 1: Email + Password -->
-    <template v-if="step === 1">
-      <button class="back-btn" @click="router.back()">←</button>
-
-      <div class="logo-block">
-        <div class="logo-icon">
-          <svg viewBox="0 0 48 48" fill="none">
-            <rect width="48" height="48" rx="14" fill="#1a5bc4"/>
-            <path d="M8 30 Q14 18 24 18 Q34 18 40 30" stroke="white" stroke-width="3" stroke-linecap="round" fill="none"/>
-            <circle cx="15" cy="31" r="4" fill="white"/>
-            <circle cx="33" cy="31" r="4" fill="white"/>
-            <rect x="7" y="27" width="34" height="6" rx="3" fill="rgba(255,255,255,0.25)"/>
-          </svg>
-        </div>
-        <h1 class="logo-title">Регистрация в TMGO</h1>
+    <div class="content">
+      <div class="intro">
+        <h2 class="title">Создайте аккаунт</h2>
+        <p class="subtitle">Выберите роль и заполните данные</p>
       </div>
 
-      <form class="form" @submit.prevent="goStep2" novalidate>
+      <!-- Role Selector -->
+      <div class="role-selector">
+        <button
+          type="button"
+          :class="['role-btn', { active: role === 'client' }]"
+          @click="role = 'client'"
+        >
+          <div class="role-icon-box">
+            <Package :size="20" />
+          </div>
+          <span>Я клиент</span>
+        </button>
+        <button
+          type="button"
+          :class="['role-btn', { active: role === 'driver' }]"
+          @click="role = 'driver'"
+        >
+          <div class="role-icon-box">
+            <Truck :size="20" />
+          </div>
+          <span>Я водитель</span>
+        </button>
+      </div>
+
+      <form class="form" @submit.prevent="submit" novalidate>
         <div v-if="error" class="error-box">{{ error }}</div>
 
         <div class="field">
@@ -75,15 +87,14 @@ async function submit() {
             v-model="email"
             type="email"
             class="field-input"
-            placeholder="email@example.com"
+            placeholder="example@mail.com"
             autocomplete="email"
           />
-          <div class="field-line" />
         </div>
 
-        <div class="field" style="margin-top: 24px">
+        <div class="field">
           <label class="field-label">Пароль</label>
-          <div class="pw-wrap">
+          <div class="input-wrap">
             <input
               v-model="password"
               :type="showPw ? 'text' : 'password'"
@@ -96,12 +107,11 @@ async function submit() {
               <Eye v-else :size="20" />
             </button>
           </div>
-          <div class="field-line" />
         </div>
 
-        <div class="field" style="margin-top: 24px">
-          <label class="field-label">Повторите пароль</label>
-          <div class="pw-wrap">
+        <div class="field">
+          <label class="field-label">Подтверждение пароля</label>
+          <div class="input-wrap">
             <input
               v-model="confirm"
               :type="showConf ? 'text' : 'password'"
@@ -114,264 +124,247 @@ async function submit() {
               <Eye v-else :size="20" />
             </button>
           </div>
-          <div class="field-line" />
         </div>
 
-        <button type="submit" class="btn-submit">ДАЛЕЕ →</button>
+        <button type="submit" class="btn-primary" :disabled="loading">
+          <span v-if="loading" class="spinner" />
+          {{ loading ? 'Создаем аккаунт...' : 'ЗАРЕГИСТРИРОВАТЬСЯ' }}
+        </button>
       </form>
 
-      <div class="login-block">
-        <p class="login-hint">Уже есть аккаунт?</p>
-        <button class="btn-login" @click="router.push('/login')">ВОЙТИ</button>
+      <div class="footer">
+        <p>Уже есть аккаунт?</p>
+        <button class="btn-link" @click="router.push('/login')">Войти</button>
       </div>
-    </template>
-
-    <!-- Step 2: Role selection -->
-    <template v-else>
-      <div class="role-header">
-        <button class="back-btn" @click="step = 1">←</button>
-        <h2 class="role-title">Профиль деятельности</h2>
-      </div>
-
-      <p class="role-desc">
-        Выберите ваш профиль деятельности.<br>
-        Поменять профиль можно и после регистрации.
-      </p>
-
-      <div v-if="error" class="error-box" style="margin: 0 0 16px">{{ error }}</div>
-
-      <div class="roles">
-        <label :class="['role-card', { selected: role === 'driver' }]" @click="role = 'driver'">
-          <div class="role-radio">
-            <div v-if="role === 'driver'" class="role-radio-dot" />
-          </div>
-          <div class="role-icon driver-icon">
-            <Truck :size="28" />
-          </div>
-          <div class="role-text">
-            <span class="role-name">Перевозчик</span>
-            <span class="role-sub">Ищу грузы для перевозки, у меня есть транспорт</span>
-          </div>
-        </label>
-
-        <label :class="['role-card', { selected: role === 'client' }]" @click="role = 'client'">
-          <div class="role-radio">
-            <div v-if="role === 'client'" class="role-radio-dot" />
-          </div>
-          <div class="role-icon client-icon">
-            <Package :size="28" />
-          </div>
-          <div class="role-text">
-            <span class="role-name">Грузовладелец</span>
-            <span class="role-sub">У меня есть груз, ищу перевозчиков</span>
-          </div>
-        </label>
-      </div>
-
-      <button class="btn-done" :disabled="loading" @click="submit">
-        <span v-if="loading" class="spinner" />
-        {{ loading ? 'Регистрация...' : 'ГОТОВО' }}
-      </button>
-    </template>
-
+    </div>
   </div>
 </template>
 
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #fff;
+  background: white;
   display: flex;
   flex-direction: column;
-  padding: 0 28px;
-  padding-top: calc(16px + var(--safe-area-top));
-  padding-bottom: calc(24px + var(--safe-area-bottom));
-  box-sizing: border-box;
+}
+
+.header {
+  padding: 12px 16px;
+  padding-top: calc(12px + var(--safe-area-top));
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .back-btn {
   background: none;
   border: none;
-  font-size: 1.4rem;
-  color: #555;
-  padding: 4px 0;
+  color: #333;
+  padding: 4px;
   cursor: pointer;
-  align-self: flex-start;
-  line-height: 1;
-}
-
-/* Step 1 */
-.logo-block {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 28px;
-  margin-bottom: 32px;
-  gap: 14px;
-}
-.logo-icon svg { width: 60px; height: 60px; }
-.logo-title { font-size: 1.2rem; font-weight: 700; color: #1a1a1a; margin: 0; }
-
-.form { display: flex; flex-direction: column; }
-
-.field { display: flex; flex-direction: column; position: relative; }
-.field-label { font-size: 0.85rem; color: #888; margin-bottom: 6px; }
-.field-input {
-  border: none; outline: none; font-size: 1rem; color: #222;
-  background: transparent; padding: 4px 0; width: 100%;
-}
-.field-input::placeholder { color: #ccc; }
-.field-line { height: 1px; background: #ddd; margin-top: 4px; }
-.field:focus-within .field-line { background: #1a5bc4; height: 1.5px; }
-
-.pw-wrap { display: flex; align-items: center; gap: 8px; }
-.pw-wrap .field-input { flex: 1; }
-.pw-toggle { background: none; border: none; color: #aaa; cursor: pointer; padding: 0; display: flex; align-items: center; flex-shrink: 0; }
-
-.error-box {
-  background: #fff0f0;
-  border-left: 3px solid #e53935;
-  border-radius: 6px;
-  padding: 10px 14px;
-  font-size: 0.85rem;
-  color: #c62828;
-  margin-bottom: 20px;
 }
 
-.btn-submit {
-  margin-top: 32px;
-  width: 100%;
-  height: 52px;
-  background: #1a5bc4;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.95rem;
+.header-title {
+  font-size: 1.1rem;
   font-weight: 700;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-submit:active { background: #154da0; }
-
-.login-block {
-  margin-top: auto;
-  padding-top: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-.login-hint { font-size: 0.85rem; color: #aaa; margin: 0; }
-.btn-login {
-  background: none; border: none; color: #1a5bc4;
-  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; padding: 4px;
+  color: #1a1a1a;
 }
 
-/* Step 2 */
-.role-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.role-header .back-btn { align-self: auto; margin-bottom: 0; }
-.role-title { font-size: 1.05rem; font-weight: 700; color: #1a1a1a; margin: 0; }
-
-.role-desc {
-  font-size: 0.88rem;
-  color: #666;
-  line-height: 1.5;
-  margin: 0 0 28px;
-}
-
-.roles {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.content {
+  padding: 24px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.role-card {
+.intro {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.role-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.role-btn {
+  flex: 1;
+  height: 90px;
+  background: #f8f9fb;
+  border: 2px solid #f0f2f5;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-btn span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.role-icon-box {
+  width: 36px;
+  height: 36px;
+  background: white;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 18px 16px;
-  border: 1.5px solid #e8e8e8;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  user-select: none;
+  justify-content: center;
+  color: #999;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
-.role-card.selected {
+
+.role-btn.active {
   border-color: #1a5bc4;
   background: #f0f5ff;
 }
 
-.role-radio {
-  width: 22px; height: 22px;
-  border: 2px solid #ccc;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.2s;
+.role-btn.active span {
+  color: #1a5bc4;
 }
-.role-card.selected .role-radio { border-color: #1a5bc4; }
-.role-radio-dot {
-  width: 10px; height: 10px;
+
+.role-btn.active .role-icon-box {
   background: #1a5bc4;
-  border-radius: 50%;
+  color: white;
 }
 
-.role-icon {
-  width: 48px; height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.driver-icon { background: #e8f0fe; color: #1a5bc4; }
-.client-icon { background: #e8f5e9; color: #2e7d32; }
-
-.role-text {
+.form {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 0;
+  gap: 20px;
 }
-.role-name { font-size: 1rem; font-weight: 600; color: #1a1a1a; }
-.role-sub  { font-size: 0.78rem; color: #888; line-height: 1.4; }
 
-.btn-done {
-  margin-top: 24px;
+.error-box {
+  background: #fff0f0;
+  border-left: 4px solid #e53935;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #c62828;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #888;
+  margin-left: 4px;
+}
+
+.field-input {
   width: 100%;
   height: 52px;
+  background: #f8f9fb;
+  border: 1.5px solid #f0f2f5;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 1rem;
+  color: #222;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.field-input:focus {
+  border-color: #1a5bc4;
+  background: white;
+}
+
+.input-wrap {
+  position: relative;
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.btn-primary {
+  margin-top: 12px;
+  height: 56px;
   background: #1a5bc4;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 14px;
   font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transition: background 0.2s;
+  gap: 12px;
+  transition: transform 0.1s active;
 }
-.btn-done:active:not(:disabled) { background: #154da0; }
-.btn-done:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+}
+
+.footer {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #1a5bc4;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px;
+}
 
 .spinner {
-  width: 18px; height: 18px;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: #fff;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: white;
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 </style>

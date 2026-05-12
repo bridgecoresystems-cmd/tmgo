@@ -12,14 +12,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api/auth': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://tmgo.bridgecore.tech',
         changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/api/, ''),
       },
     },
   },
