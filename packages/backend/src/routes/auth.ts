@@ -32,7 +32,8 @@ const signInRateLimit = rateLimit({
 });
 
 const isProduction = process.env.NODE_ENV === 'production';
-/** Secure cookies only work over HTTPS — allow HTTP on IP / без SSL. */
+/** SameSite=None; Secure — нужно для Capacitor (capacitor://localhost → https://...).
+ *  В dev используем Lax без Secure чтобы работал HTTP. */
 const useSecureSessionCookie =
   isProduction && (process.env.BETTER_AUTH_URL || '').startsWith('https');
 
@@ -47,8 +48,12 @@ async function getUserIdFromToken(request: Request): Promise<string | null> {
     .limit(1);
   return session?.userId ?? null;
 }
-const COOKIE_OPTS = `HttpOnly; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 30}${useSecureSessionCookie ? '; Secure' : ''}`;
-const COOKIE_CLEAR = `better-auth.session_token=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`;
+const COOKIE_OPTS = useSecureSessionCookie
+  ? `HttpOnly; SameSite=None; Secure; Path=/; Max-Age=${60 * 60 * 24 * 30}`
+  : `HttpOnly; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 30}`;
+const COOKIE_CLEAR = useSecureSessionCookie
+  ? `better-auth.session_token=; Max-Age=0; Path=/; HttpOnly; SameSite=None; Secure`
+  : `better-auth.session_token=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`;
 
 function generateId(len = 32) {
   return crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '').slice(0, len - 32);
