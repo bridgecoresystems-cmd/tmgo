@@ -16,3 +16,6 @@ packages/mobile/android/
 packages/mobile/ios/
 packages/frontend/android/
 packages/frontend/ios/
+
+# Docs photos
+docs/photos/

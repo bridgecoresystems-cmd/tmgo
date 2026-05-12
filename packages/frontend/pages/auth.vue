@@ -71,19 +71,28 @@
 
               <div class="field">
                 <label>{{ $t('auth.login.passwordLabel') }}</label>
-                <div class="input-wrap input-wrap--ninput">
+                <div class="input-wrap">
                   <svg class="input-icon" viewBox="0 0 24 24" fill="none">
                     <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
                     <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                   </svg>
-                  <n-input
-                    v-model:value="loginForm.password"
-                    type="password"
-                    show-password-on="click"
+                  <input
+                    :type="showLoginPw ? 'text' : 'password'"
+                    v-model="loginForm.password"
                     :placeholder="$t('auth.login.passwordPlaceholder')"
-                    @update:value="loginError = ''"
+                    @input="loginError = ''"
                     required
                   />
+                  <button type="button" class="toggle-pw" @click="showLoginPw = !showLoginPw">
+                    <svg v-if="showLoginPw" viewBox="0 0 24 24" fill="none" width="16" height="16">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" width="16" height="16">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.6"/>
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
 
@@ -137,23 +146,53 @@
 
               <div class="field">
                 <label>{{ $t('auth.signup.passwordLabel') }}</label>
-                <div class="input-wrap input-wrap--ninput">
+                <div class="input-wrap">
                   <svg class="input-icon" viewBox="0 0 24 24" fill="none">
                     <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
                     <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                   </svg>
-                  <n-input v-model:value="registerForm.password" type="password" show-password-on="click" :placeholder="$t('auth.signup.passwordPlaceholder')" required />
+                  <input
+                    :type="showRegPw ? 'text' : 'password'"
+                    v-model="registerForm.password"
+                    :placeholder="$t('auth.signup.passwordPlaceholder')"
+                    required
+                  />
+                  <button type="button" class="toggle-pw" @click="showRegPw = !showRegPw">
+                    <svg v-if="showRegPw" viewBox="0 0 24 24" fill="none" width="16" height="16">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" width="16" height="16">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.6"/>
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
 
               <div class="field">
                 <label>{{ $t('auth.signup.passwordConfirmLabel') }}</label>
-                <div class="input-wrap input-wrap--ninput">
+                <div class="input-wrap">
                   <svg class="input-icon" viewBox="0 0 24 24" fill="none">
                     <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
                     <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                   </svg>
-                  <n-input v-model:value="registerForm.passwordConfirm" type="password" show-password-on="click" :placeholder="$t('auth.signup.passwordConfirmPlaceholder')" required />
+                  <input
+                    :type="showRegPwConfirm ? 'text' : 'password'"
+                    v-model="registerForm.passwordConfirm"
+                    :placeholder="$t('auth.signup.passwordConfirmPlaceholder')"
+                    required
+                  />
+                  <button type="button" class="toggle-pw" @click="showRegPwConfirm = !showRegPwConfirm">
+                    <svg v-if="showRegPwConfirm" viewBox="0 0 24 24" fill="none" width="16" height="16">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" width="16" height="16">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.6"/>
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
 
@@ -199,6 +238,9 @@ const isSignupMode = ref(route.query.mode === 'signup')
 const loading = ref(false)
 const loginError = ref('')
 const registerError = ref('')
+const showLoginPw = ref(false)
+const showRegPw = ref(false)
+const showRegPwConfirm = ref(false)
 
 watch(() => route.query.mode, (mode) => {
   isSignupMode.value = mode === 'signup'
@@ -535,33 +577,24 @@ const handleRegister = async () => {
   pointer-events: none;
 }
 
-/* n-input wrapper */
-.input-wrap--ninput {
-  align-items: stretch;
-}
-.input-wrap--ninput .input-icon {
+/* Password show/hide toggle */
+.toggle-pw {
+  position: absolute;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 2;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+  transition: color 0.2s;
 }
-.input-wrap--ninput :deep(.n-input) {
-  width: 100%;
-  font-family: 'Poppins', sans-serif;
-  --n-border-radius: 12px;
-  --n-height: 44px;
-  --n-font-size: 13px;
-  --n-color: #f9f9fb;
-  --n-color-focus: #fff;
-  --n-border: 1.5px solid #ebebeb;
-  --n-border-hover: 1.5px solid #ff6b4a;
-  --n-border-focus: 1.5px solid #ff6b4a;
-  --n-box-shadow-focus: 0 0 0 3px rgba(255, 107, 74, 0.1);
-  --n-placeholder-color: #c5c5c5;
-}
-.input-wrap--ninput :deep(.n-input__input-el),
-.input-wrap--ninput :deep(.n-input__placeholder) {
-  padding-left: 38px !important;
-}
+.toggle-pw:hover { color: #888; }
+.input-wrap input { padding-right: 40px; }
 
 /* Submit button */
 .btn-submit {

@@ -73,18 +73,32 @@ export default defineNuxtConfig({
       cookieKey: 'i18n_redirected',
       fallbackLocale: 'ru',
     },
+    bundle: {
+      optimizeTranslationDirective: false,
+    },
   },
   naiveui: {
-    colorMode: 'light'
+    colorMode: 'light',
   },
   // SSR=false — transpile нужен только для SSR, без него Vite пре-бандлит пакеты
   build: {
     transpile: process.env.NODE_ENV === 'production' ? [] : []
   },
   vite: {
+    resolve: {
+      // Гарантируем один экземпляр Vue — иначе multiple copies ломают
+      // currentRenderingInstance в Naive UI (bun workspace добавил vue@3.5.34)
+      dedupe: ['vue', '@vue/runtime-core', '@vue/reactivity', '@vue/runtime-dom', '@vue/shared'],
+    },
     optimizeDeps: {
       // Все тяжёлые пакеты пре-бандлятся один раз при старте → F5 мгновенный
       include: [
+        'vue',
+        '@vue/runtime-core',
+        '@vue/runtime-dom',
+        '@vue/reactivity',
+        '@vue/shared',
+        '@vue/compiler-dom',
         'naive-ui',
         'vueuc',
         '@css-render/vue3-ssr',
@@ -116,6 +130,9 @@ export default defineNuxtConfig({
     '~/assets/css/main.css'
   ],
   ssr: false,
+  experimental: {
+    appManifest: false,
+  },
   nitro: {
     preset: 'bun',
   },

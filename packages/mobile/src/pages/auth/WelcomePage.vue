@@ -45,7 +45,7 @@ const skipRegistration = () => {
 
       <!-- Task Buttons -->
       <div class="btn-group right-align bottom-group">
-        <button class="welcome-btn white-btn task-btn" @click="skipRegistration">
+        <button class="welcome-btn white-btn task-btn" @click="router.push('/search')">
           <span>Хочу найти груз</span>
           <Search :size="18" />
         </button>

@@ -11,31 +11,63 @@
           <n-h1 class="hero-title">{{ $t('hero.title') }}</n-h1>
           <n-p class="hero-subtitle">{{ $t('hero.subtitle') }}</n-p>
           
-          <div class="order-form-box">
-            <n-h3 class="form-title">{{ $t('form.title') }}</n-h3>
-            <n-space vertical size="large">
-              <n-grid :cols="2" :x-gap="12">
-                <n-gi>
-                  <n-select
-                    v-model:value="orderForm.fromCity"
-                    :options="fromCityOptions"
-                    :placeholder="$t('form.fromPlaceholder')"
-                    filterable
-                  />
-                </n-gi>
-                <n-gi>
-                  <n-select
-                    v-model:value="orderForm.toCity"
-                    :options="toCityOptions"
-                    :placeholder="$t('form.toPlaceholder')"
-                    filterable
-                  />
-                </n-gi>
-              </n-grid>
-              <n-button type="primary" block size="large" class="hero-btn" @click="handleSubmit">
-                {{ $t('form.submit') }}
-              </n-button>
-            </n-space>
+          <div class="search-widget">
+            <!-- Mode toggle -->
+            <div class="mode-toggle">
+              <button :class="['mode-btn', { active: searchMode === 'cargo' }]" @click="searchMode = 'cargo'">
+                📦 Ищу груз
+              </button>
+              <button :class="['mode-btn', { active: searchMode === 'truck' }]" @click="searchMode = 'truck'">
+                🚛 Ищу машину
+              </button>
+            </div>
+
+            <!-- Route inputs -->
+            <div class="hero-route">
+              <div class="hero-field">
+                <div class="hero-field-label">Откуда</div>
+                <n-select
+                  v-model:value="heroForm.fromCountry"
+                  :options="countryOptions"
+                  placeholder="Страна"
+                  filterable
+                  clearable
+                  size="small"
+                  class="hero-select"
+                />
+                <n-input
+                  v-model:value="heroForm.fromCity"
+                  placeholder="Город"
+                  size="small"
+                  class="hero-input"
+                />
+              </div>
+
+              <button class="hero-swap" @click="swapHero" title="Поменять местами">⇄</button>
+
+              <div class="hero-field">
+                <div class="hero-field-label">Куда</div>
+                <n-select
+                  v-model:value="heroForm.toCountry"
+                  :options="countryOptions"
+                  placeholder="Страна"
+                  filterable
+                  clearable
+                  size="small"
+                  class="hero-select"
+                />
+                <n-input
+                  v-model:value="heroForm.toCity"
+                  placeholder="Город"
+                  size="small"
+                  class="hero-input"
+                />
+              </div>
+            </div>
+
+            <n-button type="primary" block size="large" class="hero-btn" @click="heroSearch">
+              {{ searchMode === 'cargo' ? 'Найти груз' : 'Найти машину' }}
+            </n-button>
           </div>
         </div>
       </div>
@@ -116,8 +148,8 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const { session, loading } = useAuth()
+const { COUNTRY_LIST } = useCountryConfig()
 
-// Автоматический редирект в кабинет для авторизованных (после загрузки сессии)
 watch([session, loading], () => {
   if (loading.value) return
   const role = session.value?.user?.role
@@ -126,73 +158,40 @@ watch([session, loading], () => {
   else if (role === 'admin') navigateTo('/admin')
 }, { immediate: true })
 
-const advantages = [
-  { key: 'vat' },
-  { key: 'limits' },
-  { key: 'cabinet' },
-  { key: 'fast' },
-  { key: 'loaders' },
-  { key: 'insurance' },
-]
+const advantages = [{ key: 'vat' }, { key: 'limits' }, { key: 'cabinet' }, { key: 'fast' }, { key: 'loaders' }, { key: 'insurance' }]
+const steps = [{ key: 'register' }, { key: 'order' }, { key: 'documents' }]
+const services = [{ key: 'office' }, { key: 'warehouse' }, { key: 'intercity' }, { key: 'customers' }]
 
-const steps = [
-  { key: 'register' },
-  { key: 'order' },
-  { key: 'documents' },
-]
+const searchMode = ref<'cargo' | 'truck'>('cargo')
+const heroForm = reactive({
+  fromCountry: null as string | null,
+  fromCity: '',
+  toCountry: null as string | null,
+  toCity: '',
+})
 
-const services = [
-  { key: 'office' },
-  { key: 'warehouse' },
-  { key: 'intercity' },
-  { key: 'customers' },
-]
+const countryOptions = computed(() =>
+  COUNTRY_LIST.map(c => ({ label: `${c.flag} ${c.name}`, value: c.code }))
+)
 
-const scrollTo = (id: string) => {
-  const el = document.getElementById(id)
-  if (el) el.scrollIntoView({ behavior: 'smooth' })
+function swapHero() {
+  const tc = heroForm.fromCountry; const tx = heroForm.fromCity
+  heroForm.fromCountry = heroForm.toCountry; heroForm.fromCity = heroForm.toCity
+  heroForm.toCountry = tc; heroForm.toCity = tx
 }
 
-const orderForm = reactive({
-  fromCity: null,
-  toCity: null
-})
-
-const allCities = ref<any[]>([])
-const { apiBase } = useApiBase()
-
-onMounted(async () => {
-  try {
-    const data = await $fetch(`${apiBase}/cities`)
-    allCities.value = Array.isArray(data) ? data : []
-  } catch (e) {
-    console.error('Failed to fetch cities', e)
-    allCities.value = []
-  }
-})
-
-const fromCityOptions = computed(() => 
-  (Array.isArray(allCities.value) ? allCities.value : [])
-    .filter(c => c.type === 'FROM' || c.type === 'BOTH')
-    .map(c => ({ label: c.name, value: c.id }))
-)
-
-const toCityOptions = computed(() => 
-  (Array.isArray(allCities.value) ? allCities.value : [])
-    .filter(c => c.type === 'TO' || c.type === 'BOTH')
-    .map(c => ({ label: c.name, value: c.id }))
-)
-
-const handleSubmit = () => {
-  if (!orderForm.fromCity || !orderForm.toCity) return
-  navigateTo('/auth')
+function heroSearch() {
+  const q: Record<string, string> = {}
+  if (heroForm.fromCountry) q.fromCountry = heroForm.fromCountry
+  if (heroForm.fromCity) q.fromCity = heroForm.fromCity
+  if (heroForm.toCountry) q.toCountry = heroForm.toCountry
+  if (heroForm.toCity) q.toCity = heroForm.toCity
+  navigateTo({ path: '/search', query: q })
 }
 
 useHead({
   title: () => t('meta.title'),
-  meta: [
-    { name: 'description', content: () => t('meta.description') }
-  ]
+  meta: [{ name: 'description', content: () => t('meta.description') }]
 })
 </script>
 
@@ -288,20 +287,6 @@ useHead({
   border-bottom-right-radius: 40px;
 }
 
-.order-form-box {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 24px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  margin-top: 20px;
-}
-
-.form-title {
-  color: #fff;
-  margin-top: 0;
-  margin-bottom: 16px;
-  font-size: 18px;
-}
 
 .hero-title {
   font-size: 42px;
@@ -320,12 +305,110 @@ useHead({
 
 .hero-btn {
   background: #fff !important;
-  color: #000 !important;
-  font-weight: 600;
-  height: 54px;
-  padding: 0 32px;
-  border-radius: 16px;
+  color: #ff6b4a !important;
+  font-weight: 700;
+  height: 52px;
+  border-radius: 12px;
   border: none;
+  font-size: 16px;
+  letter-spacing: 0.3px;
+}
+
+/* Search widget */
+.search-widget {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  backdrop-filter: blur(4px);
+}
+
+.mode-toggle {
+  display: flex;
+  background: rgba(0,0,0,0.15);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.mode-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mode-btn.active {
+  background: #fff;
+  color: #ff6b4a;
+}
+
+.hero-route {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.hero-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.hero-field-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hero-select :deep(.n-base-selection) {
+  background: rgba(255,255,255,0.9) !important;
+  border-radius: 8px !important;
+}
+
+.hero-input :deep(.n-input__input-el) {
+  background: rgba(255,255,255,0.9) !important;
+}
+
+.hero-input :deep(.n-input) {
+  border-radius: 8px !important;
+  background: rgba(255,255,255,0.9) !important;
+}
+
+.hero-swap {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+  transition: background 0.2s;
+}
+
+.hero-swap:hover {
+  background: rgba(255,255,255,0.3);
 }
 
 @media (max-width: 768px) {

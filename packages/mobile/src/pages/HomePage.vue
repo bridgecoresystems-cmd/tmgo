@@ -13,7 +13,6 @@ import {
 import CargoCard from '../components/CargoCard.vue'
 
 const activeTab = ref('search')
-const searchQuery = ref('')
 
 const cargoList = ref([
   {

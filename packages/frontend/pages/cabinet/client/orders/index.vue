@@ -108,10 +108,7 @@ const columns = computed<DataTableColumns<any>>(() => [
   {
     title: t('client.orders.route'),
     key: 'route',
-    render: (row) => {
-      const order = row.order ?? row
-      return `${order.fromCity ?? '—'} → ${order.toCity ?? '—'}`
-    },
+    render: (row) => `${row.fromCity ?? '—'} → ${row.toCity ?? '—'}`,
   },
   {
     title: t('client.orders.cargoType'),
@@ -123,38 +120,26 @@ const columns = computed<DataTableColumns<any>>(() => [
     title: t('client.orders.readyDate'),
     key: 'readyDate',
     width: 110,
-    render: (row) => {
-      const order = row.order ?? row
-      return order.readyDate ?? '—'
-    },
+    render: (row) => row.readyDate ?? '—',
   },
   {
     title: t('common.price'),
     key: 'price',
     width: 110,
-    render: (row) => {
-      const order = row.order ?? row
-      return order.price ? `${order.price} ${order.currency}` : t('client.orders.negotiable')
-    },
+    render: (row) => row.price ? `${row.price} ${row.currency}` : t('client.orders.negotiable'),
   },
   {
     title: t('common.status'),
     key: 'status',
     width: 130,
-    render: (row) => {
-      const order = row.order ?? row
-      return h(NTag, { type: (STATUS_TYPE[order.status] ?? 'default') as any, size: 'small', bordered: false },
-        { default: () => statusLabel(order.status) })
-    },
+    render: (row) => h(NTag, { type: (STATUS_TYPE[row.status] ?? 'default') as any, size: 'small', bordered: false },
+      { default: () => statusLabel(row.status) }),
   },
   {
     title: t('common.date'),
     key: 'createdAt',
     width: 110,
-    render: (row) => {
-      const order = row.order ?? row
-      return new Date(order.createdAt ?? order.created_at).toLocaleDateString('ru-RU')
-    },
+    render: (row) => new Date(row.createdAt ?? row.created_at).toLocaleDateString('ru-RU'),
   },
 ])
 
@@ -163,11 +148,14 @@ async function loadOrders() {
   loading.value = true
   try {
     const data = await $fetch<any>(`${API}/cabinet/orders/my`, { credentials: 'include' })
-    orderList.value = (data.orders ?? data ?? []).map((item: any) => ({
-      ...((item.order ?? item)),
-      cargoType: item.cargoType ?? item.order_cargo?.cargoType ?? null,
-      id: (item.order ?? item).id,
-    }))
+    orderList.value = (data.orders ?? data ?? []).map((item: any) => {
+      const ord = item.orders ?? item.order ?? item
+      return {
+        ...ord,
+        cargoType: item.cargoType ?? item.order_cargo?.cargoType ?? null,
+        id: ord.id,
+      }
+    })
   } catch (e: any) {
     const err = e?.data?.message || t('client.orders.loadOrdersError')
     loadError.value = err

@@ -23,9 +23,23 @@
     "concurrently": "^9.1.0"
   },
   "overrides": {
-    "serialize-javascript": ">=7.0.3"
+    "serialize-javascript": ">=7.0.3",
+    "vue": "3.5.34",
+    "@vue/runtime-core": "3.5.34",
+    "@vue/runtime-dom": "3.5.34",
+    "@vue/reactivity": "3.5.34",
+    "@vue/shared": "3.5.34",
+    "@vue/compiler-dom": "3.5.34",
+    "@vue/compiler-core": "3.5.34"
   },
   "resolutions": {
-    "serialize-javascript": ">=7.0.3"
+    "serialize-javascript": ">=7.0.3",
+    "vue": "3.5.34",
+    "@vue/runtime-core": "3.5.34",
+    "@vue/runtime-dom": "3.5.34",
+    "@vue/reactivity": "3.5.34",
+    "@vue/shared": "3.5.34",
+    "@vue/compiler-dom": "3.5.34",
+    "@vue/compiler-core": "3.5.34"
   }
 }

@@ -33,6 +33,7 @@ import { cabinetClientServicesRoutes } from './routes/cabinet/client-services';
 import { cabinetClientProfileRoutes } from './routes/cabinet/client-profile';
 import { cabinetChatRoutes } from './routes/cabinet/chat';
 import { cabinetProfileRoutes } from './routes/cabinet/profile';
+import { publicOrdersRoutes } from './routes/public/orders';
 import { startWorker } from './lib/queues';
 
 const app = new Elysia()
@@ -108,6 +109,7 @@ const app = new Elysia()
   .use(adminLegalDocsRoutes)
   .use(adminMvpRoadmapRoutes)
   .use(publicLegalDocsRoutes)
+  .use(publicOrdersRoutes)
   .use(cabinetMailingRoutes)
   .use(cabinetOrdersRoutes)
   .use(cabinetClientServicesRoutes)
