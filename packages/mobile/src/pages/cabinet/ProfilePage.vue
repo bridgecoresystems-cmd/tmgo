@@ -1,53 +1,50 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { 
-  User, 
-  ChevronRight, 
-  Wallet, 
-  ShieldCheck, 
-  Truck, 
-  Settings, 
-  Headset, 
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  User,
+  ChevronRight,
+  ShieldCheck,
+  Truck,
+  Settings,
+  Headset,
   LogOut,
   FileText,
   Bell,
-  ArrowLeftRight,
   Package
 } from 'lucide-vue-next'
+import { useAuth } from '@/composables/useAuth'
 
-// Role state: 'client' or 'driver'
-const currentRole = ref<'client' | 'driver'>('client')
+const router = useRouter()
+const { user, signOut } = useAuth()
 
-const toggleRole = () => {
-  currentRole.value = currentRole.value === 'client' ? 'driver' : 'client'
+const currentRole = computed(() => user.user?.role ?? 'client')
+
+async function handleSignOut() {
+  await signOut()
+  router.replace('/login')
 }
-
-const userProfile = ref({
-  name: 'Батыр',
-  balance: '125,000 ₸',
-  status: 'verified'
-})
 
 // Menu items change based on role
 const getMenuItems = () => {
   const common = [
-    { id: 'profile', label: 'Личные данные', icon: User, color: '#4834d4' },
-    { id: 'notifications', label: 'Уведомления', icon: Bell, color: '#6ab04c' },
-    { id: 'support', label: 'Служба поддержки', icon: Headset, color: '#7ed6df' },
-    { id: 'settings', label: 'Настройки', icon: Settings, color: '#95afc0' },
+    { id: 'profile', label: 'Личные данные', icon: User, color: '#4834d4', action: () => {} },
+    { id: 'notifications', label: 'Уведомления', icon: Bell, color: '#6ab04c', action: () => {} },
+    { id: 'support', label: 'Служба поддержки', icon: Headset, color: '#7ed6df', action: () => {} },
+    { id: 'settings', label: 'Настройки', icon: Settings, color: '#95afc0', action: () => {} },
   ]
 
   if (currentRole.value === 'client') {
     return [
-      { id: 'my-orders', label: 'Мои заказы (Грузы)', icon: Package, color: '#eb4d4b' },
-      { id: 'verification', label: 'Верификация компании', icon: ShieldCheck, color: '#22a6b3' },
+      { id: 'my-orders', label: 'Мои заказы', icon: Package, color: '#eb4d4b', action: () => router.push('/cabinet/client/orders') },
+      { id: 'verification', label: 'Верификация компании', icon: ShieldCheck, color: '#22a6b3', action: () => {} },
       ...common
     ]
   } else {
     return [
-      { id: 'my-vehicles', label: 'Мой транспорт', icon: Truck, color: '#f0932b' },
-      { id: 'driver-orders', label: 'Принятые заказы', icon: FileText, color: '#eb4d4b' },
-      { id: 'verification', label: 'Документы водителя', icon: ShieldCheck, color: '#22a6b3' },
+      { id: 'my-vehicles', label: 'Мой транспорт', icon: Truck, color: '#f0932b', action: () => {} },
+      { id: 'driver-orders', label: 'Принятые заказы', icon: FileText, color: '#eb4d4b', action: () => {} },
+      { id: 'verification', label: 'Документы водителя', icon: ShieldCheck, color: '#22a6b3', action: () => {} },
       ...common
     ]
   }
@@ -60,46 +57,31 @@ const getMenuItems = () => {
     <header class="profile-header">
       <div class="user-info">
         <div class="avatar">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Batyr" alt="Avatar" />
+          <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.user?.email ?? 'tmgo'}`" alt="Avatar" />
         </div>
         <div class="details">
-          <h1>{{ userProfile.name }}</h1>
+          <h1>{{ user.user?.name ?? '—' }}</h1>
           <div class="role-badge" :class="currentRole">
             {{ currentRole === 'client' ? 'Грузоотправитель' : 'Перевозчик' }}
           </div>
         </div>
       </div>
-      <button class="logout-btn">
+      <button class="logout-btn" @click="handleSignOut">
         <LogOut :size="20" />
       </button>
     </header>
 
     <main class="profile-content">
-      <!-- Role Switcher -->
-      <div class="role-switcher-card" @click="toggleRole">
-        <div class="switcher-text">
-          <h3>Сменить роль</h3>
-          <p>Переключиться на {{ currentRole === 'client' ? 'перевозчика' : 'отправителя' }}</p>
-        </div>
-        <div class="switcher-icon">
-          <ArrowLeftRight :size="20" />
-        </div>
-      </div>
 
-      <!-- Balance Card -->
-      <div class="balance-card">
-        <div class="balance-info">
-          <div class="label">Ваш баланс</div>
-          <div class="amount">{{ userProfile.balance }}</div>
-        </div>
-        <button class="top-up-btn">
-          <span>Пополнить</span>
-        </button>
+      <!-- Email -->
+      <div class="email-card">
+        <span class="email-label">Email</span>
+        <span class="email-val">{{ user.user?.email ?? '—' }}</span>
       </div>
 
       <!-- Menu List -->
       <div class="menu-list">
-        <button v-for="item in getMenuItems()" :key="item.id" class="menu-item">
+        <button v-for="item in getMenuItems()" :key="item.id" class="menu-item" @click="item.action()">
           <div class="item-left">
             <div class="icon-wrapper" :style="{ backgroundColor: item.color + '20', color: item.color }">
               <component :is="item.icon" :size="20" />
@@ -190,6 +172,19 @@ const getMenuItems = () => {
   padding: 16px;
 }
 
+.email-card {
+  background: white;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
+}
+.email-label { font-size: 0.8rem; color: var(--text-secondary); }
+.email-val   { font-size: 0.88rem; font-weight: 600; color: #222; }
+
 .role-switcher-card {
   background: white;
   padding: 16px;
@@ -226,29 +221,6 @@ const getMenuItems = () => {
   color: var(--primary);
 }
 
-.balance-card {
-  background: var(--primary);
-  border-radius: 16px;
-  padding: 20px;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.balance-info .label { font-size: 0.8rem; opacity: 0.8; }
-.balance-info .amount { font-size: 1.4rem; font-weight: 800; }
-
-.top-up-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
 
 .menu-list {
   background: white;

@@ -83,6 +83,47 @@ export const STATUS_LABEL: Record<string, string> = {
   cancelled:  'Отменён',
 }
 
+// ── Driver API ────────────────────────────────────────────────────────────────
+
+export async function getDriverAvailableOrders(params?: { fromCountry?: string; toCountry?: string }): Promise<any[]> {
+  const q = new URLSearchParams()
+  if (params?.fromCountry) q.set('fromCountry', params.fromCountry)
+  if (params?.toCountry)   q.set('toCountry',   params.toCountry)
+  const qs = q.toString() ? `?${q}` : ''
+  const data = await api<{ orders: any[] }>(`/cabinet/driver/orders/available${qs}`)
+  return data.orders ?? []
+}
+
+export async function getDriverMyBids(): Promise<any[]> {
+  const data = await api<{ orders: any[] }>('/cabinet/driver/orders')
+  return data.orders ?? []
+}
+
+export async function getDriverOrderById(id: string): Promise<any> {
+  return api<any>(`/cabinet/driver/orders/${id}`)
+}
+
+export async function placeBid(orderId: string, amount: number, currency: string, comment?: string): Promise<any> {
+  return api<any>(`/cabinet/orders/${orderId}/bids`, {
+    method: 'POST',
+    body: JSON.stringify({ amount, currency, comment }),
+  })
+}
+
+export const BID_STATUS_LABEL: Record<string, string> = {
+  pending:  'Ожидает',
+  accepted: 'Принята',
+  rejected: 'Отклонена',
+  withdrawn:'Отозвана',
+}
+
+export const BID_STATUS_COLOR: Record<string, string> = {
+  pending:  '#f0a020',
+  accepted: '#18a058',
+  rejected: '#e53935',
+  withdrawn:'#999',
+}
+
 export const STATUS_COLOR: Record<string, string> = {
   draft:      '#999',
   published:  '#1a5bc4',

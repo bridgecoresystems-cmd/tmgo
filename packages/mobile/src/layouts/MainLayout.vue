@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Search, Package, User } from 'lucide-vue-next'
+import { Search, Package, User, Truck } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
 
 const route  = useRoute()
@@ -9,16 +9,24 @@ const router = useRouter()
 const { user } = useAuth()
 
 const navItems = computed(() => {
-  const role = user.user?.role
+  if (user.user?.role === 'driver') {
+    return [
+      { id: 'search',    icon: Search,  label: 'Поиск',   path: '/search' },
+      { id: 'available', icon: Truck,   label: 'Грузы',   path: '/cabinet/driver/available' },
+      { id: 'cabinet',   icon: Package, label: 'Кабинет', path: '/cabinet/driver' },
+      { id: 'profile',   icon: User,    label: 'Профиль', path: '/profile' },
+    ]
+  }
   return [
-    { id: 'search',  icon: Search,  label: 'Поиск',     path: '/search' },
-    { id: 'cabinet', icon: Package, label: role === 'driver' ? 'Кабинет' : 'Заказы', path: role === 'driver' ? '/profile' : '/cabinet/client' },
-    { id: 'profile', icon: User,    label: 'Профиль',   path: '/profile' },
+    { id: 'search',  icon: Search,  label: 'Поиск',   path: '/search' },
+    { id: 'cabinet', icon: Package, label: 'Заказы',  path: '/cabinet/client' },
+    { id: 'profile', icon: User,    label: 'Профиль', path: '/profile' },
   ]
 })
 
 const isActive = (path: string) => {
   if (path === '/profile') return route.path === '/profile'
+  if (path === '/cabinet/driver') return route.path === '/cabinet/driver'
   return route.path.startsWith(path)
 }
 </script>

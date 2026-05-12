@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { Eye, EyeOff, Truck, Package } from 'lucide-vue-next'
 import { apiSignUp } from '@/api/auth'
 import { useAuth } from '@/composables/useAuth'
+import { roleHome } from '@/router'
 
 const router  = useRouter()
 const { setUser } = useAuth()
@@ -35,7 +36,7 @@ async function submit() {
   try {
     const user = await apiSignUp(email.value.trim(), password.value, role.value)
     setUser(user)
-    router.replace('/search')
+    router.replace(roleHome(user.role))
   } catch (e: any) {
     error.value = e.message || 'Ошибка регистрации'
     step.value = 1
