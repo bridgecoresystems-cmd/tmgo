@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import WelcomePage from '../pages/auth/WelcomePage.vue'
+import MainLayout from '../layouts/MainLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,20 +21,41 @@ const router = createRouter({
       component: () => import('../pages/auth/RegisterPage.vue'),
     },
     {
-      path: '/home',
-      name: 'home',
-      component: () => import('../pages/HomePage.vue'),
-    },
-    {
-      path: '/search',
-      name: 'search',
-      component: () => import('../pages/cargo/SearchPage.vue'),
-    },
-    {
-      path: '/search/results',
-      name: 'search-results',
-      component: () => import('../pages/cargo/SearchResultsPage.vue'),
-    },
+      path: '/',
+      component: MainLayout,
+      children: [
+        {
+          path: 'search',
+          name: 'search',
+          component: () => import('../pages/cargo/SearchPage.vue'),
+        },
+        {
+          path: 'profile',
+          name: 'profile',
+          component: () => import('../pages/cabinet/ProfilePage.vue'),
+        },
+        {
+          path: 'cabinet/client',
+          name: 'client-dashboard',
+          component: () => import('../pages/cabinet/client/DashboardPage.vue'),
+        },
+        {
+          path: 'cabinet/client/orders',
+          name: 'client-orders',
+          component: () => import('../pages/cabinet/client/OrdersPage.vue'),
+        },
+        {
+          path: 'cabinet/client/orders/create',
+          name: 'client-orders-create',
+          component: () => import('../pages/cabinet/client/CreateOrderPage.vue'),
+        },
+        {
+          path: 'cabinet/client/orders/:id',
+          name: 'client-order-detail',
+          component: () => import('../pages/cabinet/client/OrderDetailPage.vue'),
+        },
+      ]
+    }
   ],
 })
 

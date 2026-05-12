@@ -5,7 +5,7 @@ import { LogIn, UserPlus, ArrowRight, Search, Truck, Eye } from 'lucide-vue-next
 const router = useRouter()
 
 const skipRegistration = () => {
-  router.push('/home')
+  router.push('/search')
 }
 </script>
 

@@ -21,7 +21,7 @@ async function submit() {
   try {
     const user = await apiSignIn(email.value.trim(), password.value)
     setUser(user)
-    router.replace('/home')
+    router.replace('/search')
   } catch (e: any) {
     error.value = e.message || 'Ошибка входа'
   } finally {

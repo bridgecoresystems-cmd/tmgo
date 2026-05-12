@@ -35,7 +35,7 @@ async function submit() {
   try {
     const user = await apiSignUp(email.value.trim(), password.value, role.value)
     setUser(user)
-    router.replace('/home')
+    router.replace('/search')
   } catch (e: any) {
     error.value = e.message || 'Ошибка регистрации'
     step.value = 1
