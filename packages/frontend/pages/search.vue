@@ -7,7 +7,10 @@
         <button class="mobile-filter-btn" @click="showMobileFilters = !showMobileFilters">
           ⚙ Фильтры<span v-if="activeFilterCount > 0" class="filter-count">{{ activeFilterCount }}</span>
         </button>
-        <span class="mobile-results-count">{{ loading ? '...' : `${total} ${pluralOrders(total)}` }}</span>
+        <div class="mobile-view-toggle">
+          <button :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'">☰</button>
+          <button :class="{ active: viewMode === 'map' }" @click="viewMode = 'map'">🗺</button>
+        </div>
       </div>
 
       <!-- Sidebar filters -->
@@ -21,30 +24,32 @@
 
         <div class="filter-group">
           <div class="filter-label">Откуда</div>
-          <n-select
-            v-model:value="filters.fromCountry"
-            :options="countryOptions"
-            placeholder="Страна"
-            clearable
-            filterable
+          <n-select v-model:value="filters.fromCountry" :options="countryOptions" placeholder="Страна" clearable filterable size="small" style="margin-bottom: 8px" />
+          <n-auto-complete
+            v-model:value="filters.fromCity"
+            :options="fromCitySuggestions"
+            :loading="fromCityLoading"
+            placeholder="Город"
             size="small"
-            style="margin-bottom: 8px"
+            clearable
+            blur-after-select
+            @update:value="onFromCityInput"
           />
-          <n-input v-model:value="filters.fromCity" placeholder="Город" size="small" clearable />
         </div>
 
         <div class="filter-group">
           <div class="filter-label">Куда</div>
-          <n-select
-            v-model:value="filters.toCountry"
-            :options="countryOptions"
-            placeholder="Страна"
-            clearable
-            filterable
+          <n-select v-model:value="filters.toCountry" :options="countryOptions" placeholder="Страна" clearable filterable size="small" style="margin-bottom: 8px" />
+          <n-auto-complete
+            v-model:value="filters.toCity"
+            :options="toCitySuggestions"
+            :loading="toCityLoading"
+            placeholder="Город"
             size="small"
-            style="margin-bottom: 8px"
+            clearable
+            blur-after-select
+            @update:value="onToCityInput"
           />
-          <n-input v-model:value="filters.toCity" placeholder="Город" size="small" clearable />
         </div>
 
         <n-divider title-placement="left"><span class="divider-label">Груз</span></n-divider>
@@ -57,77 +62,34 @@
         <div class="filter-group">
           <div class="filter-label">Вес, кг</div>
           <div class="range-row">
-            <n-input-number
-              v-model:value="filters.weightMin"
-              placeholder="От"
-              size="small"
-              :min="0"
-              :show-button="false"
-              style="flex: 1"
-            />
+            <n-input-number v-model:value="filters.weightMin" placeholder="От" size="small" :min="0" :show-button="false" style="flex: 1" />
             <span class="range-sep">—</span>
-            <n-input-number
-              v-model:value="filters.weightMax"
-              placeholder="До"
-              size="small"
-              :min="0"
-              :show-button="false"
-              style="flex: 1"
-            />
+            <n-input-number v-model:value="filters.weightMax" placeholder="До" size="small" :min="0" :show-button="false" style="flex: 1" />
           </div>
         </div>
 
         <div class="filter-group">
           <div class="filter-label">Объём, м³</div>
           <div class="range-row">
-            <n-input-number
-              v-model:value="filters.volumeMin"
-              placeholder="От"
-              size="small"
-              :min="0"
-              :show-button="false"
-              style="flex: 1"
-            />
+            <n-input-number v-model:value="filters.volumeMin" placeholder="От" size="small" :min="0" :show-button="false" style="flex: 1" />
             <span class="range-sep">—</span>
-            <n-input-number
-              v-model:value="filters.volumeMax"
-              placeholder="До"
-              size="small"
-              :min="0"
-              :show-button="false"
-              style="flex: 1"
-            />
+            <n-input-number v-model:value="filters.volumeMax" placeholder="До" size="small" :min="0" :show-button="false" style="flex: 1" />
           </div>
         </div>
 
         <div class="filter-group">
           <div class="filter-label">Упаковка</div>
-          <n-select
-            v-model:value="filters.packaging"
-            :options="packagingOptions"
-            placeholder="Любая"
-            clearable
-            size="small"
-          />
+          <n-select v-model:value="filters.packaging" :options="packagingOptions" placeholder="Любая" clearable size="small" />
         </div>
 
         <n-divider title-placement="left"><span class="divider-label">Дата</span></n-divider>
 
         <div class="filter-group">
           <div class="filter-label">Погрузка с</div>
-          <n-date-picker
-            v-model:value="readyFromMs"
-            type="date"
-            placeholder="Любая дата"
-            clearable
-            size="small"
-            style="width: 100%"
-          />
+          <n-date-picker v-model:value="readyFromMs" type="date" placeholder="Любая дата" clearable size="small" style="width: 100%" />
         </div>
 
-        <n-button type="primary" block style="margin-top: 20px" @click="applyFilters">
-          Найти
-        </n-button>
+        <n-button type="primary" block style="margin-top: 20px" @click="applyFilters">Найти</n-button>
       </aside>
 
       <!-- Results area -->
@@ -140,98 +102,123 @@
             </span>
             <div v-if="routeSummary" class="route-summary-label">{{ routeSummary }}</div>
           </div>
-        </div>
 
-        <div v-if="loading" class="state-center">
-          <n-spin size="large" />
-          <p class="state-text">Ищем грузы...</p>
-        </div>
-
-        <n-empty
-          v-else-if="orders.length === 0"
-          description="Грузов по вашему запросу не найдено"
-          style="padding: 80px 0"
-        >
-          <template #extra>
-            <n-button @click="clearFilters">Сбросить фильтры</n-button>
-          </template>
-        </n-empty>
-
-        <div v-else class="orders-list">
-          <div v-for="order in orders" :key="order.id" class="order-card">
-            <!-- Route -->
-            <div class="card-route">
-              <div class="route-point">
-                <span class="route-dot from-dot" />
-                <div>
-                  <div class="route-city">{{ order.fromCity }}</div>
-                  <div class="route-country">{{ countryLabel(order.fromCountry) }}</div>
-                </div>
-              </div>
-              <div class="route-arrow-line">
-                <div class="route-line-inner" />
-                <span class="route-arrow-icon">→</span>
-              </div>
-              <div class="route-point">
-                <span class="route-dot to-dot" />
-                <div>
-                  <div class="route-city">{{ order.toCity }}</div>
-                  <div class="route-country">{{ countryLabel(order.toCountry) }}</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tags -->
-            <div class="card-tags">
-              <n-tag v-if="order.cargoType" size="small" type="info" :bordered="false">
-                {{ order.cargoType }}
-              </n-tag>
-              <n-tag v-if="order.weightKg" size="small" :bordered="false">
-                ⚖ {{ formatWeight(order.weightKg) }}
-              </n-tag>
-              <n-tag v-if="order.volumeM3" size="small" :bordered="false">
-                {{ order.volumeM3 }} м³
-              </n-tag>
-              <n-tag v-if="order.packaging" size="small" :bordered="false">
-                {{ packagingLabel(order.packaging) }}
-              </n-tag>
-            </div>
-
-            <!-- Footer -->
-            <div class="card-footer">
-              <span class="card-date" v-if="order.readyDate">
-                📅 Погрузка: {{ formatDate(order.readyDate) }}
-              </span>
-              <div class="card-footer-right">
-                <n-tag
-                  :type="order.status === 'published' ? 'success' : 'warning'"
-                  size="small"
-                  :bordered="false"
-                >
-                  {{ order.status === 'published' ? 'Открытый' : 'В переговорах' }}
-                </n-tag>
-                <n-button size="small" type="primary" ghost @click="navigateTo('/auth')">
-                  Откликнуться
-                </n-button>
-              </div>
-            </div>
+          <!-- View toggle (desktop) -->
+          <div class="view-toggle">
+            <button :class="['toggle-btn', { active: viewMode === 'list' }]" @click="viewMode = 'list'">
+              ☰ Список
+            </button>
+            <button :class="['toggle-btn', { active: viewMode === 'map' }]" @click="viewMode = 'map'">
+              🗺 Карта
+            </button>
           </div>
         </div>
 
-        <!-- Pagination -->
-        <div v-if="!loading && total > limit" class="pagination-wrap">
-          <n-pagination
-            v-model:page="page"
-            :page-count="Math.ceil(total / limit)"
-            @update:page="onPageChange"
-          />
+        <!-- MAP VIEW -->
+        <div v-show="viewMode === 'map'" class="map-section">
+          <div class="map-toolbar">
+            <div class="toolbar-left">
+              <button
+                :class="['btn-pick', { active: pickMode === 'from' }]"
+                :disabled="geocoding"
+                @click="pickMode = pickMode === 'from' ? null : 'from'"
+              >
+                🔵 {{ pickMode === 'from' ? (geocoding ? 'Определяю...' : 'Кликни на карте') : 'Откуда' }}
+              </button>
+              <button
+                :class="['btn-pick', { active: pickMode === 'to' }]"
+                :disabled="geocoding"
+                @click="pickMode = pickMode === 'to' ? null : 'to'"
+              >
+                🔴 {{ pickMode === 'to' ? (geocoding ? 'Определяю...' : 'Кликни на карте') : 'Куда' }}
+              </button>
+              <div v-if="filters.fromCity || filters.toCity" class="pick-summary">
+                <span v-if="filters.fromCity">{{ filters.fromCity }}</span>
+                <span v-if="filters.fromCity && filters.toCity"> → </span>
+                <span v-if="filters.toCity">{{ filters.toCity }}</span>
+                <button class="pick-clear" @click="filters.fromCity=''; filters.toCity=''; filters.fromCountry=null; filters.toCountry=null; if(pickMarker){ pickMarker.remove(); pickMarker=null }">✕</button>
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn-near-me" @click="nearMe" :disabled="locating">
+                {{ locating ? '⏳ Определяю...' : '📍 Рядом со мной' }}
+              </button>
+              <div class="map-legend">
+                <span class="legend-dot published" /> Открытый
+                <span class="legend-dot negotiating" /> В переговорах
+              </div>
+            </div>
+          </div>
+          <div ref="mapEl" class="map-container" />
         </div>
+
+        <!-- LIST VIEW -->
+        <template v-if="viewMode === 'list'">
+          <div v-if="loading" class="state-center">
+            <n-spin size="large" />
+            <p class="state-text">Ищем грузы...</p>
+          </div>
+
+          <n-empty v-else-if="orders.length === 0" description="Грузов по вашему запросу не найдено" style="padding: 80px 0">
+            <template #extra>
+              <n-button @click="clearFilters">Сбросить фильтры</n-button>
+            </template>
+          </n-empty>
+
+          <div v-else class="orders-list">
+            <div v-for="order in orders" :key="order.id" class="order-card">
+              <div class="card-route">
+                <div class="route-point">
+                  <span class="route-dot from-dot" />
+                  <div>
+                    <div class="route-city">{{ order.fromCity }}</div>
+                    <div class="route-country">{{ countryLabel(order.fromCountry) }}</div>
+                  </div>
+                </div>
+                <div class="route-arrow-line">
+                  <div class="route-line-inner" />
+                  <span class="route-arrow-icon">→</span>
+                </div>
+                <div class="route-point">
+                  <span class="route-dot to-dot" />
+                  <div>
+                    <div class="route-city">{{ order.toCity }}</div>
+                    <div class="route-country">{{ countryLabel(order.toCountry) }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-tags">
+                <n-tag v-if="order.cargoType" size="small" type="info" :bordered="false">{{ order.cargoType }}</n-tag>
+                <n-tag v-if="order.weightKg" size="small" :bordered="false">⚖ {{ formatWeight(order.weightKg) }}</n-tag>
+                <n-tag v-if="order.volumeM3" size="small" :bordered="false">{{ order.volumeM3 }} м³</n-tag>
+                <n-tag v-if="order.packaging" size="small" :bordered="false">{{ packagingLabel(order.packaging) }}</n-tag>
+              </div>
+
+              <div class="card-footer">
+                <span class="card-date" v-if="order.readyDate">📅 Погрузка: {{ formatDate(order.readyDate) }}</span>
+                <div class="card-footer-right">
+                  <n-tag :type="order.status === 'published' ? 'success' : 'warning'" size="small" :bordered="false">
+                    {{ order.status === 'published' ? 'Открытый' : 'В переговорах' }}
+                  </n-tag>
+                  <n-button size="small" type="primary" ghost @click="navigateTo('/auth')">Откликнуться</n-button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="!loading && total > limit" class="pagination-wrap">
+            <n-pagination v-model:page="page" :page-count="Math.ceil(total / limit)" @update:page="onPageChange" />
+          </div>
+        </template>
       </main>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { nextTick } from 'vue'
+
 definePageMeta({ layout: 'default' })
 
 const route = useRoute()
@@ -239,53 +226,135 @@ const router = useRouter()
 const { COUNTRY_LIST } = useCountryConfig()
 const { apiBase } = useApiBase()
 
+// ── Filters ──────────────────────────────────────────────────────────────────
 const filters = reactive({
   fromCountry: (route.query.fromCountry as string) || null as string | null,
-  fromCity: (route.query.fromCity as string) || '',
-  toCountry: (route.query.toCountry as string) || null as string | null,
-  toCity: (route.query.toCity as string) || '',
-  cargoType: (route.query.cargoType as string) || '',
-  weightMin: route.query.weightMin ? Number(route.query.weightMin) : null as number | null,
-  weightMax: route.query.weightMax ? Number(route.query.weightMax) : null as number | null,
-  volumeMin: route.query.volumeMin ? Number(route.query.volumeMin) : null as number | null,
-  volumeMax: route.query.volumeMax ? Number(route.query.volumeMax) : null as number | null,
-  packaging: (route.query.packaging as string) || null as string | null,
+  fromCity:    (route.query.fromCity    as string) || '',
+  toCountry:   (route.query.toCountry   as string) || null as string | null,
+  toCity:      (route.query.toCity      as string) || '',
+  cargoType:   (route.query.cargoType   as string) || '',
+  weightMin:   route.query.weightMin ? Number(route.query.weightMin) : null as number | null,
+  weightMax:   route.query.weightMax ? Number(route.query.weightMax) : null as number | null,
+  volumeMin:   route.query.volumeMin ? Number(route.query.volumeMin) : null as number | null,
+  volumeMax:   route.query.volumeMax ? Number(route.query.volumeMax) : null as number | null,
+  packaging:   (route.query.packaging   as string) || null as string | null,
 })
 const readyFromMs = ref<number | null>(
   route.query.readyFrom ? new Date(route.query.readyFrom as string).getTime() : null
 )
 
-const page = ref(1)
+const page  = ref(1)
 const limit = 20
 const loading = ref(false)
-const orders = ref<any[]>([])
-const total = ref(0)
+const orders  = ref<any[]>([])
+const total   = ref(0)
 const showMobileFilters = ref(false)
+const viewMode = ref<'list' | 'map'>('list')
 
+// ── Options ──────────────────────────────────────────────────────────────────
 const countryOptions = computed(() =>
   COUNTRY_LIST.map(c => ({ label: `${c.flag} ${c.name}`, value: c.code }))
 )
 
+// ── City autocomplete ─────────────────────────────────────────────────────────
+const { fetchCitySuggestions } = useNominatimCities()
+
+const fromCitySuggestions = ref<string[]>([])
+const toCitySuggestions   = ref<string[]>([])
+const fromCityLoading = ref(false)
+const toCityLoading   = ref(false)
+let fromCityTimer: ReturnType<typeof setTimeout> | null = null
+let toCityTimer:   ReturnType<typeof setTimeout> | null = null
+
+function onFromCityInput(val: string) {
+  if (fromCityTimer) clearTimeout(fromCityTimer)
+  fromCityTimer = setTimeout(async () => {
+    fromCityLoading.value = true
+    fromCitySuggestions.value = await fetchCitySuggestions(val, filters.fromCountry)
+    fromCityLoading.value = false
+  }, 350)
+}
+
+function onToCityInput(val: string) {
+  if (toCityTimer) clearTimeout(toCityTimer)
+  toCityTimer = setTimeout(async () => {
+    toCityLoading.value = true
+    toCitySuggestions.value = await fetchCitySuggestions(val, filters.toCountry)
+    toCityLoading.value = false
+  }, 350)
+}
+
+watch(() => filters.fromCountry, () => { filters.fromCity = ''; fromCitySuggestions.value = [] })
+watch(() => filters.toCountry,   () => { filters.toCity   = ''; toCitySuggestions.value   = [] })
+
 const packagingOptions = [
-  { label: 'Навалом', value: 'bulk' },
-  { label: 'Коробки', value: 'boxes' },
-  { label: 'Паллеты', value: 'pallets' },
-  { label: 'Контейнер', value: 'container' },
-  { label: 'Другое', value: 'other' },
+  { label: 'Навалом',    value: 'bulk'      },
+  { label: 'Коробки',    value: 'boxes'     },
+  { label: 'Паллеты',    value: 'pallets'   },
+  { label: 'Контейнер',  value: 'container' },
+  { label: 'Другое',     value: 'other'     },
 ]
 
-const activeFilterCount = computed(() => [
-  filters.fromCountry, filters.fromCity, filters.toCountry, filters.toCity,
-  filters.cargoType, filters.weightMin, filters.weightMax,
-  filters.volumeMin, filters.volumeMax, filters.packaging, readyFromMs.value,
-].filter(Boolean).length)
+// ── City coords (для карты) ───────────────────────────────────────────────────
+const CITY_COORDS: Record<string, [number, number]> = {
+  // Туркменистан
+  'Ашхабад': [37.9601, 58.3261], 'Мары': [37.5932, 61.8401],
+  'Туркменабад': [39.0869, 63.5681], 'Дашогуз': [41.8361, 59.9667],
+  'Туркменбашы': [40.0622, 52.9736], 'Балканабад': [39.5142, 54.3681],
+  // Узбекистан
+  'Ташкент': [41.2995, 69.2401], 'Самарканд': [39.6542, 66.9597],
+  'Бухара': [39.7747, 64.4286], 'Навои': [40.0842, 65.3791],
+  'Андижан': [40.7821, 72.3441], 'Фергана': [40.3842, 71.7874],
+  'Наманган': [41.0011, 71.6686], 'Карши': [38.8575, 65.7861],
+  'Нукус': [42.4627, 59.6058], 'Термез': [37.2244, 67.2783],
+  // Казахстан
+  'Алматы': [43.2220, 76.8512], 'Астана': [51.1801, 71.4460],
+  'Шымкент': [42.3417, 69.5901], 'Актау': [43.6539, 51.1981],
+  'Атырау': [47.1166, 51.8878], 'Актобе': [50.2839, 57.1664],
+  'Тараз': [42.9000, 71.3667], 'Уральск': [51.2333, 51.3667],
+  // Кыргызстан
+  'Бишкек': [42.8746, 74.5698], 'Ош': [40.5283, 72.7985],
+  // Таджикистан
+  'Душанбе': [38.5598, 68.7870], 'Худжанд': [40.2960, 69.6244],
+  // Иран
+  'Тегеран': [35.6892, 51.3890], 'Мешхед': [36.2605, 59.6168],
+  'Бандар-Аббас': [27.1865, 56.2808], 'Тебриз': [38.0800, 46.2919],
+  // Турция
+  'Стамбул': [41.0082, 28.9784], 'Анкара': [39.9334, 32.8597],
+  'Трабзон': [41.0027, 39.7168], 'Газиантеп': [37.0662, 37.3833],
+  // ОАЭ
+  'Дубай': [25.2048, 55.2708], 'Абу-Даби': [24.4539, 54.3773],
+  // Россия
+  'Москва': [55.7558, 37.6173], 'Санкт-Петербург': [59.9311, 30.3609],
+  'Казань': [55.8304, 49.0661], 'Краснодар': [45.0448, 38.9760],
+  'Астрахань': [46.3497, 48.0408], 'Новосибирск': [54.9885, 82.9207],
+  'Екатеринбург': [56.8389, 60.6057], 'Уфа': [54.7388, 55.9721],
+  // Беларусь
+  'Минск': [53.9045, 27.5615],
+}
+
+function getCityCoords(city: string): [number, number] | null {
+  if (!city) return null
+  if (CITY_COORDS[city]) return CITY_COORDS[city]
+  const lower = city.toLowerCase()
+  const key = Object.keys(CITY_COORDS).find(k => k.toLowerCase() === lower)
+  return key ? CITY_COORDS[key] : null
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const activeFilterCount = computed(() =>
+  [filters.fromCountry, filters.fromCity, filters.toCountry, filters.toCity,
+   filters.cargoType, filters.weightMin, filters.weightMax,
+   filters.volumeMin, filters.volumeMax, filters.packaging, readyFromMs.value]
+    .filter(Boolean).length
+)
 
 const routeSummary = computed(() => {
   const from = [countryLabel(filters.fromCountry), filters.fromCity].filter(Boolean).join(', ')
-  const to = [countryLabel(filters.toCountry), filters.toCity].filter(Boolean).join(', ')
+  const to   = [countryLabel(filters.toCountry),   filters.toCity  ].filter(Boolean).join(', ')
   if (from && to) return `${from} → ${to}`
   if (from) return `Из ${from}`
-  if (to) return `В ${to}`
+  if (to)   return `В ${to}`
   return ''
 })
 
@@ -321,30 +390,31 @@ function pluralOrders(n: number) {
 function buildQuery() {
   const q: Record<string, string> = {}
   if (filters.fromCountry) q.fromCountry = filters.fromCountry
-  if (filters.fromCity) q.fromCity = filters.fromCity
-  if (filters.toCountry) q.toCountry = filters.toCountry
-  if (filters.toCity) q.toCity = filters.toCity
-  if (filters.cargoType) q.cargoType = filters.cargoType
+  if (filters.fromCity)    q.fromCity    = filters.fromCity
+  if (filters.toCountry)   q.toCountry   = filters.toCountry
+  if (filters.toCity)      q.toCity      = filters.toCity
+  if (filters.cargoType)   q.cargoType   = filters.cargoType
   if (filters.weightMin != null) q.weightMin = String(filters.weightMin)
   if (filters.weightMax != null) q.weightMax = String(filters.weightMax)
   if (filters.volumeMin != null) q.volumeMin = String(filters.volumeMin)
   if (filters.volumeMax != null) q.volumeMax = String(filters.volumeMax)
-  if (filters.packaging) q.packaging = filters.packaging
-  if (readyFromMs.value) q.readyFrom = new Date(readyFromMs.value).toISOString().split('T')[0]
-  q.page = String(page.value)
+  if (filters.packaging)   q.packaging   = filters.packaging
+  if (readyFromMs.value)   q.readyFrom   = new Date(readyFromMs.value).toISOString().split('T')[0]
+  q.page  = String(page.value)
   q.limit = String(limit)
   return q
 }
 
+// ── Data fetch ────────────────────────────────────────────────────────────────
 async function fetchOrders() {
   loading.value = true
   try {
     const data = await $fetch<any>(`${apiBase}/public/orders`, { query: buildQuery() })
     orders.value = data.orders ?? []
-    total.value = data.total ?? 0
+    total.value  = data.total  ?? 0
   } catch {
     orders.value = []
-    total.value = 0
+    total.value  = 0
   } finally {
     loading.value = false
   }
@@ -353,25 +423,20 @@ async function fetchOrders() {
 function applyFilters() {
   page.value = 1
   const q = buildQuery()
-  delete q.page
-  delete q.limit
+  delete q.page; delete q.limit
   router.push({ path: '/search', query: q })
   showMobileFilters.value = false
   fetchOrders()
 }
 
 function clearFilters() {
-  filters.fromCountry = null
-  filters.fromCity = ''
-  filters.toCountry = null
-  filters.toCity = ''
-  filters.cargoType = ''
-  filters.weightMin = null
-  filters.weightMax = null
-  filters.volumeMin = null
-  filters.volumeMax = null
-  filters.packaging = null
-  readyFromMs.value = null
+  filters.fromCountry = null; filters.fromCity = ''
+  filters.toCountry   = null; filters.toCity   = ''
+  filters.cargoType   = ''
+  filters.weightMin   = null; filters.weightMax = null
+  filters.volumeMin   = null; filters.volumeMax = null
+  filters.packaging   = null
+  readyFromMs.value   = null
 }
 
 function onPageChange(p: number) {
@@ -380,8 +445,195 @@ function onPageChange(p: number) {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+// ── Leaflet map ───────────────────────────────────────────────────────────────
+const mapEl      = ref<HTMLDivElement | null>(null)
+const locating   = ref(false)
+const geocoding  = ref(false)
+const pickMode   = ref<null | 'from' | 'to'>(null)
+let   leafletMap:     any = null
+let   markersLayer:   any = null
+let   userMarker:     any = null
+let   pickMarker:     any = null
+let   L:              any = null
+
+async function initMap() {
+  if (!mapEl.value) return
+  if (leafletMap) { updateMapMarkers(); return }
+
+  L = (await import('leaflet')).default
+
+  // Fix broken icons when bundled with Vite
+  delete (L.Icon.Default.prototype as any)._getIconUrl
+  L.Icon.Default.mergeOptions({
+    iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  })
+
+  leafletMap   = L.map(mapEl.value, { center: [40, 62], zoom: 4 })
+  markersLayer = L.layerGroup().addTo(leafletMap)
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org">OpenStreetMap</a>',
+    maxZoom: 18,
+  }).addTo(leafletMap)
+
+  // Клик по карте — выбор точки откуда/куда
+  leafletMap.on('click', async (e: any) => {
+    if (!pickMode.value) return
+    const { lat, lng } = e.latlng
+    geocoding.value = true
+
+    // Визуальный маркер в точке клика
+    if (pickMarker) pickMarker.remove()
+    pickMarker = L.circleMarker([lat, lng], {
+      radius: 8, color: '#ff6b4a', fillColor: '#ff6b4a', fillOpacity: 0.8, weight: 2,
+    }).addTo(leafletMap)
+
+    try {
+      const res  = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ru`,
+        { headers: { 'User-Agent': 'TMGO-logistics/1.0' } }
+      )
+      const data = await res.json()
+      const addr = data.address ?? {}
+      const city = addr.city || addr.town || addr.village || addr.county || ''
+      const code = (addr.country_code ?? '').toUpperCase()
+
+      if (pickMode.value === 'from') {
+        filters.fromCountry = code || null
+        filters.fromCity    = city
+        pickMode.value      = 'to'   // автопереход к "куда"
+      } else {
+        filters.toCountry   = code || null
+        filters.toCity      = city
+        pickMode.value      = null
+        // автозапуск поиска когда оба поля выбраны
+        await fetchOrders()
+      }
+    } finally {
+      geocoding.value = false
+    }
+  })
+
+  updateMapMarkers()
+}
+
+// Меняем курсор карты в зависимости от режима выбора
+watch(pickMode, val => {
+  if (!mapEl.value) return
+  if (val) {
+    mapEl.value.style.cursor = 'crosshair'
+  } else {
+    mapEl.value.style.cursor = ''
+  }
+})
+
+function dotIcon(color: string) {
+  return L.divIcon({
+    html: `<div style="
+      width:14px;height:14px;
+      background:${color};
+      border:2px solid #fff;
+      border-radius:50%;
+      box-shadow:0 1px 4px rgba(0,0,0,.35);
+    "></div>`,
+    className: '',
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -8],
+  })
+}
+
+function updateMapMarkers() {
+  if (!leafletMap || !markersLayer || !L) return
+  markersLayer.clearLayers()
+
+  for (const order of orders.value) {
+    const coords = getCityCoords(order.fromCity)
+    if (!coords) continue
+
+    const color  = order.status === 'published' ? '#18a058' : '#f0a020'
+    const weight = order.weightKg ? `<div style="color:#888;font-size:12px">⚖ ${formatWeight(order.weightKg)}</div>` : ''
+    const cargo  = order.cargoType ? `<div style="margin-top:4px;color:#444">${order.cargoType}</div>` : ''
+
+    L.marker(coords, { icon: dotIcon(color) })
+      .addTo(markersLayer)
+      .bindPopup(`
+        <div style="min-width:180px;font-family:inherit">
+          <b style="font-size:14px">${order.fromCity} → ${order.toCity}</b>
+          ${cargo}${weight}
+          <div style="margin-top:10px">
+            <a href="/auth"
+               style="display:inline-block;background:#ff6b4a;color:#fff;
+                      border-radius:6px;padding:4px 12px;font-size:12px;
+                      font-weight:600;text-decoration:none">
+              Откликнуться →
+            </a>
+          </div>
+        </div>
+      `, { maxWidth: 220 })
+  }
+}
+
+async function nearMe() {
+  if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return }
+  if (!leafletMap) await initMap()
+
+  locating.value = true
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      locating.value = false
+      const { latitude: lat, longitude: lng } = pos.coords
+
+      if (userMarker) userMarker.remove()
+      userMarker = L.marker([lat, lng], {
+        icon: L.divIcon({
+          html: `<div style="
+            width:18px;height:18px;
+            background:#1a5bc4;
+            border:3px solid #fff;
+            border-radius:50%;
+            box-shadow:0 2px 8px rgba(26,91,196,.5);
+          "></div>`,
+          className: '',
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
+        }),
+      })
+        .addTo(leafletMap)
+        .bindPopup('<b>📍 Вы здесь</b>')
+        .openPopup()
+
+      leafletMap.setView([lat, lng], 7)
+    },
+    () => {
+      locating.value = false
+      alert('Не удалось получить геолокацию. Проверьте разрешения браузера.')
+    }
+  )
+}
+
+// Switch to map → init
+watch(viewMode, async val => {
+  if (val === 'map') {
+    await nextTick()
+    await initMap()
+  }
+})
+
+// New orders loaded while map is open → refresh markers
+watch(orders, () => {
+  if (viewMode.value === 'map') updateMapMarkers()
+})
+
 onMounted(fetchOrders)
 </script>
+
+<style>
+/* Leaflet CSS — non-scoped so it applies globally */
+@import 'leaflet/dist/leaflet.css';
+</style>
 
 <style scoped>
 .search-page {
@@ -398,10 +650,8 @@ onMounted(fetchOrders)
   align-items: flex-start;
 }
 
-/* Mobile filter bar (hidden on desktop) */
-.mobile-filter-bar {
-  display: none;
-}
+/* Mobile bar */
+.mobile-filter-bar { display: none; }
 
 /* Sidebar */
 .filters-sidebar {
@@ -422,101 +672,175 @@ onMounted(fetchOrders)
   margin-bottom: 4px;
 }
 
-.filters-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a1a1a;
-}
+.filters-title { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+.btn-reset { background: none; border: none; color: #ff6b4a; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; }
+.divider-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #999; }
+.filter-group { margin-bottom: 16px; }
+.filter-label { font-size: 12px; color: #888; font-weight: 500; margin-bottom: 6px; }
+.range-row { display: flex; align-items: center; gap: 6px; }
+.range-sep { color: #ccc; font-size: 14px; flex-shrink: 0; }
 
-.btn-reset {
-  background: none;
-  border: none;
-  color: #ff6b4a;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-}
-
-.divider-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #999;
-}
-
-.filter-group {
-  margin-bottom: 16px;
-}
-
-.filter-label {
-  font-size: 12px;
-  color: #888;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.range-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.range-sep {
-  color: #ccc;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-/* Results area */
-.results-main {
-  flex: 1;
-  min-width: 0;
-}
+/* Results */
+.results-main { flex: 1; min-width: 0; }
 
 .results-header {
-  margin-bottom: 16px;
-}
-
-.results-meta {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.results-count {
-  font-size: 15px;
-  color: #555;
+.results-meta { display: flex; align-items: center; gap: 16px; }
+.results-count { font-size: 15px; color: #555; }
+.route-summary-label { font-size: 14px; color: #ff6b4a; font-weight: 600; }
+
+/* View toggle */
+.view-toggle {
+  display: flex;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
 }
 
-.route-summary-label {
-  font-size: 14px;
-  color: #ff6b4a;
+.toggle-btn {
+  background: none;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 600;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
 
-.state-center {
+.toggle-btn.active {
+  background: #fff;
+  color: #1a1a1a;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* Map */
+.map-section { display: flex; flex-direction: column; gap: 0; }
+
+.map-toolbar {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 80px 0;
-  gap: 12px;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.state-text {
-  color: #999;
-  font-size: 14px;
+.toolbar-left  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.toolbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.btn-pick {
+  background: #f0f4ff;
+  border: 1px solid #d0daf5;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a5bc4;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-pick:hover   { background: #dce8ff; }
+.btn-pick.active  { background: #1a5bc4; color: #fff; border-color: #1a5bc4; animation: pulse 1.2s infinite; }
+.btn-pick:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(26,91,196,0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(26,91,196,0); }
 }
 
-.orders-list {
+.pick-summary {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  gap: 6px;
+  background: #fff8f0;
+  border: 1px solid #ffd0b0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #cc4400;
 }
 
-/* Order card */
+.pick-clear {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 0 0 4px;
+  line-height: 1;
+}
+.pick-clear:hover { color: #e53935; }
+
+.btn-near-me {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a5bc4;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-near-me:hover    { background: #154da0; }
+.btn-near-me:disabled { background: #aaa; cursor: not-allowed; }
+
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: #666;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  margin-right: 4px;
+}
+
+.legend-dot.published   { background: #18a058; }
+.legend-dot.negotiating { background: #f0a020; }
+
+.map-container {
+  width: 100%;
+  height: 560px;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+/* List */
+.state-center { display: flex; flex-direction: column; align-items: center; padding: 80px 0; gap: 12px; }
+.state-text { color: #999; font-size: 14px; }
+
+.orders-list { display: flex; flex-direction: column; gap: 12px; }
+
 .order-card {
   background: #fff;
   border-radius: 12px;
@@ -528,124 +852,40 @@ onMounted(fetchOrders)
   gap: 12px;
 }
 
-.order-card:hover {
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  transform: translateY(-1px);
-}
+.order-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); transform: translateY(-1px); }
 
-/* Route */
-.card-route {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.card-route { display: flex; align-items: center; gap: 12px; }
+.route-point { display: flex; align-items: center; gap: 8px; min-width: 0; }
 
-.route-point {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.route-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
+.route-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .from-dot { background: #1a5bc4; }
-.to-dot { background: #ff6b4a; }
+.to-dot   { background: #ff6b4a; }
 
-.route-city {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a1a1a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 160px;
-}
+.route-city    { font-size: 16px; font-weight: 700; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+.route-country { font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
 
-.route-country {
-  font-size: 11px;
-  color: #999;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 160px;
-}
+.route-arrow-line { flex: 1; display: flex; align-items: center; gap: 4px; min-width: 40px; }
+.route-line-inner { flex: 1; height: 1px; background: #e0e0e0; }
+.route-arrow-icon { color: #ccc; font-size: 14px; flex-shrink: 0; }
 
-.route-arrow-line {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 40px;
-}
+.card-tags { display: flex; gap: 8px; flex-wrap: wrap; }
 
-.route-line-inner {
-  flex: 1;
-  height: 1px;
-  background: #e0e0e0;
-}
+.card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card-date { font-size: 13px; color: #888; }
+.card-footer-right { display: flex; align-items: center; gap: 10px; }
 
-.route-arrow-icon {
-  color: #ccc;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-/* Tags */
-.card-tags {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* Footer */
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.card-date {
-  font-size: 13px;
-  color: #888;
-}
-
-.card-footer-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Pagination */
-.pagination-wrap {
-  display: flex;
-  justify-content: center;
-  margin-top: 32px;
-}
+.pagination-wrap { display: flex; justify-content: center; margin-top: 32px; }
 
 /* Mobile */
 @media (max-width: 768px) {
-  .search-page {
-    padding: 0 0 80px;
-  }
-
-  .search-layout {
-    flex-direction: column;
-    gap: 0;
-  }
+  .search-page { padding: 0 0 80px; }
+  .search-layout { flex-direction: column; gap: 0; }
 
   .mobile-filter-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 10px 16px;
     background: #fff;
     border-bottom: 1px solid #eee;
     position: sticky;
@@ -667,25 +907,33 @@ onMounted(fetchOrders)
     gap: 6px;
   }
 
-  .filter-count {
-    background: #ff6b4a;
-    color: #fff;
-    border-radius: 10px;
-    padding: 0 6px;
-    font-size: 11px;
+  .filter-count { background: #ff6b4a; color: #fff; border-radius: 10px; padding: 0 6px; font-size: 11px; }
+
+  .mobile-view-toggle {
+    display: flex;
+    background: #f0f0f0;
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
   }
 
-  .mobile-results-count {
-    font-size: 13px;
-    color: #888;
+  .mobile-view-toggle button {
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .mobile-view-toggle button.active {
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
 
   .filters-sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     z-index: 100;
     border-radius: 0;
     overflow-y: auto;
@@ -694,21 +942,11 @@ onMounted(fetchOrders)
     width: 100%;
   }
 
-  .filters-sidebar.mobile-open {
-    transform: translateX(0);
-  }
+  .filters-sidebar.mobile-open { transform: translateX(0); }
 
-  .results-main {
-    padding: 12px 16px;
-  }
-
-  .results-header {
-    margin-bottom: 12px;
-  }
-
-  .route-city {
-    max-width: 100px;
-    font-size: 14px;
-  }
+  .results-main { padding: 12px 16px; }
+  .view-toggle  { display: none; }
+  .map-container { height: 400px; }
+  .route-city { max-width: 100px; font-size: 14px; }
 }
 </style>

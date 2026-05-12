@@ -32,7 +32,15 @@
             </n-gi>
             <n-gi>
               <n-form-item :label="t('client.orders.fromCity')" path="fromCity" required>
-                <n-input v-model:value="form.fromCity" :placeholder="t('client.orders.cityPlaceholder')" />
+                <n-auto-complete
+                  v-model:value="form.fromCity"
+                  :options="fromCitySuggestions"
+                  :loading="fromCityLoading"
+                  :placeholder="form.fromCountry ? 'Начните вводить город...' : t('client.orders.cityPlaceholder')"
+                  clearable
+                  blur-after-select
+                  @update:value="onFromCityInput"
+                />
               </n-form-item>
             </n-gi>
             <n-gi>
@@ -47,7 +55,15 @@
             </n-gi>
             <n-gi>
               <n-form-item :label="t('client.orders.toCity')" path="toCity" required>
-                <n-input v-model:value="form.toCity" :placeholder="t('client.orders.cityPlaceholder')" />
+                <n-auto-complete
+                  v-model:value="form.toCity"
+                  :options="toCitySuggestions"
+                  :loading="toCityLoading"
+                  :placeholder="form.toCountry ? 'Начните вводить город...' : t('client.orders.cityPlaceholder')"
+                  clearable
+                  blur-after-select
+                  @update:value="onToCityInput"
+                />
               </n-form-item>
             </n-gi>
           </n-grid>
@@ -220,6 +236,38 @@ const form = reactive({
 const countryOptions = computed(() =>
   COUNTRY_LIST.map(c => ({ label: `${c.flag} ${c.name}`, value: c.code }))
 )
+
+// ── City autocomplete via Nominatim ───────────────────────────────────────────
+const { fetchCitySuggestions } = useNominatimCities()
+
+const fromCitySuggestions = ref<string[]>([])
+const toCitySuggestions   = ref<string[]>([])
+const fromCityLoading = ref(false)
+const toCityLoading   = ref(false)
+let fromCityTimer: ReturnType<typeof setTimeout> | null = null
+let toCityTimer:   ReturnType<typeof setTimeout> | null = null
+
+function onFromCityInput(val: string) {
+  if (fromCityTimer) clearTimeout(fromCityTimer)
+  fromCityTimer = setTimeout(async () => {
+    fromCityLoading.value = true
+    fromCitySuggestions.value = await fetchCitySuggestions(val, form.fromCountry)
+    fromCityLoading.value = false
+  }, 350)
+}
+
+function onToCityInput(val: string) {
+  if (toCityTimer) clearTimeout(toCityTimer)
+  toCityTimer = setTimeout(async () => {
+    toCityLoading.value = true
+    toCitySuggestions.value = await fetchCitySuggestions(val, form.toCountry)
+    toCityLoading.value = false
+  }, 350)
+}
+
+// Сброс города при смене страны
+watch(() => form.fromCountry, () => { form.fromCity = ''; fromCitySuggestions.value = [] })
+watch(() => form.toCountry,   () => { form.toCity   = ''; toCitySuggestions.value   = [] })
 
 const currencyOptions = [
   { label: 'USD', value: 'USD' },
