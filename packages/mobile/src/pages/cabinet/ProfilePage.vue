@@ -14,15 +14,29 @@ import {
   Package
 } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
+import { switchRole } from '@/api/cabinet'
 
 const router = useRouter()
-const { user, signOut } = useAuth()
+const { user, signOut, setUser } = useAuth()
 
 const currentRole = computed(() => user.user?.role ?? 'client')
+const switching = ref(false)
 
 async function handleSignOut() {
   await signOut()
   router.replace('/login')
+}
+
+async function handleSwitchRole() {
+  const next = currentRole.value === 'driver' ? 'client' : 'driver'
+  switching.value = true
+  try {
+    const data = await switchRole(next)
+    setUser(data.user)
+    router.replace(next === 'driver' ? '/cabinet/driver' : '/cabinet/client')
+  } catch { /* ignore */ } finally {
+    switching.value = false
+  }
 }
 
 // Menu items change based on role
@@ -78,6 +92,21 @@ const getMenuItems = () => {
         <span class="email-label">Email</span>
         <span class="email-val">{{ user.user?.email ?? '—' }}</span>
       </div>
+
+      <!-- Role switcher -->
+      <button class="role-switch-card" :disabled="switching" @click="handleSwitchRole">
+        <div class="role-switch-icon">
+          <Truck v-if="currentRole === 'client'" :size="20" />
+          <Package v-else :size="20" />
+        </div>
+        <div class="role-switch-text">
+          <span class="role-switch-label">Переключить профиль</span>
+          <span class="role-switch-sub">
+            {{ currentRole === 'client' ? 'Стать перевозчиком' : 'Стать грузовладельцем' }}
+          </span>
+        </div>
+        <ChevronRight :size="18" color="#ccc" />
+      </button>
 
       <!-- Menu List -->
       <div class="menu-list">
@@ -183,6 +212,20 @@ const getMenuItems = () => {
   border: 1px solid var(--border-color);
 }
 .email-label { font-size: 0.8rem; color: var(--text-secondary); }
+
+.role-switch-card {
+  width: 100%; background: white; border: 1px solid var(--border-color);
+  border-radius: 14px; padding: 14px 16px; display: flex; align-items: center;
+  gap: 12px; margin-bottom: 16px; cursor: pointer; text-align: left;
+}
+.role-switch-card:disabled { opacity: 0.6; cursor: not-allowed; }
+.role-switch-icon {
+  width: 38px; height: 38px; border-radius: 10px; background: #f0f5ff;
+  color: #1a5bc4; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.role-switch-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.role-switch-label { font-size: 0.88rem; font-weight: 600; color: #222; }
+.role-switch-sub { font-size: 0.75rem; color: #999; }
 .email-val   { font-size: 0.88rem; font-weight: 600; color: #222; }
 
 .role-switcher-card {

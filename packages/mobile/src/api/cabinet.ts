@@ -6,8 +6,17 @@ async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data?.error?.message ?? data?.error ?? 'Ошибка запроса')
+  let data: any
+  try {
+    data = await res.json()
+  } catch {
+    if (res.status === 401) throw new Error('session_expired')
+    throw new Error(`HTTP ${res.status}`)
+  }
+  if (!res.ok) {
+    if (res.status === 401) throw new Error('session_expired')
+    throw new Error(data?.error?.message ?? data?.error ?? 'Ошибка запроса')
+  }
   return data as T
 }
 
@@ -69,6 +78,10 @@ export async function publishOrder(id: string): Promise<any> {
 
 export async function getClientProfile(): Promise<any> {
   return api<any>('/cabinet/client/profile')
+}
+
+export async function switchRole(role: 'client' | 'driver'): Promise<any> {
+  return api<any>('/cabinet/profile/role', { method: 'PATCH', body: JSON.stringify({ role }) })
 }
 
 export const STATUS_LABEL: Record<string, string> = {

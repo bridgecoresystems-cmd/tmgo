@@ -128,6 +128,11 @@ router.beforeEach(async (to) => {
     return '/login'
   }
 
+  // Redirect to correct cabinet if role doesn't match the route
+  if (to.meta.requiresAuth && user && to.meta.role && to.meta.role !== user.role) {
+    return roleHome(user.role)
+  }
+
   // Redirect welcome page based on auth status
   if (to.path === '/' && user) {
     return roleHome(user.role)

@@ -29,7 +29,9 @@ async function load() {
     ])
     myBids.value  = bids
     available.value = avail.length
-  } catch { /* ignore */ } finally {
+  } catch (e: any) {
+    if (e?.message === 'session_expired') { router.replace('/login'); return }
+  } finally {
     loading.value = false
   }
 }
