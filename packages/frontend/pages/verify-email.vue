@@ -15,6 +15,6 @@ onMounted(async () => {
     return
   }
   // Редиректим на бэкенд — он сам сделает redirect в /cabinet?verified=true
-  window.location.href = `${API}/api/auth/verify-email?token=${token}`
+  window.location.href = `${API}/auth/verify-email?token=${token}`
 })
 </script>

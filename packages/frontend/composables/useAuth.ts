@@ -35,7 +35,7 @@ export const useAuth = () => {
 
   async function fetchSession() {
     try {
-      const data = await $fetch<{ user: AuthUser | null; isImpersonating?: boolean }>(`${API}/api/auth/get-session`, {
+      const data = await $fetch<{ user: AuthUser | null; isImpersonating?: boolean }>(`${API}/auth/get-session`, {
         credentials: 'include',
       })
       if (import.meta.dev) console.log('[useAuth] get-session response:', data?.user ? { ...data.user, image: data.user.image } : null)
@@ -58,7 +58,7 @@ export const useAuth = () => {
   async function signIn(email: string, password: string) {
     try {
       const data = await $fetch<{ user: AuthUser; error?: { message: string } }>(
-        `${API}/api/auth/sign-in/email`,
+        `${API}/auth/sign-in/email`,
         { method: 'POST', body: { email, password }, credentials: 'include' }
       )
       if ((data as any).error) throw new Error((data as any).error.message)
@@ -82,7 +82,7 @@ export const useAuth = () => {
   async function signUp(email: string, password: string, name?: string, role?: string) {
     try {
       const data = await $fetch<{ user: AuthUser; error?: { message: string } }>(
-        `${API}/api/auth/sign-up/email`,
+        `${API}/auth/sign-up/email`,
         { method: 'POST', body: { email, password, name, role }, credentials: 'include' }
       )
       if ((data as any).error) throw new Error((data as any).error.message)
@@ -96,7 +96,7 @@ export const useAuth = () => {
   }
 
   async function signOut() {
-    await $fetch(`${API}/api/auth/sign-out`, { method: 'POST', credentials: 'include' })
+    await $fetch(`${API}/auth/sign-out`, { method: 'POST', credentials: 'include' })
     state.user = null
   }
 

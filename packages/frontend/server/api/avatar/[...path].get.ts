@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   }
   const config = useRuntimeConfig()
   const apiBase = (config.public.apiBase as string) || 'http://localhost:8000'
-  const url = `${apiBase}/api/auth/avatars/${filename}`
+  const url = `${apiBase}/auth/avatars/${filename}`
   try {
     const response = await fetch(url)
     if (!response.ok) {

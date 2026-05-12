@@ -112,7 +112,7 @@ onMounted(() => {
 async function resendVerification() {
   sendingVerification.value = true
   try {
-    await $fetch(`${API}/api/auth/send-verification`, { method: 'POST', credentials: 'include' })
+    await $fetch(`${API}/auth/send-verification`, { method: 'POST', credentials: 'include' })
     message.success(t('emailVerification.sentToast'))
   } catch {
     message.error(t('common.error'))

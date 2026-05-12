@@ -152,11 +152,14 @@ async function loadOrders() {
       const ord = item.orders ?? item.order ?? item
       return {
         ...ord,
-        cargoType: item.cargoType ?? item.order_cargo?.cargoType ?? null,
+        cargoType: item.cargoType ?? item.orderCargo?.cargoType ?? item.order_cargo?.cargoType ?? null,
         id: ord.id,
       }
     })
   } catch (e: any) {
+    if (e?.data?.error === 'profile_required') {
+      return navigateTo('/cabinet/client/verification')
+    }
     const err = e?.data?.message || t('client.orders.loadOrdersError')
     loadError.value = err
     message.error(err)

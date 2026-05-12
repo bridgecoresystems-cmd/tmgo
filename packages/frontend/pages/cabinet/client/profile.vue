@@ -175,7 +175,7 @@ async function handleAvatarUpload({
   try {
     const fd = new FormData()
     fd.append('file', file.file, file.file.name)
-    await $fetch<{ url: string }>(`${apiBase}/api/auth/upload-avatar`, {
+    await $fetch<{ url: string }>(`${apiBase}/auth/upload-avatar`, {
       method: 'POST',
       credentials: 'include',
       body: fd,
@@ -198,7 +198,7 @@ async function handleUpdateProfile() {
       .map((s) => s.trim())
       .filter(Boolean)
       .join(', ')
-    await $fetch(`${apiBase}/api/auth/update-profile`, {
+    await $fetch(`${apiBase}/auth/update-profile`, {
       method: 'PATCH',
       credentials: 'include',
       body: {
@@ -227,7 +227,7 @@ async function handleChangePassword() {
   }
   passwordLoading.value = true
   try {
-    await $fetch(`${apiBase}/api/auth/change-password`, {
+    await $fetch(`${apiBase}/auth/change-password`, {
       method: 'POST',
       credentials: 'include',
       body: {
