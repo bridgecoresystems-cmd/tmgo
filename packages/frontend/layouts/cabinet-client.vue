@@ -66,6 +66,7 @@
     </n-layout>
   </n-layout>
 
+  <ClientChatButton />
   <ChatWidget
     v-model="chatOpen"
     :order-id="chatOrderId"

@@ -1280,6 +1280,14 @@
     }
   },
   "client": {
+    "chat": {
+      "title": "My Chats",
+      "loading": "Loading chats...",
+      "noChats": "No active chats",
+      "noDrivers": "No conversations",
+      "driverCount": "{n} driver",
+      "chatWith": "Chat: {name}"
+    },
     "dashboard": {
       "contactData": "Contact information",
       "contactSubtitle": "Phone and name",

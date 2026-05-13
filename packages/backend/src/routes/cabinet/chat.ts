@@ -65,6 +65,94 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
     return { user };
   })
 
+  // GET /cabinet/chat/client-rooms
+  // Client: list all orders that have at least one driver chat, grouped by order.
+  .get('/client-rooms', async ({ user, set }) => {
+    if (user.role !== 'client') { set.status = 403; return { error: 'forbidden' }; }
+    const clientProfileId = await getClientProfileId(user.id);
+    if (!clientProfileId) { set.status = 403; return { error: 'forbidden' }; }
+
+    // All orders belonging to this client
+    const myOrders = await db.select({
+      id: orders.id,
+      title: orders.title,
+      status: orders.status,
+      fromCity: orders.fromCity,
+      toCity: orders.toCity,
+    }).from(orders).where(eq(orders.clientProfileId, clientProfileId));
+
+    if (myOrders.length === 0) return { orders: [] };
+
+    const orderIds = myOrders.map(o => o.id);
+
+    // All messages for these orders (distinct orderId+carrierId combos)
+    const msgRows = await db.select({
+      orderId: orderMessages.orderId,
+      carrierProfileId: orderMessages.carrierProfileId,
+      message: orderMessages.message,
+      createdAt: orderMessages.createdAt,
+    }).from(orderMessages)
+      .where(and(
+        inArray(orderMessages.orderId, orderIds),
+        // only rows that belong to a specific carrier chat
+      ))
+      .orderBy(desc(orderMessages.createdAt));
+
+    // Group by orderId → carrierId → last message
+    const orderMap = new Map<string, Map<string, { message: string; createdAt: any }>>();
+    for (const m of msgRows) {
+      if (!m.carrierProfileId) continue;
+      if (!orderMap.has(m.orderId)) orderMap.set(m.orderId, new Map());
+      const cmap = orderMap.get(m.orderId)!;
+      if (!cmap.has(m.carrierProfileId)) {
+        cmap.set(m.carrierProfileId, { message: m.message, createdAt: m.createdAt });
+      }
+    }
+
+    // Collect all carrierProfileIds that have messages
+    const allCarrierIds = [...new Set(
+      [...orderMap.values()].flatMap(m => [...m.keys()])
+    )];
+
+    if (allCarrierIds.length === 0) return { orders: [] };
+
+    const carriers = await db.select({
+      id: carrierProfiles.id,
+      userId: carrierProfiles.userId,
+      companyName: carrierProfiles.companyName,
+    }).from(carrierProfiles).where(inArray(carrierProfiles.id, allCarrierIds));
+
+    const carrierUserIds = carriers.map(c => c.userId);
+    const userRows = carrierUserIds.length > 0
+      ? await db.select({ id: users.id, name: users.name }).from(users)
+        .where(inArray(users.id, carrierUserIds))
+      : [];
+
+    const userMap = new Map(userRows.map(u => [u.id, u.name]));
+    const carrierMap = new Map(carriers.map(c => [c.id, c]));
+
+    const result = myOrders
+      .filter(o => orderMap.has(o.id))
+      .map(o => {
+        const cmap = orderMap.get(o.id)!;
+        const drivers = [...cmap.entries()].map(([cid, last]) => {
+          const carrier = carrierMap.get(cid);
+          const name = carrier
+            ? (userMap.get(carrier.userId) ?? carrier.companyName ?? 'Водитель')
+            : 'Водитель';
+          return {
+            carrierId: cid,
+            carrierName: name,
+            lastMessage: last.message,
+            lastMessageAt: last.createdAt,
+          };
+        });
+        return { ...o, drivers };
+      });
+
+    return { orders: result };
+  })
+
   // GET /cabinet/chat/bid-rooms/:orderId
   // Client: list all bids on this order with carrier info and last message preview.
   .get('/bid-rooms/:orderId', async ({ user, params, set }) => {

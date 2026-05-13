@@ -1280,6 +1280,14 @@
     }
   },
   "client": {
+    "chat": {
+      "title": "Мои чаты",
+      "loading": "Загрузка чатов...",
+      "noChats": "Нет активных чатов",
+      "noDrivers": "Нет переписок",
+      "driverCount": "{n} водитель | {n} водителя | {n} водителей",
+      "chatWith": "Чат: {name}"
+    },
     "dashboard": {
       "contactData": "Контактные данные",
       "contactSubtitle": "Телефон и имя",
