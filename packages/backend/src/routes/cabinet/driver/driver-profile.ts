@@ -2,11 +2,11 @@ import { join } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
-import { carrierProfiles, profileEditRequests, driverDocuments, driverCitizenships, driverContacts, profileVerificationHistory } from '../../db/schema';
+import { db } from '../../../db';
+import { carrierProfiles, profileEditRequests, driverDocuments, driverCitizenships, driverContacts, profileVerificationHistory } from '../../../db/schema';
 import { eq, and, desc, inArray, isNull } from 'drizzle-orm';
-import { getUnlockedKeys } from '../../lib/field-access';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUnlockedKeys } from '../../../lib/field-access';
+import { getUserFromRequest } from '../../../lib/auth';
 
 const EDITABLE_FIELD_KEYS = [
   'surname', 'given_name', 'patronymic', 'date_of_birth', 'citizenship', 'gender', 'status', 'employment_category',

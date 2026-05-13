@@ -1,13 +1,13 @@
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
+import { db } from '../../../db';
 import {
   driverVehicles,
   vehicleMakes,
   vehicleModels,
   carrierProfiles,
-} from '../../db/schema';
+} from '../../../db/schema';
 import { eq, and } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 import {
   vehicleTypeIds,
   chassisTypeIds,

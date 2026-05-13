@@ -1,11 +1,11 @@
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
+import { db } from '../../../db';
 import {
   orders, orderCargo, orderBids, orderStatusLog,
   carrierProfiles, clientProfiles,
-} from '../../db/schema';
+} from '../../../db/schema';
 import { eq, desc, and, inArray, notInArray, sql } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 
 export const cabinetDriverOrdersRoutes = new Elysia({ prefix: '/cabinet/driver/orders' })
   .derive(async ({ request, set }) => {

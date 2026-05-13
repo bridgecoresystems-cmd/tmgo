@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
-import { carrierProfiles, driverContacts } from '../../db/schema';
+import { db } from '../../../db';
+import { carrierProfiles, driverContacts } from '../../../db/schema';
 import { eq, and, isNull, desc } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 
 function formatContact(c: typeof driverContacts.$inferSelect) {
   return {

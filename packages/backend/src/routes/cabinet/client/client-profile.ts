@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
-import { clientProfiles, clientIndividual, clientCompany } from '../../db/schema';
+import { db } from '../../../db';
+import { clientProfiles, clientIndividual, clientCompany } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 
 const tIndividual = t.Optional(t.Object({
   firstName: t.Optional(t.String()),

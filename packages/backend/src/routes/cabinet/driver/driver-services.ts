@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
-import { driverServices, carrierProfiles, cities, vehicles } from '../../db/schema';
+import { db } from '../../../db';
+import { driverServices, carrierProfiles, cities, vehicles } from '../../../db/schema';
 import { eq, desc, and } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 
 export const cabinetDriverServicesRoutes = new Elysia({ prefix: '/cabinet/driver/services' })
   .derive(async ({ request, set }) => {

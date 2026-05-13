@@ -2,10 +2,10 @@ import { join } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
-import { carrierProfiles, driverDocuments, profileChangeRequests } from '../../db/schema';
+import { db } from '../../../db';
+import { carrierProfiles, driverDocuments, profileChangeRequests } from '../../../db/schema';
 import { eq, and, or, isNull, lte, gte, desc } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 
 const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024;

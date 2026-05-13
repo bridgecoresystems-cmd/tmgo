@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
-import { driverTrailers, vehicleCouplings, driverVehicles, vehicleMakes, vehicleModels, carrierProfiles } from '../../db/schema';
+import { db } from '../../../db';
+import { driverTrailers, vehicleCouplings, driverVehicles, vehicleMakes, vehicleModels, carrierProfiles } from '../../../db/schema';
 import { eq, and } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 import { trailerBodyTypeIds, REEFER_BODY_TYPES } from '@tmgo/shared';
 
 const trailerBodyUnion = t.Union(trailerBodyTypeIds.map((id) => t.Literal(id)) as [typeof t.Literal, ...typeof t.Literal[]]);

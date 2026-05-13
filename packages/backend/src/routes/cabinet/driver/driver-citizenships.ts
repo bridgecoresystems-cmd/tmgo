@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
-import { carrierProfiles, driverCitizenships, profileChangeRequests } from '../../db/schema';
+import { db } from '../../../db';
+import { carrierProfiles, driverCitizenships, profileChangeRequests } from '../../../db/schema';
 import { eq, and, gte, desc } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 
 // Статусы, при которых редактирование гражданств требует change_request (совместимость со старыми: waiting_verification, request)
 const LOCKED_STATUSES = ['submitted', 'verified', 'suspended', 'waiting_verification', 'request'];

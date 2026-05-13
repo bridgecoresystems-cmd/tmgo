@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
-import { carrierProfiles, profileChangeRequests } from '../../db/schema';
+import { db } from '../../../db';
+import { carrierProfiles, profileChangeRequests } from '../../../db/schema';
 import { eq, and, gt, desc } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 
 const VALID_FIELD_KEYS = [
   'surname', 'given_name', 'patronymic', 'date_of_birth', 'gender',
