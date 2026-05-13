@@ -788,6 +788,8 @@ export const orderMessages = pgTable('order_messages', {
   orderId: uuid('order_id')
     .references(() => orders.id)
     .notNull(),
+  carrierProfileId: uuid('carrier_profile_id'),
+  // room = (orderId, carrierProfileId) — один чат на пару заказ+перевозчик
   senderId: uuid('sender_id')
     .references(() => users.id)
     .notNull(),

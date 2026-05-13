@@ -15,7 +15,7 @@ import { adminImpersonateRoutes } from './routes/admin/impersonate';
 import { adminMailingRoutes } from './routes/admin/mailing';
 import { adminCitiesRoutes, publicCitiesRoutes } from './routes/admin/cities';
 import { cabinetMailingRoutes } from './routes/cabinet/mailing';
-import { cabinetOrdersRoutes } from './routes/cabinet/orders';
+import { cabinetOrdersRoutes } from './routes/cabinet/client/orders';
 import { cabinetDriverVehiclesRoutes } from './routes/cabinet/driver/driver-vehicles';
 import { cabinetDriverTrailersRoutes, cabinetDriverCouplingsRoutes } from './routes/cabinet/driver/driver-trailers';
 import { cabinetDriverOrdersRoutes } from './routes/cabinet/driver/driver-orders';

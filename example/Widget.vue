@@ -1,11 +1,15 @@
 <!--
-  ChatWidget — floating chat panel (bottom right)
-  Props: modelValue, orderId, title, currentUserId
-  Click outside to close
+  ChatWidget — floating sliding chat panel (bottom-right)
+  Props:
+    modelValue (v-model)  boolean  — open/close
+    roomId                number   — chat room id
+    title                 string   — header title (student name)
+    readonly              boolean  — disable input (finished course)
+    currentUserId         string   — logged-in user id
 -->
 <template>
   <Teleport to="body">
-    <!-- Overlay — click to close chat -->
+    <!-- Backdrop for mobile -->
     <div
       v-if="modelValue"
       class="cw-backdrop"
@@ -13,21 +17,41 @@
     />
 
     <div class="cw-panel" :class="{ 'cw-panel--open': modelValue }">
-      <div class="cw-header" @click="togglePanel">
-        <div class="cw-header__left">
+      <!-- Header -->
+      <div class="cw-header">
+        <div class="cw-header__left" @click="togglePanel">
+          <NIcon
+            v-if="showBack"
+            size="18"
+            class="cw-back-btn"
+            @click.stop="$emit('back')"
+          >
+            <component :is="BackIcon" />
+          </NIcon>
           <span class="cw-status" :class="{ 'cw-status--online': wsConnected }" />
-          <span class="cw-header__title">{{ title || t('chat.title') }}</span>
-          <NIcon v-if="typingName" size="14" class="cw-typing-icon">
+          <span class="cw-header__title">{{ title || 'Чат' }}</span>
+          <NIcon
+            v-if="typingName"
+            size="14"
+            class="cw-typing-icon"
+          >
             <component :is="PencilIcon" />
           </NIcon>
         </div>
         <div class="cw-header__right">
+          <NBadge
+            v-if="unreadCount > 0 && !modelValue"
+            :value="unreadCount"
+            :max="99"
+            type="error"
+          />
           <NIcon size="18" class="cw-close-btn" @click.stop="$emit('update:modelValue', false)">
             <component :is="CloseIcon" />
           </NIcon>
         </div>
       </div>
 
+      <!-- Messages -->
       <div class="cw-body" ref="bodyEl">
         <div v-if="loading" class="cw-center">
           <NSpin size="small" />
@@ -35,7 +59,7 @@
 
         <div v-else-if="messages.length === 0" class="cw-center cw-empty">
           <NIcon size="32" color="#d1d5db"><component :is="ChatIcon" /></NIcon>
-          <span>{{ t('chat.noMessages') }}</span>
+          <span>Нет сообщений</span>
         </div>
 
         <template v-else>
@@ -47,159 +71,110 @@
           >
             <NAvatar
               v-if="msg.userId !== currentUserId"
+              :src="msg.user?.avatar || undefined"
+              :fallback-src="avatarFallback(msg.user)"
               round
               :size="28"
               class="cw-msg__ava"
-              :style="{ backgroundColor: '#ff6b4a' }"
-            >
-              {{ (msg.user?.name || '?').charAt(0) }}
-            </NAvatar>
+            />
             <div class="cw-msg__body">
               <div v-if="msg.userId !== currentUserId" class="cw-msg__name">
                 {{ msg.user?.name }}
               </div>
-              <div class="cw-msg__bubble">
-                <template v-if="msg.content">
-                  <span v-if="msg.content === '[Фото]' || msg.content === '[Photo]'">{{ t('chat.photo') }}</span>
-                  <span v-else>{{ msg.content }}</span>
-                </template>
-                <div v-if="msg.attachments?.length" class="cw-msg__imgs">
-                  <div
-                    v-for="(url, i) in msg.attachments"
-                    :key="i"
-                    class="cw-msg__img-link"
-                    @click="previewImage = imageUrl(url)"
-                  >
-                    <img :src="imageUrl(url)" :alt="t('chat.photoAlt')" class="cw-msg__img" />
-                  </div>
-                </div>
-              </div>
+              <div class="cw-msg__bubble">{{ msg.content }}</div>
               <div class="cw-msg__time">{{ fmtTime(msg.createdAt) }}</div>
             </div>
           </div>
 
           <div v-if="typingName" class="cw-typing">
-            <span>{{ typingName }} {{ t('chat.typing') }}</span>
+            <span>{{ typingName }} печатает</span>
             <span class="cw-dots"><span>.</span><span>.</span><span>.</span></span>
           </div>
         </template>
       </div>
 
+      <!-- Footer -->
       <div class="cw-footer">
-        <div class="cw-footer-row">
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept="image/*"
-            class="cw-file-input"
-            @change="handleFileSelect"
-          />
-          <NButton
-            quaternary
-            circle
-            size="small"
-            class="cw-photo-btn"
-            @click="fileInputRef?.click()"
-          >
-            <template #icon>
-              <NIcon size="20"><component :is="ImageIcon" /></NIcon>
-            </template>
-          </NButton>
+        <template v-if="!readonly">
           <textarea
             v-model="inputText"
             class="cw-input"
-            :placeholder="t('chat.typingPlaceholder')"
+            placeholder="Написать сообщение..."
             rows="2"
             :disabled="!wsConnected"
             @keydown="handleKey"
             @input="handleTyping"
           />
-          <NButton
-            type="primary"
-            size="small"
-            circle
-            :disabled="(!inputText.trim() && !pendingPhotos.length) || !wsConnected"
-            :loading="uploading"
-            @click="sendMsg"
-          >
-            <template #icon>
-              <NIcon><component :is="SendIcon" /></NIcon>
-            </template>
-          </NButton>
-        </div>
-        <div v-if="pendingPhotos.length" class="cw-pending-photos">
-          <div v-for="(p, i) in pendingPhotos" :key="i" class="cw-pending-item">
-            <img :src="p.preview" alt="" class="cw-pending-preview" />
-            <NButton text size="tiny" type="error" @click="removePendingPhoto(i)">×</NButton>
+          <div class="cw-actions">
+            <NButton
+              type="primary"
+              size="small"
+              circle
+              :disabled="!inputText.trim() || !wsConnected"
+              @click="sendMsg"
+            >
+              <template #icon>
+                <NIcon><component :is="SendIcon" /></NIcon>
+              </template>
+            </NButton>
           </div>
+        </template>
+        <div v-else class="cw-readonly">
+          <NIcon size="14"><component :is="LockIcon" /></NIcon>
+          Курс завершён
         </div>
       </div>
     </div>
-
-    <NModal v-model:show="imageModalShow" preset="card" :title="t('chat.photoTitle')" style="width: 90vw; max-width: 900px">
-      <img v-if="previewImage" :src="previewImage" :alt="t('chat.photoAlt')" style="width: 100%; height: auto; display: block" />
-    </NModal>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
-import { NButton, NIcon, NAvatar, NSpin, useMessage } from 'naive-ui'
+import { ref, watch, onUnmounted, nextTick, watchEffect } from 'vue'
+import { NBadge, NButton, NIcon, NAvatar, NSpin } from 'naive-ui'
 import {
   ChatbubbleEllipsesOutline as ChatIcon,
   CloseOutline as CloseIcon,
   SendOutline as SendIcon,
+  LockClosedOutline as LockIcon,
   PencilOutline as PencilIcon,
-  ImageOutline as ImageIcon,
+  ArrowBackOutline as BackIcon,
 } from '@vicons/ionicons5'
-
-const { t } = useI18n()
 
 const props = defineProps<{
   modelValue: boolean
-  orderId: string | null
-  carrierId: string | null
+  roomId: number | null
   title?: string
+  readonly?: boolean
   currentUserId?: string
+  showBack?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
+  'back': []
+  'update:unread': [count: number]
 }>()
 
-const { apiBase: API, wsUrl: WS_BASE } = useApiBase()
+const config = useRuntimeConfig()
+const API = config.public.apiBase as string
+const WS_BASE = (config.public.wsUrl as string) || 'ws://localhost:8010'
 
 const messages = ref<any[]>([])
 const loading = ref(false)
 const inputText = ref('')
 const typingName = ref('')
+const unreadCount = ref(0)
 const wsConnected = ref(false)
 const bodyEl = ref<HTMLElement | null>(null)
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const uploading = ref(false)
-const pendingPhotos = ref<{ file: File; preview: string }[]>([])
-const previewImage = ref('')
-const imageModalShow = computed({
-  get: () => !!previewImage.value,
-  set: (v) => { if (!v) previewImage.value = '' },
-})
-
 let ws: WebSocket | null = null
 let typingTimer: ReturnType<typeof setTimeout> | null = null
 let typingOutTimer: ReturnType<typeof setTimeout> | null = null
 
-function imageUrl(path: string) {
-  if (!path) return ''
-  if (path.startsWith('http')) return path
-  const base = API.replace(/\/$/, '')
-  return path.startsWith('/') ? `${base}${path}` : `${base}/${path}`
-}
-
-async function loadMessages(orderId: string) {
-  if (!props.carrierId) return
+// ── Load messages ────────────────────────────────────────────────────────────
+async function loadMessages(roomId: number) {
   loading.value = true
   try {
-    const data = await $fetch<any[]>(`${API}/cabinet/chat/messages/${orderId}/${props.carrierId}`, {
+    const data = await $fetch<any[]>(`${API}/cabinet/chat/messages/${roomId}`, {
       credentials: 'include',
     })
     messages.value = Array.isArray(data) ? data : []
@@ -211,10 +186,10 @@ async function loadMessages(orderId: string) {
   }
 }
 
-function openWs(orderId: string) {
-  if (!props.carrierId) return
+// ── WebSocket ────────────────────────────────────────────────────────────────
+function openWs(roomId: number) {
   closeWs()
-  const url = `${WS_BASE}/cabinet/chat/ws/${orderId}/${props.carrierId}`
+  const url = `${WS_BASE}/api/v1/cabinet/chat/ws/${roomId}`
   ws = new WebSocket(url)
 
   ws.onopen = () => {
@@ -227,6 +202,7 @@ function openWs(orderId: string) {
       if (data.type === 'message') {
         messages.value.push(data.message)
         scrollBottom()
+        if (!props.modelValue) unreadCount.value++
       }
       if (data.type === 'typing' && data.userId !== props.currentUserId) {
         typingName.value = data.name
@@ -250,94 +226,45 @@ function openWs(orderId: string) {
 }
 
 function closeWs() {
-  if (ws) {
-    ws.onclose = null
-    ws.close()
-    ws = null
-  }
+  if (ws) { ws.onclose = null; ws.close(); ws = null }
   wsConnected.value = false
 }
 
+// ── Watchers ─────────────────────────────────────────────────────────────────
 watch(
-  () => [props.orderId, props.carrierId],
-  ([newOrderId]) => {
+  () => props.roomId,
+  (newId) => {
     closeWs()
     messages.value = []
     typingName.value = ''
-    if (newOrderId && props.carrierId) {
-      loadMessages(newOrderId as string)
-      openWs(newOrderId as string)
+    if (newId) {
+      loadMessages(newId)
+      if (!props.readonly) openWs(newId)
     }
   },
   { immediate: true }
 )
 
+watchEffect(() => emit('update:unread', unreadCount.value))
+
 watch(
   () => props.modelValue,
   (open) => {
-    if (open) scrollBottom()
+    if (open) {
+      unreadCount.value = 0
+      scrollBottom()
+      // CSS transition takes 280ms — scroll again after it settles
+      setTimeout(() => {
+        if (bodyEl.value) bodyEl.value.scrollTop = bodyEl.value.scrollHeight
+      }, 300)
+    }
   }
 )
 
-function handleFileSelect(e: Event) {
-  const input = e.target as HTMLInputElement
-  const files = input.files
-  if (!files?.length) return
-  for (let i = 0; i < files.length; i++) {
-    const f = files[i]
-    if (!f.type.startsWith('image/')) continue
-    if (f.size > 5 * 1024 * 1024) continue
-    const preview = URL.createObjectURL(f)
-    pendingPhotos.value.push({ file: f, preview })
-  }
-  input.value = ''
-}
-
-function removePendingPhoto(i: number) {
-  URL.revokeObjectURL(pendingPhotos.value[i].preview)
-  pendingPhotos.value.splice(i, 1)
-}
-
-async function uploadPhoto(file: File): Promise<string> {
-  const formData = new FormData()
-  formData.append('file', file, file.name)
-  const res = await $fetch<{ url: string }>(`${API}/cabinet/chat/upload`, {
-    method: 'POST',
-    credentials: 'include',
-    body: formData,
-  })
-  return res.url
-}
-
-async function sendMsg() {
-  if (!ws || !wsConnected.value) return
-  const hasText = !!inputText.value.trim()
-  const hasPhotos = pendingPhotos.value.length > 0
-  if (!hasText && !hasPhotos) return
-
-  const attachments: string[] = []
-  if (hasPhotos) {
-    uploading.value = true
-    try {
-      for (const p of pendingPhotos.value) {
-        const url = await uploadPhoto(p.file)
-        attachments.push(url)
-        URL.revokeObjectURL(p.preview)
-      }
-      pendingPhotos.value = []
-    } catch (e) {
-      console.error('Upload failed', e)
-      uploading.value = false
-      return
-    }
-    uploading.value = false
-  }
-
-  ws.send(JSON.stringify({
-    type: 'message',
-    content: inputText.value.trim(),
-    attachments,
-  }))
+// ── Send ─────────────────────────────────────────────────────────────────────
+function sendMsg() {
+  if (!inputText.value.trim() || !ws || !wsConnected.value) return
+  ws.send(JSON.stringify({ type: 'message', content: inputText.value.trim() }))
   inputText.value = ''
   if (ws && wsConnected.value) ws.send(JSON.stringify({ type: 'stop_typing' }))
   if (typingOutTimer) clearTimeout(typingOutTimer)
@@ -359,13 +286,16 @@ function handleTyping() {
   }, 1500)
 }
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function togglePanel() {
   emit('update:modelValue', !props.modelValue)
 }
 
 function scrollBottom() {
   nextTick(() => {
-    if (bodyEl.value) bodyEl.value.scrollTop = bodyEl.value.scrollHeight
+    requestAnimationFrame(() => {
+      if (bodyEl.value) bodyEl.value.scrollTop = bodyEl.value.scrollHeight
+    })
   })
 }
 
@@ -374,22 +304,34 @@ function fmtTime(iso: string | undefined) {
   return new Date(iso).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })
 }
 
+function avatarFallback(user: any) {
+  const l = ((user?.name || 'U').charAt(0)).toUpperCase()
+  return `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%234f46e5' width='32' height='32'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' fill='white' font-size='14'>${l}</text></svg>`
+}
+
 onUnmounted(() => {
   closeWs()
   if (typingTimer) clearTimeout(typingTimer)
   if (typingOutTimer) clearTimeout(typingOutTimer)
-  pendingPhotos.value.forEach((p) => URL.revokeObjectURL(p.preview))
 })
 </script>
 
 <style scoped>
+/* ── Backdrop ─────────────────────────────────────────────────────────────── */
 .cw-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.25);
-  z-index: 1099;
+  display: none;
+}
+@media (max-width: 480px) {
+  .cw-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 1099;
+  }
 }
 
+/* ── Panel ────────────────────────────────────────────────────────────────── */
 .cw-panel {
   position: fixed;
   bottom: 20px;
@@ -398,13 +340,14 @@ onUnmounted(() => {
   height: 480px;
   background: #fff;
   border-radius: 14px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
   display: flex;
   flex-direction: column;
   z-index: 1100;
   transform: translateY(calc(100% + 24px));
   opacity: 0;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.22s ease;
   pointer-events: none;
   overflow: hidden;
 }
@@ -415,12 +358,13 @@ onUnmounted(() => {
   pointer-events: all;
 }
 
+/* ── Header ───────────────────────────────────────────────────────────────── */
 .cw-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  background: linear-gradient(135deg, #ff6b4a 0%, #e55a3a 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-radius: 14px 14px 0 0;
   cursor: pointer;
@@ -442,15 +386,21 @@ onUnmounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: white;
 }
 
-.cw-header__right { flex-shrink: 0; }
+.cw-header__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
 
 .cw-status {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255,255,255,0.4);
   flex-shrink: 0;
 }
 
@@ -460,18 +410,36 @@ onUnmounted(() => {
 }
 
 .cw-typing-icon {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255,255,255,0.85);
   animation: pulse 1.4s ease-in-out infinite;
 }
 
-.cw-close-btn {
-  color: rgba(255, 255, 255, 0.85);
+.cw-back-btn {
+  color: rgba(255,255,255,0.85);
   cursor: pointer;
   padding: 2px;
   border-radius: 4px;
+  transition: background 0.15s;
+  flex-shrink: 0;
 }
-.cw-close-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.cw-back-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
 
+.cw-close-btn {
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.cw-close-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+/* ── Body ─────────────────────────────────────────────────────────────────── */
 .cw-body {
   flex: 1;
   overflow-y: auto;
@@ -497,11 +465,12 @@ onUnmounted(() => {
   height: 100%;
 }
 
+/* ── Messages ─────────────────────────────────────────────────────────────── */
 .cw-msg {
   display: flex;
   align-items: flex-end;
   gap: 6px;
-  max-width: 85%;
+  max-width: 80%;
 }
 
 .cw-msg--own {
@@ -510,9 +479,17 @@ onUnmounted(() => {
   margin-left: auto;
 }
 
-.cw-msg__ava { flex-shrink: 0; margin-bottom: 18px; }
+.cw-msg__ava {
+  flex-shrink: 0;
+  margin-bottom: 18px;
+}
 
-.cw-msg__body { display: flex; flex-direction: column; gap: 2px; }
+.cw-msg__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .cw-msg--own .cw-msg__body { align-items: flex-end; }
 
 .cw-msg__name {
@@ -533,18 +510,9 @@ onUnmounted(() => {
 }
 
 .cw-msg--own .cw-msg__bubble {
-  background: linear-gradient(135deg, #ff6b4a 0%, #e55a3a 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-radius: 14px 14px 3px 14px;
-}
-
-.cw-msg__imgs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-.cw-msg__img-link { display: block; cursor: pointer; }
-.cw-msg__img {
-  max-width: 120px;
-  max-height: 120px;
-  border-radius: 8px;
-  object-fit: cover;
 }
 
 .cw-msg__time {
@@ -560,12 +528,18 @@ onUnmounted(() => {
   font-size: 12px;
   color: #6b7280;
   font-style: italic;
+  padding: 2px 4px;
 }
 
-.cw-dots span { animation: blink 1.4s infinite; font-size: 14px; }
+.cw-dots span {
+  animation: blink 1.4s infinite;
+  font-size: 14px;
+  line-height: 1;
+}
 .cw-dots span:nth-child(2) { animation-delay: 0.2s; }
 .cw-dots span:nth-child(3) { animation-delay: 0.4s; }
 
+/* ── Footer ───────────────────────────────────────────────────────────────── */
 .cw-footer {
   border-top: 1px solid #e5e7eb;
   padding: 8px 10px;
@@ -573,18 +547,8 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.cw-footer-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.cw-file-input { display: none; }
-
-.cw-photo-btn { flex-shrink: 0; }
-
 .cw-input {
-  flex: 1;
+  width: 100%;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 8px 10px;
@@ -594,34 +558,30 @@ onUnmounted(() => {
   font-family: inherit;
   background: white;
   color: #111827;
-  min-height: 36px;
+  transition: border-color 0.15s;
   box-sizing: border-box;
 }
 
-.cw-input:focus { border-color: #ff6b4a; }
+.cw-input:focus { border-color: #667eea; }
 .cw-input:disabled { background: #f3f4f6; cursor: not-allowed; }
 
-.cw-pending-photos {
+.cw-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
-  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 6px;
 }
 
-.cw-pending-item {
-  position: relative;
+.cw-readonly {
   display: flex;
-  align-items: flex-start;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #92400e;
+  justify-content: center;
+  padding: 4px 0;
 }
 
-.cw-pending-preview {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 6px;
-}
-
+/* ── Animations ───────────────────────────────────────────────────────────── */
 @keyframes blink {
   0%, 80%, 100% { opacity: 0; }
   40% { opacity: 1; }
@@ -632,6 +592,7 @@ onUnmounted(() => {
   50% { opacity: 0.4; }
 }
 
+/* ── Mobile ───────────────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .cw-panel {
     width: calc(100vw - 24px);

@@ -1373,6 +1373,7 @@
       "accepted": "Carrier accepted",
       "responseRejected": "Response rejected",
       "chat": "Chat",
+      "chatWith": "Chat with {name}",
       "statusPending": "Pending",
       "statusAccepted": "Accepted",
       "statusInTransit": "In transit",
@@ -1480,7 +1481,10 @@
       "loadError": "Load error"
     },
     "chat": {
-      "title": "Messages"
+      "title": "Messages",
+      "loading": "Loading chats...",
+      "noChats": "No active chats",
+      "client": "Client"
     }
   },
   "online": {

@@ -69,6 +69,7 @@
   <ChatWidget
     v-model="chatOpen"
     :order-id="chatOrderId"
+    :carrier-id="chatCarrierId"
     :title="chatTitle"
     :current-user-id="session?.user?.id"
   />
@@ -90,7 +91,7 @@ import {
 const { t } = useI18n()
 const { session, signOut } = useAuth()
 const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
-const { chatOpen, chatOrderId, chatTitle } = useOrderChat()
+const { chatOpen, chatOrderId, chatCarrierId, chatTitle } = useOrderChat()
 const route = useRoute()
 const collapsed = ref(false)
 

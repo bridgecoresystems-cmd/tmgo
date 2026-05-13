@@ -3,66 +3,56 @@ import { randomUUID } from 'crypto';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { db } from '../../db';
-import { orders, orderMessages, orderResponses, carrierProfiles, users } from '../../db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { orders, orderMessages, orderBids, carrierProfiles, clientProfiles, users } from '../../db/schema';
+import { eq, and, desc, inArray } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 import { signAttachmentUrls } from '../../lib/chat-attachments';
 
+// room key = orderId:carrierProfileId
 const rooms = new Map<string, Set<any>>();
 
-async function canAccessOrderChat(userId: string, userRole: string, orderId: string): Promise<boolean> {
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-  if (!order) return false;
-
-  if (order.clientId === userId) return true;
-
-  if (userRole === 'driver') {
-    const [profile] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.userId, userId)).limit(1);
-    if (!profile) return false;
-    if (order.carrierId === profile.id) return true;
-    const [resp] = await db
-      .select()
-      .from(orderResponses)
-      .where(and(eq(orderResponses.orderId, orderId), eq(orderResponses.carrierId, profile.id)))
-      .limit(1);
-    return !!resp;
-  }
-  return false;
+function roomKey(orderId: string, carrierId: string) {
+  return `${orderId}:${carrierId}`;
 }
 
-async function getOtherPartyName(orderId: string, currentUserId: string): Promise<string> {
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-  if (!order) return 'Чат';
+async function getClientProfileId(userId: string): Promise<string | null> {
+  const [p] = await db.select({ id: clientProfiles.id }).from(clientProfiles)
+    .where(eq(clientProfiles.userId, userId)).limit(1);
+  return p?.id ?? null;
+}
 
-  if (order.clientId === currentUserId) {
-    if (order.carrierId) {
-      const [carrier] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.id, order.carrierId)).limit(1);
-      if (carrier) {
-        const [u] = await db.select().from(users).where(eq(users.id, carrier.userId)).limit(1);
-        return u?.name || carrier.companyName || 'Перевозчик';
-      }
-    }
-    const [resp] = await db
-      .select()
-      .from(orderResponses)
-      .where(eq(orderResponses.orderId, orderId))
-      .limit(1);
-    if (resp) {
-      const [carrier] = await db.select().from(carrierProfiles).where(eq(carrierProfiles.id, resp.carrierId)).limit(1);
-      if (carrier) {
-        const [u] = await db.select().from(users).where(eq(users.id, carrier.userId)).limit(1);
-        return u?.name || carrier.companyName || 'Перевозчик';
-      }
-    }
-    return 'Перевозчик';
-  } else {
-    const [order2] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-    if (order2?.clientId) {
-      const [u] = await db.select().from(users).where(eq(users.id, order2.clientId)).limit(1);
-      return u?.name || 'Заказчик';
-    }
-    return 'Заказчик';
+async function getCarrierProfileId(userId: string): Promise<string | null> {
+  const [p] = await db.select({ id: carrierProfiles.id }).from(carrierProfiles)
+    .where(eq(carrierProfiles.userId, userId)).limit(1);
+  return p?.id ?? null;
+}
+
+// Client can access (orderId, carrierId) if they own the order.
+// Driver can access if their carrierProfileId === carrierId AND they have a bid on the order.
+async function canAccess(
+  userId: string,
+  role: string,
+  orderId: string,
+  carrierId: string,
+): Promise<boolean> {
+  const [order] = await db.select({ id: orders.id, clientProfileId: orders.clientProfileId })
+    .from(orders).where(eq(orders.id, orderId)).limit(1);
+  if (!order) return false;
+
+  if (role === 'client') {
+    const cpId = await getClientProfileId(userId);
+    return cpId !== null && order.clientProfileId === cpId;
   }
+
+  if (role === 'driver') {
+    const cpId = await getCarrierProfileId(userId);
+    if (!cpId || cpId !== carrierId) return false;
+    const [bid] = await db.select({ id: orderBids.id }).from(orderBids)
+      .where(and(eq(orderBids.orderId, orderId), eq(orderBids.carrierProfileId, cpId))).limit(1);
+    return !!bid;
+  }
+
+  return false;
 }
 
 export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
@@ -74,40 +64,191 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
     }
     return { user };
   })
-  .get('/room/:orderId', async ({ user, params, set }) => {
-    const ok = await canAccessOrderChat(user.id, user.role!, params.orderId);
-    if (!ok) {
-      set.status = 403;
-      return { error: 'Forbidden' };
-    }
-    const title = await getOtherPartyName(params.orderId, user.id);
-    return { id: params.orderId, orderId: params.orderId, title };
-  })
-  .get('/messages/:orderId', async ({ user, params, set }) => {
-    const ok = await canAccessOrderChat(user.id, user.role!, params.orderId);
-    if (!ok) {
-      set.status = 403;
-      return { error: 'Forbidden' };
+
+  // GET /cabinet/chat/bid-rooms/:orderId
+  // Client: list all bids on this order with carrier info and last message preview.
+  .get('/bid-rooms/:orderId', async ({ user, params, set }) => {
+    const clientProfileId = await getClientProfileId(user.id);
+    if (!clientProfileId) { set.status = 403; return { error: 'forbidden' }; }
+
+    const [order] = await db.select({ id: orders.id, clientProfileId: orders.clientProfileId })
+      .from(orders).where(eq(orders.id, params.orderId)).limit(1);
+    if (!order || order.clientProfileId !== clientProfileId) {
+      set.status = 403; return { error: 'forbidden' };
     }
 
-    const rows = await db
-      .select({
-        id: orderMessages.id,
-        orderId: orderMessages.orderId,
-        senderId: orderMessages.senderId,
-        message: orderMessages.message,
-        attachments: orderMessages.attachments,
-        createdAt: orderMessages.createdAt,
-        senderName: users.name,
-      })
-      .from(orderMessages)
+    const bids = await db.select({
+      id: orderBids.id,
+      carrierProfileId: orderBids.carrierProfileId,
+      amount: orderBids.amount,
+      currency: orderBids.currency,
+      status: orderBids.status,
+      comment: orderBids.comment,
+      createdAt: orderBids.createdAt,
+    }).from(orderBids).where(eq(orderBids.orderId, params.orderId));
+
+    if (bids.length === 0) return { rooms: [] };
+
+    const carrierIds = bids.map(b => b.carrierProfileId);
+    const carriers = await db.select({
+      id: carrierProfiles.id,
+      userId: carrierProfiles.userId,
+      companyName: carrierProfiles.companyName,
+    }).from(carrierProfiles).where(inArray(carrierProfiles.id, carrierIds));
+
+    const carrierUserIds = carriers.map(c => c.userId);
+    const userRows = carrierUserIds.length > 0
+      ? await db.select({ id: users.id, name: users.name }).from(users)
+        .where(inArray(users.id, carrierUserIds))
+      : [];
+
+    const userMap = new Map(userRows.map(u => [u.id, u.name]));
+    const carrierMap = new Map(carriers.map(c => [c.id, c]));
+
+    // Last message per (orderId, carrierId)
+    const lastMsgRows = await db.select({
+      carrierProfileId: orderMessages.carrierProfileId,
+      message: orderMessages.message,
+      createdAt: orderMessages.createdAt,
+    }).from(orderMessages)
+      .where(and(
+        eq(orderMessages.orderId, params.orderId),
+        inArray(orderMessages.carrierProfileId as any, carrierIds),
+      ))
+      .orderBy(desc(orderMessages.createdAt));
+
+    const lastMsgMap = new Map<string, { message: string; createdAt: any }>();
+    for (const m of lastMsgRows) {
+      if (m.carrierProfileId && !lastMsgMap.has(m.carrierProfileId)) {
+        lastMsgMap.set(m.carrierProfileId, { message: m.message, createdAt: m.createdAt });
+      }
+    }
+
+    const roomList = bids.map(bid => {
+      const carrier = carrierMap.get(bid.carrierProfileId);
+      const name = carrier
+        ? (userMap.get(carrier.userId) || carrier.companyName || 'Перевозчик')
+        : 'Перевозчик';
+      const last = lastMsgMap.get(bid.carrierProfileId);
+      return {
+        carrierId: bid.carrierProfileId,
+        carrierName: name,
+        bidId: bid.id,
+        bidAmount: bid.amount,
+        bidCurrency: bid.currency,
+        bidStatus: bid.status,
+        lastMessage: last?.message ?? null,
+        lastMessageAt: last?.createdAt ?? null,
+        hasMessages: !!last,
+      };
+    });
+
+    return { rooms: roomList };
+  })
+
+  // GET /cabinet/chat/driver-rooms
+  // Driver: list orders where client started a chat (has messages) with me.
+  .get('/driver-rooms', async ({ user, set }) => {
+    if (user.role !== 'driver') { set.status = 403; return { error: 'forbidden' }; }
+    const carrierId = await getCarrierProfileId(user.id);
+    if (!carrierId) { set.status = 403; return { error: 'forbidden' }; }
+
+    const msgs = await db.select({
+      orderId: orderMessages.orderId,
+    }).from(orderMessages)
+      .where(eq(orderMessages.carrierProfileId as any, carrierId));
+
+    const orderIds = [...new Set(msgs.map(m => m.orderId))];
+    if (orderIds.length === 0) return { rooms: [] };
+
+    const orderRows = await db.select({
+      id: orders.id,
+      title: orders.title,
+      status: orders.status,
+      clientProfileId: orders.clientProfileId,
+      fromCity: orders.fromCity,
+      toCity: orders.toCity,
+    }).from(orders).where(inArray(orders.id, orderIds));
+
+    const clientIds = orderRows.map(o => o.clientProfileId);
+    const clientRows = await db.select({
+      id: clientProfiles.id,
+      userId: clientProfiles.userId,
+    }).from(clientProfiles).where(inArray(clientProfiles.id, clientIds));
+
+    const clientUserIds = clientRows.map(c => c.userId);
+    const clientUsers = clientUserIds.length > 0
+      ? await db.select({ id: users.id, name: users.name }).from(users)
+        .where(inArray(users.id, clientUserIds))
+      : [];
+
+    const clientUserMap = new Map(clientUsers.map(u => [u.id, u.name]));
+    const clientProfileMap = new Map(clientRows.map(c => [c.id, c]));
+
+    // Last message per orderId
+    const lastMsgs = await db.select({
+      orderId: orderMessages.orderId,
+      message: orderMessages.message,
+      senderId: orderMessages.senderId,
+      createdAt: orderMessages.createdAt,
+    }).from(orderMessages)
+      .where(and(
+        inArray(orderMessages.orderId, orderIds),
+        eq(orderMessages.carrierProfileId as any, carrierId),
+      ))
+      .orderBy(desc(orderMessages.createdAt));
+
+    const lastMsgMap = new Map<string, typeof lastMsgs[0]>();
+    for (const m of lastMsgs) {
+      if (!lastMsgMap.has(m.orderId)) lastMsgMap.set(m.orderId, m);
+    }
+
+    const rooms = orderRows.map(order => {
+      const clientProfile = clientProfileMap.get(order.clientProfileId);
+      const clientName = clientProfile
+        ? (clientUserMap.get(clientProfile.userId) ?? 'Заказчик')
+        : 'Заказчик';
+      const last = lastMsgMap.get(order.id);
+      return {
+        orderId: order.id,
+        orderTitle: order.title,
+        orderStatus: order.status,
+        fromCity: order.fromCity,
+        toCity: order.toCity,
+        clientName,
+        carrierId,
+        lastMessage: last?.message ?? null,
+        lastMessageAt: last?.createdAt ?? null,
+      };
+    });
+
+    return { rooms };
+  })
+
+  // GET /cabinet/chat/messages/:orderId/:carrierId
+  .get('/messages/:orderId/:carrierId', async ({ user, params, set }) => {
+    const ok = await canAccess(user.id, user.role!, params.orderId, params.carrierId);
+    if (!ok) { set.status = 403; return { error: 'forbidden' }; }
+
+    const rows = await db.select({
+      id: orderMessages.id,
+      orderId: orderMessages.orderId,
+      senderId: orderMessages.senderId,
+      message: orderMessages.message,
+      attachments: orderMessages.attachments,
+      createdAt: orderMessages.createdAt,
+      senderName: users.name,
+    }).from(orderMessages)
       .leftJoin(users, eq(orderMessages.senderId, users.id))
-      .where(eq(orderMessages.orderId, params.orderId))
+      .where(and(
+        eq(orderMessages.orderId, params.orderId),
+        eq(orderMessages.carrierProfileId as any, params.carrierId),
+      ))
       .orderBy(desc(orderMessages.createdAt))
       .limit(100);
 
-    return rows.reverse().map((r) => {
-      const urls = (r.attachments as { urls?: string[] })?.urls || [];
+    return rows.reverse().map(r => {
+      const urls = (r.attachments as { urls?: string[] })?.urls ?? [];
       return {
         id: r.id,
         orderId: r.orderId,
@@ -115,84 +256,65 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
         content: r.message,
         attachments: signAttachmentUrls(urls),
         createdAt: r.createdAt?.toISOString(),
-        user: { id: r.senderId, name: r.senderName || 'Unknown' },
+        user: { id: r.senderId, name: r.senderName ?? 'Unknown' },
       };
     });
   })
+
+  // POST /cabinet/chat/upload
   .post('/upload', async ({ user, body, set }) => {
     const file = body.file;
-    if (!file || !file.size) {
-      set.status = 400;
-      return { error: 'No file' };
-    }
-    const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
+    if (!file || !file.size) { set.status = 400; return { error: 'No file' }; }
+    const ext = (file.name ?? '').split('.').pop()?.toLowerCase() ?? 'jpg';
     if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
-      set.status = 400;
-      return { error: 'Invalid file type' };
+      set.status = 400; return { error: 'Invalid file type' };
     }
-    if (file.size > 5 * 1024 * 1024) {
-      set.status = 400;
-      return { error: 'File too large (max 5MB)' };
-    }
+    if (file.size > 5 * 1024 * 1024) { set.status = 400; return { error: 'File too large (max 5MB)' }; }
 
     const uploadDir = join(process.cwd(), 'storage', 'chat');
     await mkdir(uploadDir, { recursive: true });
     const filename = `${randomUUID()}.${ext}`;
-    const filepath = join(uploadDir, filename);
-    const buf = await file.arrayBuffer();
-    await writeFile(filepath, Buffer.from(buf));
-
-    const url = `/chat/${filename}`;
-    return { url };
+    await writeFile(join(uploadDir, filename), Buffer.from(await file.arrayBuffer()));
+    return { url: `/chat/${filename}` };
   }, {
-    body: t.Object({
-      file: t.File(),
-    }),
+    body: t.Object({ file: t.File() }),
   })
-  .ws('/ws/:orderId', {
+
+  // WS /cabinet/chat/ws/:orderId/:carrierId
+  .ws('/ws/:orderId/:carrierId', {
     async open(ws) {
       const user = (ws.data as any).user;
-      const orderId = (ws.data.params as any).orderId;
-      if (!user || !orderId) {
-        ws.close();
-        return;
-      }
-      const ok = await canAccessOrderChat(user.id, user.role!, orderId);
-      if (!ok) {
-        ws.close();
-        return;
-      }
-      if (!rooms.has(orderId)) rooms.set(orderId, new Set());
-      rooms.get(orderId)!.add(ws);
+      const { orderId, carrierId } = ws.data.params as any;
+      if (!user || !orderId || !carrierId) { ws.close(); return; }
+      const ok = await canAccess(user.id, user.role!, orderId, carrierId);
+      if (!ok) { ws.close(); return; }
+      const key = roomKey(orderId, carrierId);
+      if (!rooms.has(key)) rooms.set(key, new Set());
+      rooms.get(key)!.add(ws);
     },
 
     async message(ws, raw: any) {
       const user = (ws.data as any).user;
-      const orderId = (ws.data.params as any).orderId;
-      if (!user || !orderId) return;
+      const { orderId, carrierId } = ws.data.params as any;
+      if (!user || !orderId || !carrierId) return;
 
       let msg: any;
-      try {
-        msg = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      } catch {
-        return;
-      }
+      try { msg = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { return; }
+
+      const key = roomKey(orderId, carrierId);
 
       if (msg?.type === 'message') {
-        const content = (msg.content as string)?.trim() || '';
+        const content = (msg.content as string)?.trim() ?? '';
         const attachmentUrls = Array.isArray(msg.attachments) ? msg.attachments : [];
-
         if (!content && attachmentUrls.length === 0) return;
 
-        const [saved] = await db
-          .insert(orderMessages)
-          .values({
-            orderId,
-            senderId: user.id,
-            message: content || '[Фото]',
-            attachments: attachmentUrls.length ? { urls: attachmentUrls } : null,
-          })
-          .returning();
+        const [saved] = await db.insert(orderMessages).values({
+          orderId,
+          carrierProfileId: carrierId,
+          senderId: user.id,
+          message: content || '[Фото]',
+          attachments: attachmentUrls.length ? { urls: attachmentUrls } : null,
+        }).returning();
 
         const payload = JSON.stringify({
           type: 'message',
@@ -206,49 +328,26 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
             user: { id: user.id, name: user.name },
           },
         });
-
-        rooms.get(orderId)?.forEach((conn) => {
-          try {
-            conn.send(payload);
-          } catch {}
-        });
+        rooms.get(key)?.forEach(conn => { try { conn.send(payload); } catch {} });
       }
 
       if (msg?.type === 'typing') {
-        const payload = JSON.stringify({
-          type: 'typing',
-          userId: user.id,
-          name: user.name,
-        });
-        rooms.get(orderId)?.forEach((conn) => {
-          if (conn !== ws) {
-            try {
-              conn.send(payload);
-            } catch {}
-          }
-        });
+        const payload = JSON.stringify({ type: 'typing', userId: user.id, name: user.name });
+        rooms.get(key)?.forEach(conn => { if (conn !== ws) { try { conn.send(payload); } catch {} } });
       }
 
       if (msg?.type === 'stop_typing') {
-        const payload = JSON.stringify({
-          type: 'stop_typing',
-          userId: user.id,
-        });
-        rooms.get(orderId)?.forEach((conn) => {
-          if (conn !== ws) {
-            try {
-              conn.send(payload);
-            } catch {}
-          }
-        });
+        const payload = JSON.stringify({ type: 'stop_typing', userId: user.id });
+        rooms.get(key)?.forEach(conn => { if (conn !== ws) { try { conn.send(payload); } catch {} } });
       }
     },
 
     close(ws) {
-      const orderId = (ws.data.params as any).orderId;
-      if (orderId) {
-        rooms.get(orderId)?.delete(ws);
-        if ((rooms.get(orderId)?.size ?? 0) === 0) rooms.delete(orderId);
+      const { orderId, carrierId } = ws.data.params as any;
+      if (orderId && carrierId) {
+        const key = roomKey(orderId, carrierId);
+        rooms.get(key)?.delete(ws);
+        if ((rooms.get(key)?.size ?? 0) === 0) rooms.delete(key);
       }
     },
   });

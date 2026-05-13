@@ -69,9 +69,11 @@
     </n-layout>
   </n-layout>
 
+  <DriverChatButton />
   <ChatWidget
     v-model="chatOpen"
     :order-id="chatOrderId"
+    :carrier-id="chatCarrierId"
     :title="chatTitle"
     :current-user-id="session?.user?.id"
   />
@@ -98,7 +100,7 @@ import {
 const { t } = useI18n()
 const { session, signOut } = useAuth()
 const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
-const { chatOpen, chatOrderId, chatTitle } = useOrderChat()
+const { chatOpen, chatOrderId, chatCarrierId, chatTitle } = useOrderChat()
 const { status: verificationStatus } = useDriverVerificationStatus()
 const { count: alertsCount, fetchAlerts } = useDriverAlerts()
 const route = useRoute()

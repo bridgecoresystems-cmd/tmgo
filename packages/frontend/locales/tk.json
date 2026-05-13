@@ -1373,6 +1373,7 @@
       "accepted": "Daşaýjy kabul edildi",
       "responseRejected": "Jogap ret edildi",
       "chat": "Gürrüňdeşlik",
+      "chatWith": "{name} bilen gürrüňdeşlik",
       "statusPending": "Garaşylýar",
       "statusAccepted": "Kabul edildi",
       "statusInTransit": "Ýolda",
@@ -1480,7 +1481,10 @@
       "loadError": "Ýüklemek ýalňyşlygy"
     },
     "chat": {
-      "title": "Habarlar"
+      "title": "Habarlar",
+      "loading": "Gürrüňdeşlikler ýüklenýär...",
+      "noChats": "Işjeň gürrüňdeşlikler ýok",
+      "client": "Müşderi"
     }
   },
   "online": {

@@ -97,7 +97,7 @@
                 <div v-if="bid.comment" class="bid-comment">{{ bid.comment }}</div>
                 <div class="bid-date">{{ new Date(bid.createdAt).toLocaleString('ru-RU') }}</div>
               </div>
-              <div>
+              <n-space>
                 <n-tag v-if="bid.status === 'accepted'" type="success" size="small">✓ {{ t('client.orders.accepted') }}</n-tag>
                 <n-button
                   v-else-if="order.status === 'negotiating' && bid.status === 'pending'"
@@ -108,7 +108,14 @@
                 >
                   {{ t('client.orders.accept') }}
                 </n-button>
-              </div>
+                <n-button
+                  size="small"
+                  secondary
+                  @click="startChat(bid)"
+                >
+                  💬 {{ t('client.orders.chat') }}
+                </n-button>
+              </n-space>
             </div>
           </div>
         </n-space>
@@ -150,6 +157,7 @@ definePageMeta({ layout: 'cabinet-client' })
 
 const { t } = useI18n()
 const { apiBase: API } = useApiBase()
+const { openChat } = useOrderChat()
 const message = useMessage()
 const dialog = useDialog()
 const route = useRoute()
@@ -177,11 +185,19 @@ function statusLabel(s: string) {
 async function loadOrder() {
   loading.value = true
   try {
-    const data = await $fetch<any>(`${API}/cabinet/orders/${route.params.id}`, { credentials: 'include' })
+    const [data, rooms] = await Promise.all([
+      $fetch<any>(`${API}/cabinet/orders/${route.params.id}`, { credentials: 'include' }),
+      $fetch<any>(`${API}/cabinet/chat/bid-rooms/${route.params.id}`, { credentials: 'include' }).catch(() => ({ rooms: [] })),
+    ])
     order.value = data.order
     cargo.value = data.cargo
-    bids.value = data.bids ?? []
     statusLogs.value = data.statusLogs ?? []
+    // Merge bid-rooms info (carrierName) into bids
+    const roomMap = new Map((rooms.rooms ?? []).map((r: any) => [r.carrierId, r]))
+    bids.value = (data.bids ?? []).map((b: any) => ({
+      ...b,
+      carrierName: roomMap.get(b.carrierProfileId)?.carrierName ?? null,
+    }))
   } catch {
     order.value = null
   } finally {
@@ -247,6 +263,10 @@ async function cancel() {
       }
     },
   })
+}
+
+function startChat(bid: any) {
+  openChat(order.value?.id ?? null, bid.carrierProfileId, t('client.orders.chatWith', { name: bid.carrierName ?? t('common.driver') }))
 }
 
 onMounted(loadOrder)

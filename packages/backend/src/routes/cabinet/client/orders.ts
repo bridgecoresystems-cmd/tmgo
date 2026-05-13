@@ -1,10 +1,10 @@
 import { Elysia, t } from 'elysia';
-import { db } from '../../db';
+import { db } from '../../../db';
 import {
   orders, orderCargo, orderBids, orderStatusLog, clientProfiles,
-} from '../../db/schema';
+} from '../../../db/schema';
 import { eq, and, inArray, ne, sql, desc } from 'drizzle-orm';
-import { getUserFromRequest } from '../../lib/auth';
+import { getUserFromRequest } from '../../../lib/auth';
 
 // Разрешённые переходы статусов для перевозчика
 const CARRIER_TRANSITIONS: Record<string, string> = {
@@ -264,7 +264,7 @@ export const cabinetOrdersRoutes = new Elysia({ prefix: '/cabinet/orders' })
     }
 
     // Получаем carrier_profile_id из carrierProfiles
-    const { carrierProfiles } = await import('../../db/schema');
+    const { carrierProfiles } = await import('../../../db/schema');
     const [carrierProfile] = await db.select().from(carrierProfiles)
       .where(eq(carrierProfiles.userId, user.id)).limit(1);
     if (!carrierProfile) { set.status = 400; return { error: 'carrier_profile_required' }; }
@@ -355,7 +355,7 @@ export const cabinetOrdersRoutes = new Elysia({ prefix: '/cabinet/orders' })
 
   // PATCH /cabinet/orders/:id/status — обновить статус заказа (для перевозчика)
   .patch('/:id/status', async ({ user, params, body, set }) => {
-    const { carrierProfiles } = await import('../../db/schema');
+    const { carrierProfiles } = await import('../../../db/schema');
     const [carrierProfile] = await db.select().from(carrierProfiles)
       .where(eq(carrierProfiles.userId, user.id)).limit(1);
     if (!carrierProfile) { set.status = 400; return { error: 'carrier_profile_required' }; }

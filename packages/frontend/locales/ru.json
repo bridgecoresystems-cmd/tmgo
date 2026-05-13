@@ -1373,6 +1373,7 @@
       "accepted": "Перевозчик принят",
       "responseRejected": "Отклик отклонён",
       "chat": "Чат",
+      "chatWith": "Чат с {name}",
       "statusPending": "В ожидании",
       "statusAccepted": "Принят",
       "statusInTransit": "В пути",
@@ -1480,7 +1481,10 @@
       "loadError": "Ошибка загрузки"
     },
     "chat": {
-      "title": "Сообщения"
+      "title": "Сообщения",
+      "loading": "Загрузка чатов...",
+      "noChats": "Нет активных чатов",
+      "client": "Заказчик"
     }
   },
   "online": {
