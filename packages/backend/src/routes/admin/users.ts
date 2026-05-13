@@ -21,7 +21,7 @@ function safeProfileId(id: string): boolean {
   return UUID_REGEX.test(id);
 }
 import { db } from '../../db';
-import { users, accounts, carrierProfiles, sessions, profileEditRequests, profileChangeRequests, vehicles, orderResponses, driverServices, orders, orderMessages, driverCitizenships, driverContacts, driverDocuments } from '../../db/schema';
+import { users, accounts, carrierProfiles, sessions, profileEditRequests, profileChangeRequests, vehicles, orderResponses, driverServices, orders, orderMessages, driverCitizenships, driverContacts, driverDocuments, clientProfiles } from '../../db/schema';
 import { eq, and, desc, inArray, isNull } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 
@@ -172,21 +172,20 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
         const profileId = profile.id;
         await db.delete(driverServices).where(eq(driverServices.carrierId, profileId));
         await db.delete(orderResponses).where(eq(orderResponses.carrierId, profileId));
-        const carrierVehicles = await db.select({ id: vehicles.id }).from(vehicles).where(eq(vehicles.carrierId, profileId));
-        const vehicleIds = carrierVehicles.map((v) => v.id);
-        if (vehicleIds.length > 0) {
-          await db.update(orders).set({ vehicleId: null }).where(inArray(orders.vehicleId, vehicleIds));
-        }
         await db.delete(vehicles).where(eq(vehicles.carrierId, profileId));
-        await db.update(orders).set({ carrierId: null }).where(eq(orders.carrierId, profileId));
       }
 
-      const clientOrders = await db.select({ id: orders.id }).from(orders).where(eq(orders.clientId, params.id));
-      for (const o of clientOrders) {
-        await db.delete(orderResponses).where(eq(orderResponses.orderId, o.id));
-        await db.delete(orderMessages).where(eq(orderMessages.orderId, o.id));
+      const clientProfilesList = await db.select({ id: clientProfiles.id }).from(clientProfiles).where(eq(clientProfiles.userId, params.id));
+      for (const cp of clientProfilesList) {
+        const clientOrders = await db.select({ id: orders.id }).from(orders).where(eq(orders.clientProfileId, cp.id));
+        for (const o of clientOrders) {
+          await db.delete(orderResponses).where(eq(orderResponses.orderId, o.id));
+          await db.delete(orderMessages).where(eq(orderMessages.orderId, o.id));
+        }
+        await db.delete(orders).where(eq(orders.clientProfileId, cp.id));
       }
-      await db.delete(orders).where(eq(orders.clientId, params.id));
+      await db.delete(clientProfiles).where(eq(clientProfiles.userId, params.id));
+
       await db.delete(orderMessages).where(eq(orderMessages.senderId, params.id));
       await db.delete(sessions).where(eq(sessions.userId, params.id));
       await db.delete(accounts).where(eq(accounts.userId, params.id));
