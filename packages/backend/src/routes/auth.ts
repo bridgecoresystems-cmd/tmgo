@@ -81,7 +81,7 @@ async function createSession(userId: string, request: Request) {
   return token;
 }
 
-export const authRoutes = new Elysia({ prefix: '/api/auth' })
+export const authRoutes = new Elysia({ prefix: '/auth' })
   .use(signInRateLimit)
 
   // GET /api/auth/get-session
