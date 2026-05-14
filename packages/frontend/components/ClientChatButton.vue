@@ -111,7 +111,7 @@ import {
 
 const { t } = useI18n()
 const { apiBase: API, wsUrl: WS_BASE } = useApiBase()
-const { chatOpen, chatOrderId, chatCarrierId, chatClosedTick, openChat, isRoomRead } = useOrderChat()
+const { chatOpen, chatOrderId, chatCarrierId, chatClosedTick, openChat } = useOrderChat()
 
 const chatOrders = ref<any[]>([])
 const loading = ref(false)
@@ -121,14 +121,13 @@ const selectedOrder = ref<any>(null)
 const activeCarrierId = ref<string | null>(null)
 
 // Single source of truth for badge math, mirroring DriverChatButton.
-// Currently-active chat: 0. Client-marked-read with no newer messages: 0. Otherwise server's count.
+// Currently-active chat: 0. Otherwise server's count, updated optimistically on client.
 function driverUnread(driver: any, order: any): number {
   if (
     chatOpen.value &&
     order.id === chatOrderId.value &&
     driver.carrierId === chatCarrierId.value
   ) return 0
-  if (isRoomRead(order.id, driver.carrierId, driver.lastMessageAt)) return 0
   return driver.unreadCount ?? 0
 }
 
@@ -160,6 +159,7 @@ function selectOrder(order: any) {
 
 function selectDriver(driver: any) {
   if (!selectedOrder.value) return
+  driver.unreadCount = 0 // optimistic update
   activeCarrierId.value = driver.carrierId
   showPicker.value = false
   openChat(
@@ -182,8 +182,14 @@ function handleFabClick() {
 }
 
 // Refresh after the chat closes so lastMessage previews stay fresh.
-// Badge count is derived via driverUnread (client read tracker), not server data alone.
 watch(chatClosedTick, () => {
+  if (selectedOrder.value && activeCarrierId.value) {
+    const order = chatOrders.value.find(o => o.id === selectedOrder.value.id)
+    if (order) {
+      const driver = order.drivers.find((d: any) => d.carrierId === activeCarrierId.value)
+      if (driver) driver.unreadCount = 0
+    }
+  }
   activeCarrierId.value = null
   loadRooms()
 })

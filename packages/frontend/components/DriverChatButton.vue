@@ -68,16 +68,15 @@ import {
 
 const { t } = useI18n()
 const { apiBase: API, wsUrl: WS_BASE } = useApiBase()
-const { chatOpen, chatOrderId, chatCarrierId, chatClosedTick, openChat, isRoomRead } = useOrderChat()
+const { chatOpen, chatOrderId, chatCarrierId, chatClosedTick, openChat } = useOrderChat()
 
 const rooms = ref<any[]>([])
 const loading = ref(false)
 const showPicker = ref(false)
 const activeOrderId = ref<string | null>(null)
 
-// Single source of truth for badge math: server count, overridden by client-side read state.
+// Single source of truth for badge math: server count, updated optimistically on client.
 // - currently-active chat → 0
-// - chat the client has marked read AND no newer messages since → 0
 // - otherwise → server's unreadCount
 function effectiveUnread(room: any): number {
   if (
@@ -85,7 +84,6 @@ function effectiveUnread(room: any): number {
     room.orderId === chatOrderId.value &&
     room.carrierId === chatCarrierId.value
   ) return 0
-  if (isRoomRead(room.orderId, room.carrierId, room.lastMessageAt)) return 0
   return room.unreadCount ?? 0
 }
 
@@ -105,6 +103,7 @@ async function loadRooms() {
 }
 
 function selectRoom(room: any) {
+  room.unreadCount = 0 // optimistic update
   activeOrderId.value = room.orderId
   showPicker.value = false
   openChat(room.orderId, room.carrierId, room.clientName || t('driver.chat.client'))
@@ -117,8 +116,11 @@ function handleFabClick() {
 }
 
 // Refresh after the chat closes so lastMessage previews stay fresh.
-// Badge count is derived via effectiveUnread (client read tracker), not server data alone.
 watch(chatClosedTick, () => {
+  if (activeOrderId.value) {
+    const room = rooms.value.find(r => r.orderId === activeOrderId.value)
+    if (room) room.unreadCount = 0
+  }
   activeOrderId.value = null
   loadRooms()
 })

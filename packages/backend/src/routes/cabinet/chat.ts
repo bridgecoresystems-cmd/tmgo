@@ -4,7 +4,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { db } from '../../db';
 import { orders, orderMessages, orderBids, carrierProfiles, clientProfiles, users, chatReadCursors } from '../../db/schema';
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { eq, and, desc, inArray, sql } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 import { signAttachmentUrls } from '../../lib/chat-attachments';
 
@@ -357,15 +357,17 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
     const ok = await canAccess(user.id, user.role!, params.orderId, params.carrierId);
     if (!ok) { set.status = 403; return { error: 'forbidden' }; }
 
+    const cursorSql = sql`COALESCE((SELECT max(created_at) FROM order_messages WHERE order_id = ${params.orderId} AND carrier_profile_id = ${params.carrierId}), now())`;
+
     // Mark room as read
     await db.insert(chatReadCursors).values({
       userId: user.id,
       orderId: params.orderId,
       carrierProfileId: params.carrierId,
-      lastReadAt: new Date(),
+      lastReadAt: cursorSql,
     }).onConflictDoUpdate({
       target: [chatReadCursors.userId, chatReadCursors.orderId, chatReadCursors.carrierProfileId],
-      set: { lastReadAt: new Date() },
+      set: { lastReadAt: cursorSql },
     });
 
     const rows = await db.select({
@@ -404,14 +406,16 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
   .post('/mark-read/:orderId/:carrierId', async ({ user, params, set }) => {
     const ok = await canAccess(user.id, user.role!, params.orderId, params.carrierId);
     if (!ok) { set.status = 403; return { error: 'forbidden' }; }
+    const cursorSql = sql`COALESCE((SELECT max(created_at) FROM order_messages WHERE order_id = ${params.orderId} AND carrier_profile_id = ${params.carrierId}), now())`;
+
     await db.insert(chatReadCursors).values({
       userId: user.id,
       orderId: params.orderId,
       carrierProfileId: params.carrierId,
-      lastReadAt: new Date(),
+      lastReadAt: cursorSql,
     }).onConflictDoUpdate({
       target: [chatReadCursors.userId, chatReadCursors.orderId, chatReadCursors.carrierProfileId],
-      set: { lastReadAt: new Date() },
+      set: { lastReadAt: cursorSql },
     });
     return { ok: true };
   })
@@ -485,9 +489,8 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
         });
         rooms.get(key)?.forEach(conn => { try { conn.send(payload); } catch {} });
 
-        // Update read cursor for all receivers currently in the room. Use the message's
-        // own createdAt so cursor >= createdAt is guaranteed (no clock drift between JS/DB).
-        const cursorAt = saved.createdAt ?? new Date();
+        // Update read cursor for all receivers currently in the room.
+        const cursorSql = sql`COALESCE((SELECT max(created_at) FROM order_messages WHERE order_id = ${orderId} AND carrier_profile_id = ${carrierId}), now())`;
         for (const conn of rooms.get(key) ?? []) {
           const connUser = (conn.data as any).user;
           if (connUser && connUser.id !== user.id) {
@@ -496,10 +499,10 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
                 userId: connUser.id,
                 orderId,
                 carrierProfileId: carrierId,
-                lastReadAt: cursorAt,
+                lastReadAt: cursorSql,
               }).onConflictDoUpdate({
                 target: [chatReadCursors.userId, chatReadCursors.orderId, chatReadCursors.carrierProfileId],
-                set: { lastReadAt: cursorAt },
+                set: { lastReadAt: cursorSql },
               });
             } catch {}
           }
