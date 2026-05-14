@@ -265,25 +265,34 @@ function closeWs() {
   wsConnected.value = false
 }
 
+// WS presence is tied to the chat panel being visible. If we kept it open after
+// modelValue=false, the backend would treat us as "still in the room" and auto-mark
+// every incoming message as read — badges would never appear.
 watch(
-  () => [props.orderId, props.carrierId],
-  ([newOrderId]) => {
-    closeWs()
-    messages.value = []
-    typingName.value = ''
-    if (newOrderId && props.carrierId) {
-      loadMessages(newOrderId as string)
-      openWs(newOrderId as string)
+  () => ({ open: props.modelValue, orderId: props.orderId, carrierId: props.carrierId }),
+  (curr, prev) => {
+    const wasActive = !!(prev?.open && prev.orderId && prev.carrierId)
+    const isActive = !!(curr.open && curr.orderId && curr.carrierId)
+    const keyChanged =
+      prev?.orderId !== curr.orderId || prev?.carrierId !== curr.carrierId
+
+    if (!isActive && wasActive) {
+      closeWs()
+      messages.value = []
+      typingName.value = ''
+      return
+    }
+
+    if (isActive && (!wasActive || keyChanged)) {
+      closeWs()
+      messages.value = []
+      typingName.value = ''
+      loadMessages(curr.orderId as string)
+      openWs(curr.orderId as string)
+      scrollBottom()
     }
   },
-  { immediate: true }
-)
-
-watch(
-  () => props.modelValue,
-  (open) => {
-    if (open) scrollBottom()
-  }
+  { immediate: true },
 )
 
 function handleFileSelect(e: Event) {

@@ -489,24 +489,12 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
         });
         rooms.get(key)?.forEach(conn => { try { conn.send(payload); } catch {} });
 
-        // Update read cursor for all receivers currently in the room.
-        const cursorSql = sql`COALESCE((SELECT max(created_at) FROM order_messages WHERE order_id = ${orderId} AND carrier_profile_id = ${carrierId}), now())`;
-        for (const conn of rooms.get(key) ?? []) {
-          const connUser = (conn.data as any).user;
-          if (connUser && connUser.id !== user.id) {
-            try {
-              await db.insert(chatReadCursors).values({
-                userId: connUser.id,
-                orderId,
-                carrierProfileId: carrierId,
-                lastReadAt: cursorSql,
-              }).onConflictDoUpdate({
-                target: [chatReadCursors.userId, chatReadCursors.orderId, chatReadCursors.carrierProfileId],
-                set: { lastReadAt: cursorSql },
-              });
-            } catch {}
-          }
-        }
+        // NOTE: do NOT auto-update read cursor for in-room receivers here.
+        // Read state is owned by explicit GET /messages and POST /mark-read calls from
+        // the active client. Auto-marking on every WS broadcast caused a race:
+        // a message could arrive between the client's ws.close() and the backend
+        // processing that close, leaving a stale "in-room" entry whose cursor would
+        // get bumped to the new message's time — and the badge would never show.
 
         // Notify the other participant only (sender doesn't need a badge refresh)
         const notifyPayload = JSON.stringify({ type: 'refresh' });
