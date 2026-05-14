@@ -50,6 +50,9 @@
                 {{ t('client.chat.driverCount', { n: order.drivers.length }) }}
               </div>
             </div>
+            <span v-if="orderUnread(order) > 0" class="ccb-unread">
+              {{ orderUnread(order) > 9 ? '9+' : orderUnread(order) }}
+            </span>
             <NIcon size="16" class="ccb-chevron"><component :is="ChevronIcon" /></NIcon>
           </div>
         </template>
@@ -72,6 +75,9 @@
                 {{ driver.lastMessage }}
               </div>
             </div>
+            <span v-if="driver.unreadCount > 0" class="ccb-unread">
+              {{ driver.unreadCount > 9 ? '9+' : driver.unreadCount }}
+            </span>
           </div>
         </template>
       </div>
@@ -94,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { NIcon, NSpin, NTag } from 'naive-ui'
 import {
   ChatbubbleEllipsesOutline as ChatIcon,
@@ -113,7 +119,13 @@ const showPicker = ref(false)
 const level = ref<'orders' | 'drivers'>('orders')
 const selectedOrder = ref<any>(null)
 const activeCarrierId = ref<string | null>(null)
-const totalUnread = ref(0)
+const totalUnread = computed(() =>
+  chatOrders.value.reduce((s, o) => s + orderUnread(o), 0)
+)
+
+function orderUnread(order: any): number {
+  return (order.drivers ?? []).reduce((s: number, d: any) => s + (d.unreadCount ?? 0), 0)
+}
 
 async function loadRooms() {
   if (loading.value) return
@@ -156,7 +168,12 @@ function handleFabClick() {
   showPicker.value = true
 }
 
-watch(chatOpen, open => { if (!open) activeCarrierId.value = null })
+watch(chatOpen, open => {
+  if (!open) {
+    activeCarrierId.value = null
+    loadRooms()
+  }
+})
 
 onMounted(loadRooms)
 </script>
@@ -313,6 +330,21 @@ onMounted(loadRooms)
   text-overflow: ellipsis;
 }
 .ccb-chevron { color: #d1d5db; flex-shrink: 0; }
+
+.ccb-unread {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: #ff6b4a;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
 .ccb-status-tag { font-size: 10px !important; }
 
 .ccb-slide-enter-active {

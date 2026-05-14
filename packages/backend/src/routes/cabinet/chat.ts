@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { db } from '../../db';
-import { orders, orderMessages, orderBids, carrierProfiles, clientProfiles, users } from '../../db/schema';
+import { orders, orderMessages, orderBids, carrierProfiles, clientProfiles, users, chatReadCursors } from '../../db/schema';
 import { eq, and, desc, inArray } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 import { signAttachmentUrls } from '../../lib/chat-attachments';
@@ -85,27 +85,44 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
 
     const orderIds = myOrders.map(o => o.id);
 
-    // All messages for these orders (distinct orderId+carrierId combos)
+    // All messages for these orders
     const msgRows = await db.select({
       orderId: orderMessages.orderId,
       carrierProfileId: orderMessages.carrierProfileId,
+      senderId: orderMessages.senderId,
       message: orderMessages.message,
       createdAt: orderMessages.createdAt,
     }).from(orderMessages)
-      .where(and(
-        inArray(orderMessages.orderId, orderIds),
-        // only rows that belong to a specific carrier chat
-      ))
+      .where(inArray(orderMessages.orderId, orderIds))
       .orderBy(desc(orderMessages.createdAt));
 
-    // Group by orderId → carrierId → last message
-    const orderMap = new Map<string, Map<string, { message: string; createdAt: any }>>();
+    // Read cursors for this user
+    const cursors = await db.select({
+      orderId: chatReadCursors.orderId,
+      carrierProfileId: chatReadCursors.carrierProfileId,
+      lastReadAt: chatReadCursors.lastReadAt,
+    }).from(chatReadCursors)
+      .where(and(
+        eq(chatReadCursors.userId, user.id),
+        inArray(chatReadCursors.orderId, orderIds),
+      ));
+    const cursorMap = new Map<string, Date>();
+    for (const c of cursors) {
+      if (c.carrierProfileId) cursorMap.set(`${c.orderId}:${c.carrierProfileId}`, c.lastReadAt);
+    }
+
+    // Group by orderId → carrierId → last message + unread count
+    const orderMap = new Map<string, Map<string, { message: string; createdAt: any; unreadCount: number }>>();
     for (const m of msgRows) {
       if (!m.carrierProfileId) continue;
       if (!orderMap.has(m.orderId)) orderMap.set(m.orderId, new Map());
       const cmap = orderMap.get(m.orderId)!;
       if (!cmap.has(m.carrierProfileId)) {
-        cmap.set(m.carrierProfileId, { message: m.message, createdAt: m.createdAt });
+        cmap.set(m.carrierProfileId, { message: m.message, createdAt: m.createdAt, unreadCount: 0 });
+      }
+      const lastRead = cursorMap.get(`${m.orderId}:${m.carrierProfileId}`);
+      if (m.senderId !== user.id && (!lastRead || m.createdAt > lastRead)) {
+        cmap.get(m.carrierProfileId)!.unreadCount++;
       }
     }
 
@@ -145,6 +162,7 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
             carrierName: name,
             lastMessage: last.message,
             lastMessageAt: last.createdAt,
+            unreadCount: last.unreadCount,
           };
         });
         return { ...o, drivers };
@@ -273,7 +291,7 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
     const clientUserMap = new Map(clientUsers.map(u => [u.id, u.name]));
     const clientProfileMap = new Map(clientRows.map(c => [c.id, c]));
 
-    // Last message per orderId
+    // All messages per room (for last message + unread count)
     const lastMsgs = await db.select({
       orderId: orderMessages.orderId,
       message: orderMessages.message,
@@ -286,9 +304,27 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
       ))
       .orderBy(desc(orderMessages.createdAt));
 
+    // Read cursors for this driver (one per orderId since carrierId is fixed)
+    const driverCursors = await db.select({
+      orderId: chatReadCursors.orderId,
+      lastReadAt: chatReadCursors.lastReadAt,
+    }).from(chatReadCursors)
+      .where(and(
+        eq(chatReadCursors.userId, user.id),
+        inArray(chatReadCursors.orderId, orderIds),
+        eq(chatReadCursors.carrierProfileId, carrierId),
+      ));
+    const driverCursorMap = new Map<string, Date>();
+    for (const c of driverCursors) driverCursorMap.set(c.orderId, c.lastReadAt);
+
     const lastMsgMap = new Map<string, typeof lastMsgs[0]>();
+    const unreadMap = new Map<string, number>();
     for (const m of lastMsgs) {
       if (!lastMsgMap.has(m.orderId)) lastMsgMap.set(m.orderId, m);
+      const lastRead = driverCursorMap.get(m.orderId);
+      if (m.senderId !== user.id && (!lastRead || m.createdAt > lastRead)) {
+        unreadMap.set(m.orderId, (unreadMap.get(m.orderId) ?? 0) + 1);
+      }
     }
 
     const rooms = orderRows.map(order => {
@@ -307,6 +343,7 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
         carrierId,
         lastMessage: last?.message ?? null,
         lastMessageAt: last?.createdAt ?? null,
+        unreadCount: unreadMap.get(order.id) ?? 0,
       };
     });
 
@@ -317,6 +354,17 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
   .get('/messages/:orderId/:carrierId', async ({ user, params, set }) => {
     const ok = await canAccess(user.id, user.role!, params.orderId, params.carrierId);
     if (!ok) { set.status = 403; return { error: 'forbidden' }; }
+
+    // Mark room as read
+    await db.insert(chatReadCursors).values({
+      userId: user.id,
+      orderId: params.orderId,
+      carrierProfileId: params.carrierId,
+      lastReadAt: new Date(),
+    }).onConflictDoUpdate({
+      target: [chatReadCursors.userId, chatReadCursors.orderId, chatReadCursors.carrierProfileId],
+      set: { lastReadAt: new Date() },
+    });
 
     const rows = await db.select({
       id: orderMessages.id,

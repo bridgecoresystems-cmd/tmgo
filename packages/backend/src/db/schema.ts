@@ -781,6 +781,18 @@ export const profileEditRequests = pgTable('profile_edit_requests', {
   resolvedById: uuid('resolved_by_id'),
 });
 
+// --- Курсоры прочитанных сообщений ---
+
+export const chatReadCursors = pgTable('chat_read_cursors', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  orderId: uuid('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  carrierProfileId: uuid('carrier_profile_id').notNull(),
+  lastReadAt: timestamp('last_read_at').defaultNow().notNull(),
+}, (table) => ({
+  uniqueCursor: uniqueIndex('chat_read_cursors_unique').on(table.userId, table.orderId, table.carrierProfileId),
+}));
+
 // --- Чат по заказу ---
 
 export const orderMessages = pgTable('order_messages', {

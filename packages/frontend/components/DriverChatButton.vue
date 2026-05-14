@@ -35,6 +35,9 @@
               {{ room.lastMessage }}
             </div>
           </div>
+          <span v-if="room.unreadCount > 0" class="dcb-unread">
+            {{ room.unreadCount > 9 ? '9+' : room.unreadCount }}
+          </span>
         </div>
       </div>
     </Transition>
@@ -56,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { NIcon, NSpin } from 'naive-ui'
 import {
   ChatbubbleEllipsesOutline as ChatIcon,
@@ -71,7 +74,7 @@ const rooms = ref<any[]>([])
 const loading = ref(false)
 const showPicker = ref(false)
 const activeOrderId = ref<string | null>(null)
-const totalUnread = ref(0)
+const totalUnread = computed(() => rooms.value.reduce((s, r) => s + (r.unreadCount ?? 0), 0))
 
 async function loadRooms() {
   if (loading.value) return
@@ -98,7 +101,12 @@ function handleFabClick() {
   showPicker.value = true
 }
 
-watch(chatOpen, open => { if (!open) activeOrderId.value = null })
+watch(chatOpen, open => {
+  if (!open) {
+    activeOrderId.value = null
+    loadRooms()
+  }
+})
 
 onMounted(loadRooms)
 </script>
@@ -219,6 +227,21 @@ onMounted(loadRooms)
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.dcb-unread {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: #667eea;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
 }
 
 .dcb-slide-enter-active {
