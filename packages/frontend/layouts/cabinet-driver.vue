@@ -76,8 +76,8 @@
     :carrier-id="chatCarrierId"
     :title="chatTitle"
     :current-user-id="session?.user?.id"
-    show-back
-    @back="chatBtnRef?.openPicker()"
+    :show-back="true"
+    @back="handleChatBack"
   />
   <ScrollToTopButton />
 </template>
@@ -104,6 +104,12 @@ const { session, signOut } = useAuth()
 const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
 const { chatOpen, chatOrderId, chatCarrierId, chatTitle } = useOrderChat()
 const chatBtnRef = ref<{ openPicker: () => void } | null>(null)
+
+function handleChatBack() {
+  chatOpen.value = false
+  chatBtnRef.value?.openPicker()
+}
+
 const { status: verificationStatus } = useDriverVerificationStatus()
 const { count: alertsCount, fetchAlerts } = useDriverAlerts()
 const route = useRoute()

@@ -73,8 +73,8 @@
     :carrier-id="chatCarrierId"
     :title="chatTitle"
     :current-user-id="session?.user?.id"
-    show-back
-    @back="chatBtnRef?.openPicker()"
+    :show-back="true"
+    @back="handleChatBack"
   />
 </template>
 
@@ -98,6 +98,11 @@ const { chatOpen, chatOrderId, chatCarrierId, chatTitle } = useOrderChat()
 const route = useRoute()
 const collapsed = ref(false)
 const chatBtnRef = ref<{ openPicker: () => void } | null>(null)
+
+function handleChatBack() {
+  chatOpen.value = false
+  chatBtnRef.value?.openPicker()
+}
 
 const activeKey = computed(() => route.path)
 
