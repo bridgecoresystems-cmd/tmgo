@@ -10,6 +10,8 @@ import { signAttachmentUrls } from '../../lib/chat-attachments';
 
 // room key = orderId:carrierProfileId
 const rooms = new Map<string, Set<any>>();
+// userId → WS connections for badge notifications
+const notifyConns = new Map<string, Set<any>>();
 
 function roomKey(orderId: string, carrierId: string) {
   return `${orderId}:${carrierId}`;
@@ -465,6 +467,20 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
           },
         });
         rooms.get(key)?.forEach(conn => { try { conn.send(payload); } catch {} });
+
+        // Notify both participants so their badges refresh
+        const notifyPayload = JSON.stringify({ type: 'refresh' });
+        const [orderRow] = await db.select({ clientProfileId: orders.clientProfileId })
+          .from(orders).where(eq(orders.id, orderId)).limit(1);
+        if (orderRow) {
+          const [cp] = await db.select({ userId: clientProfiles.userId })
+            .from(clientProfiles).where(eq(clientProfiles.id, orderRow.clientProfileId)).limit(1);
+          const [carrier] = await db.select({ userId: carrierProfiles.userId })
+            .from(carrierProfiles).where(eq(carrierProfiles.id, carrierId)).limit(1);
+          for (const uid of [cp?.userId, carrier?.userId]) {
+            if (uid) notifyConns.get(uid)?.forEach(c => { try { c.send(notifyPayload); } catch {} });
+          }
+        }
       }
 
       if (msg?.type === 'typing') {
@@ -484,6 +500,24 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
         const key = roomKey(orderId, carrierId);
         rooms.get(key)?.delete(ws);
         if ((rooms.get(key)?.size ?? 0) === 0) rooms.delete(key);
+      }
+    },
+  })
+
+  // WS /cabinet/chat/ws/notify — user-level badge refresh channel
+  .ws('/ws/notify', {
+    open(ws) {
+      const user = (ws.data as any).user;
+      if (!user) { ws.close(); return; }
+      if (!notifyConns.has(user.id)) notifyConns.set(user.id, new Set());
+      notifyConns.get(user.id)!.add(ws);
+    },
+    message() {},
+    close(ws) {
+      const user = (ws.data as any).user;
+      if (user) {
+        notifyConns.get(user.id)?.delete(ws);
+        if ((notifyConns.get(user.id)?.size ?? 0) === 0) notifyConns.delete(user.id);
       }
     },
   });

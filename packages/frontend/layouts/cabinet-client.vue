@@ -66,13 +66,15 @@
     </n-layout>
   </n-layout>
 
-  <ClientChatButton />
+  <ClientChatButton ref="chatBtnRef" />
   <ChatWidget
     v-model="chatOpen"
     :order-id="chatOrderId"
     :carrier-id="chatCarrierId"
     :title="chatTitle"
     :current-user-id="session?.user?.id"
+    show-back
+    @back="chatBtnRef?.openPicker()"
   />
 </template>
 
@@ -95,6 +97,7 @@ const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
 const { chatOpen, chatOrderId, chatCarrierId, chatTitle } = useOrderChat()
 const route = useRoute()
 const collapsed = ref(false)
+const chatBtnRef = ref<{ openPicker: () => void } | null>(null)
 
 const activeKey = computed(() => route.path)
 

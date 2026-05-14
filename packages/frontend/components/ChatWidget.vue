@@ -15,6 +15,9 @@
     <div class="cw-panel" :class="{ 'cw-panel--open': modelValue }">
       <div class="cw-header" @click="togglePanel">
         <div class="cw-header__left">
+          <NIcon v-if="showBack" size="18" class="cw-back-btn" @click.stop="$emit('back')">
+            <component :is="BackIcon" />
+          </NIcon>
           <span class="cw-status" :class="{ 'cw-status--online': wsConnected }" />
           <span class="cw-header__title">{{ title || t('chat.title') }}</span>
           <NIcon v-if="typingName" size="14" class="cw-typing-icon">
@@ -151,6 +154,7 @@ import {
   SendOutline as SendIcon,
   PencilOutline as PencilIcon,
   ImageOutline as ImageIcon,
+  ArrowBackOutline as BackIcon,
 } from '@vicons/ionicons5'
 
 const { t } = useI18n()
@@ -161,10 +165,12 @@ const props = defineProps<{
   carrierId: string | null
   title?: string
   currentUserId?: string
+  showBack?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
+  'back': []
 }>()
 
 const { apiBase: API, wsUrl: WS_BASE } = useApiBase()
@@ -463,6 +469,16 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.85);
   animation: pulse 1.4s ease-in-out infinite;
 }
+
+.cw-back-btn {
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+.cw-back-btn:hover { background: rgba(255, 255, 255, 0.2); color: white; }
 
 .cw-close-btn {
   color: rgba(255, 255, 255, 0.85);

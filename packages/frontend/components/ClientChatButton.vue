@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { NIcon, NSpin, NTag } from 'naive-ui'
 import {
   ChatbubbleEllipsesOutline as ChatIcon,
@@ -110,7 +110,7 @@ import {
 } from '@vicons/ionicons5'
 
 const { t } = useI18n()
-const { apiBase: API } = useApiBase()
+const { apiBase: API, wsUrl: WS_BASE } = useApiBase()
 const { chatOpen, openChat } = useOrderChat()
 
 const chatOrders = ref<any[]>([])
@@ -175,7 +175,30 @@ watch(chatOpen, open => {
   }
 })
 
-onMounted(loadRooms)
+let notifyWs: WebSocket | null = null
+
+function openNotifyWs() {
+  notifyWs = new WebSocket(`${WS_BASE}/cabinet/chat/ws/notify`)
+  notifyWs.onmessage = () => loadRooms()
+  notifyWs.onclose = () => { notifyWs = null }
+}
+
+onMounted(() => {
+  loadRooms()
+  openNotifyWs()
+})
+
+onUnmounted(() => {
+  notifyWs?.close()
+  notifyWs = null
+})
+
+function openPicker() {
+  level.value = selectedOrder.value ? 'drivers' : 'orders'
+  showPicker.value = true
+}
+
+defineExpose({ openPicker })
 </script>
 
 <style scoped>
