@@ -35,8 +35,8 @@
               {{ room.lastMessage }}
             </div>
           </div>
-          <span v-if="room.unreadCount > 0" class="dcb-unread">
-            {{ room.unreadCount > 9 ? '9+' : room.unreadCount }}
+          <span v-if="effectiveUnread(room) > 0" class="dcb-unread">
+            {{ effectiveUnread(room) > 9 ? '9+' : effectiveUnread(room) }}
           </span>
         </div>
       </div>
@@ -68,13 +68,28 @@ import {
 
 const { t } = useI18n()
 const { apiBase: API, wsUrl: WS_BASE } = useApiBase()
-const { chatOpen, openChat } = useOrderChat()
+const { chatOpen, chatOrderId, chatCarrierId, chatClosedTick, openChat, isRoomRead } = useOrderChat()
 
 const rooms = ref<any[]>([])
 const loading = ref(false)
 const showPicker = ref(false)
 const activeOrderId = ref<string | null>(null)
-const totalUnread = computed(() => rooms.value.reduce((s, r) => s + (r.unreadCount ?? 0), 0))
+
+// Single source of truth for badge math: server count, overridden by client-side read state.
+// - currently-active chat → 0
+// - chat the client has marked read AND no newer messages since → 0
+// - otherwise → server's unreadCount
+function effectiveUnread(room: any): number {
+  if (
+    chatOpen.value &&
+    room.orderId === chatOrderId.value &&
+    room.carrierId === chatCarrierId.value
+  ) return 0
+  if (isRoomRead(room.orderId, room.carrierId, room.lastMessageAt)) return 0
+  return room.unreadCount ?? 0
+}
+
+const totalUnread = computed(() => rooms.value.reduce((s, r) => s + effectiveUnread(r), 0))
 
 async function loadRooms() {
   if (loading.value) return
@@ -101,11 +116,11 @@ function handleFabClick() {
   showPicker.value = true
 }
 
-watch(chatOpen, open => {
-  if (!open) {
-    activeOrderId.value = null
-    loadRooms()
-  }
+// Refresh after the chat closes so lastMessage previews stay fresh.
+// Badge count is derived via effectiveUnread (client read tracker), not server data alone.
+watch(chatClosedTick, () => {
+  activeOrderId.value = null
+  loadRooms()
 })
 
 let notifyWs: WebSocket | null = null

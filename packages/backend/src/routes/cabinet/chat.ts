@@ -399,6 +399,23 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
     });
   })
 
+  // POST /cabinet/chat/mark-read/:orderId/:carrierId
+  // Awaitable cursor update — call before refetching badges to avoid race.
+  .post('/mark-read/:orderId/:carrierId', async ({ user, params, set }) => {
+    const ok = await canAccess(user.id, user.role!, params.orderId, params.carrierId);
+    if (!ok) { set.status = 403; return { error: 'forbidden' }; }
+    await db.insert(chatReadCursors).values({
+      userId: user.id,
+      orderId: params.orderId,
+      carrierProfileId: params.carrierId,
+      lastReadAt: new Date(),
+    }).onConflictDoUpdate({
+      target: [chatReadCursors.userId, chatReadCursors.orderId, chatReadCursors.carrierProfileId],
+      set: { lastReadAt: new Date() },
+    });
+    return { ok: true };
+  })
+
   // POST /cabinet/chat/upload
   .post('/upload', async ({ user, body, set }) => {
     const file = body.file;
@@ -468,7 +485,27 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
         });
         rooms.get(key)?.forEach(conn => { try { conn.send(payload); } catch {} });
 
-        // Notify both participants so their badges refresh
+        // Update read cursor for all receivers currently in the room. Use the message's
+        // own createdAt so cursor >= createdAt is guaranteed (no clock drift between JS/DB).
+        const cursorAt = saved.createdAt ?? new Date();
+        for (const conn of rooms.get(key) ?? []) {
+          const connUser = (conn.data as any).user;
+          if (connUser && connUser.id !== user.id) {
+            try {
+              await db.insert(chatReadCursors).values({
+                userId: connUser.id,
+                orderId,
+                carrierProfileId: carrierId,
+                lastReadAt: cursorAt,
+              }).onConflictDoUpdate({
+                target: [chatReadCursors.userId, chatReadCursors.orderId, chatReadCursors.carrierProfileId],
+                set: { lastReadAt: cursorAt },
+              });
+            } catch {}
+          }
+        }
+
+        // Notify the other participant only (sender doesn't need a badge refresh)
         const notifyPayload = JSON.stringify({ type: 'refresh' });
         const [orderRow] = await db.select({ clientProfileId: orders.clientProfileId })
           .from(orders).where(eq(orders.id, orderId)).limit(1);
@@ -478,7 +515,9 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
           const [carrier] = await db.select({ userId: carrierProfiles.userId })
             .from(carrierProfiles).where(eq(carrierProfiles.id, carrierId)).limit(1);
           for (const uid of [cp?.userId, carrier?.userId]) {
-            if (uid) notifyConns.get(uid)?.forEach(c => { try { c.send(notifyPayload); } catch {} });
+            if (uid && uid !== user.id) {
+              notifyConns.get(uid)?.forEach(c => { try { c.send(notifyPayload); } catch {} });
+            }
           }
         }
       }

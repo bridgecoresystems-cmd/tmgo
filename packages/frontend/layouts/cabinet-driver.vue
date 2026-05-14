@@ -71,12 +71,13 @@
 
   <DriverChatButton ref="chatBtnRef" />
   <ChatWidget
-    v-model="chatOpen"
+    :model-value="chatOpen"
     :order-id="chatOrderId"
     :carrier-id="chatCarrierId"
     :title="chatTitle"
     :current-user-id="session?.user?.id"
     :show-back="true"
+    @close="closeChat"
     @back="handleChatBack"
   />
   <ScrollToTopButton />
@@ -102,11 +103,11 @@ import {
 const { t } = useI18n()
 const { session, signOut } = useAuth()
 const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
-const { chatOpen, chatOrderId, chatCarrierId, chatTitle } = useOrderChat()
+const { chatOpen, chatOrderId, chatCarrierId, chatTitle, closeChat } = useOrderChat()
 const chatBtnRef = ref<{ openPicker: () => void } | null>(null)
 
-function handleChatBack() {
-  chatOpen.value = false
+async function handleChatBack() {
+  await closeChat()
   chatBtnRef.value?.openPicker()
 }
 

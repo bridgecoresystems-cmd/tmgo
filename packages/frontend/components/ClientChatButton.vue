@@ -75,8 +75,8 @@
                 {{ driver.lastMessage }}
               </div>
             </div>
-            <span v-if="driver.unreadCount > 0" class="ccb-unread">
-              {{ driver.unreadCount > 9 ? '9+' : driver.unreadCount }}
+            <span v-if="driverUnread(driver, selectedOrder) > 0" class="ccb-unread">
+              {{ driverUnread(driver, selectedOrder) > 9 ? '9+' : driverUnread(driver, selectedOrder) }}
             </span>
           </div>
         </template>
@@ -111,7 +111,7 @@ import {
 
 const { t } = useI18n()
 const { apiBase: API, wsUrl: WS_BASE } = useApiBase()
-const { chatOpen, openChat } = useOrderChat()
+const { chatOpen, chatOrderId, chatCarrierId, chatClosedTick, openChat, isRoomRead } = useOrderChat()
 
 const chatOrders = ref<any[]>([])
 const loading = ref(false)
@@ -119,13 +119,26 @@ const showPicker = ref(false)
 const level = ref<'orders' | 'drivers'>('orders')
 const selectedOrder = ref<any>(null)
 const activeCarrierId = ref<string | null>(null)
+
+// Single source of truth for badge math, mirroring DriverChatButton.
+// Currently-active chat: 0. Client-marked-read with no newer messages: 0. Otherwise server's count.
+function driverUnread(driver: any, order: any): number {
+  if (
+    chatOpen.value &&
+    order.id === chatOrderId.value &&
+    driver.carrierId === chatCarrierId.value
+  ) return 0
+  if (isRoomRead(order.id, driver.carrierId, driver.lastMessageAt)) return 0
+  return driver.unreadCount ?? 0
+}
+
+function orderUnread(order: any): number {
+  return (order.drivers ?? []).reduce((s: number, d: any) => s + driverUnread(d, order), 0)
+}
+
 const totalUnread = computed(() =>
   chatOrders.value.reduce((s, o) => s + orderUnread(o), 0)
 )
-
-function orderUnread(order: any): number {
-  return (order.drivers ?? []).reduce((s: number, d: any) => s + (d.unreadCount ?? 0), 0)
-}
 
 async function loadRooms() {
   if (loading.value) return
@@ -168,11 +181,11 @@ function handleFabClick() {
   showPicker.value = true
 }
 
-watch(chatOpen, open => {
-  if (!open) {
-    activeCarrierId.value = null
-    loadRooms()
-  }
+// Refresh after the chat closes so lastMessage previews stay fresh.
+// Badge count is derived via driverUnread (client read tracker), not server data alone.
+watch(chatClosedTick, () => {
+  activeCarrierId.value = null
+  loadRooms()
 })
 
 let notifyWs: WebSocket | null = null

@@ -9,7 +9,7 @@
     <div
       v-if="modelValue"
       class="cw-backdrop"
-      @click="$emit('update:modelValue', false)"
+      @click="$emit('close')"
     />
 
     <div class="cw-panel" :class="{ 'cw-panel--open': modelValue }">
@@ -25,7 +25,7 @@
           </NIcon>
         </div>
         <div class="cw-header__right">
-          <NIcon size="18" class="cw-close-btn" @click.stop="$emit('update:modelValue', false)">
+          <NIcon size="18" class="cw-close-btn" @click.stop="$emit('close')">
             <component :is="CloseIcon" />
           </NIcon>
         </div>
@@ -171,6 +171,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
   'back': []
+  'close': []
 }>()
 
 const { apiBase: API, wsUrl: WS_BASE } = useApiBase()
@@ -366,7 +367,7 @@ function handleTyping() {
 }
 
 function togglePanel() {
-  emit('update:modelValue', !props.modelValue)
+  if (props.modelValue) emit('close')
 }
 
 function scrollBottom() {
