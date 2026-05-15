@@ -1,0 +1,88 @@
+{
+  "hero": {
+    "title": "Freight transportation for businesses",
+    "subtitle": "Organize cargo transportation with benefits for your company"
+  },
+  "form": {
+    "title": "Select route",
+    "fromPlaceholder": "From",
+    "toPlaceholder": "To",
+    "submit": "Submit request"
+  },
+  "advantages": {
+    "title": "Service advantages",
+    "items": {
+      "vat": {
+        "title": "VAT refund",
+        "description": "If you work under the general taxation system, you can claim VAT refunds."
+      },
+      "limits": {
+        "title": "Limit settings",
+        "description": "By addresses and geozones, time and days of the week."
+      },
+      "cabinet": {
+        "title": "Convenient personal account",
+        "description": "Place orders, top up balance, grant access to employees."
+      },
+      "fast": {
+        "title": "Fast dispatch",
+        "description": "Average truck arrival time — 10 minutes."
+      },
+      "loaders": {
+        "title": "Loader assistance",
+        "description": "They will help load and unload heavy shipments."
+      },
+      "insurance": {
+        "title": "Insurance",
+        "description": "Cargo is insured up to 500,000 ₽ during transportation."
+      }
+    }
+  },
+  "cabinet": {
+    "title": "Your control center — personal account",
+    "description": "In your personal account you can order shipments or enable your employees to pay for deliveries from the corporate account.",
+    "button": "Sign in"
+  },
+  "steps": {
+    "title": "How we work",
+    "items": {
+      "register": {
+        "title": "Register",
+        "description": "Create a personal account and top up your balance."
+      },
+      "order": {
+        "title": "Create an order",
+        "description": "Submit a request in the cabinet or via the app."
+      },
+      "documents": {
+        "title": "Get documents",
+        "description": "Closing documents will be available in your account."
+      }
+    }
+  },
+  "services": {
+    "title": "Our services",
+    "items": {
+      "office": {
+        "title": "Office relocation",
+        "description": "We will transport office furniture and equipment."
+      },
+      "warehouse": {
+        "title": "Warehouse delivery",
+        "description": "We will load and pick up goods of any weight."
+      },
+      "intercity": {
+        "title": "Intercity",
+        "description": "We will pick up from one city and deliver to another."
+      },
+      "customers": {
+        "title": "Customer delivery",
+        "description": "We will deliver any cargo to your customers."
+      }
+    }
+  },
+  "meta": {
+    "title": "tmGo — Business Platform",
+    "description": "Multi-regional freight platform. Connecting shippers and carriers."
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "hero": {
+    "title": "Hukuk taraplar üçin ýük daşamagy",
+    "subtitle": "Şereketiniz üçin bähbitli ýük daşamagy gurnaň"
+  },
+  "form": {
+    "title": "Ugry saýlaň",
+    "fromPlaceholder": "Nireden",
+    "toPlaceholder": "Nirä",
+    "submit": "Arza goýberiň"
+  },
+  "advantages": {
+    "title": "Hyzmatyň artykmaçlyklary",
+    "items": {
+      "vat": {
+        "title": "QGV-ni yzyna gaýtarmak",
+        "description": "Umumy salgyt ulgamy boýunça işleýän bolsaňyz, QGV-ni yzyna gaýtaryp bilersiňiz."
+      },
+      "limits": {
+        "title": "Çäklendirmeleri sazlamak",
+        "description": "Salgylara we geozolaga, wagta we günlere görä."
+      },
+      "cabinet": {
+        "title": "Amatly şahsy otagjyk",
+        "description": "Sargytlary resmileşdiriň, balansy doldurdyň, işgärlere giriş açyň."
+      },
+      "fast": {
+        "title": "Çalt tabşyryş",
+        "description": "Ýük maşynyny ortalama getiriş wagty — 10 minut."
+      },
+      "loaders": {
+        "title": "Ýükleýjileriň kömegi",
+        "description": "Agyr ýükleri ýüklemäge we düşürmäge kömek ederler."
+      },
+      "insurance": {
+        "title": "Ätiýaçlandyryş",
+        "description": "Daşamak wagtynda ýük 500 000 ₽ çenli ätiýaçlandyrylýar."
+      }
+    }
+  },
+  "cabinet": {
+    "title": "Dolandyryş merkeziňiz — şahsy otagjyk",
+    "description": "Şahsy otagjykda iberme sargyt edip ýa-da işgärleriňize korporatiw hasapdan eltip bermegi tölemek mümkinçiligini birikdirip bilersiňiz.",
+    "button": "Otagjyga giriş"
+  },
+  "steps": {
+    "title": "Nähili işleýäris",
+    "items": {
+      "register": {
+        "title": "Hasaba duruň",
+        "description": "Şahsy otagjyk dörediň we balansy doldurdyň."
+      },
+      "order": {
+        "title": "Sargyt dörediň",
+        "description": "Otagjykda ýa-da programma arkaly arza beriň."
+      },
+      "documents": {
+        "title": "Resminamalary alyň",
+        "description": "Ýapýan resminamalar otagjykda elýeterli bolar."
+      }
+    }
+  },
+  "services": {
+    "title": "Biziň hyzmatlarymyz",
+    "items": {
+      "office": {
+        "title": "Ofis göçürmesi",
+        "description": "Ofis mebelleri we enjamlaryny daşarys."
+      },
+      "warehouse": {
+        "title": "Ammar eltip bermek",
+        "description": "Islendik agyrlyktaky harytlary ýükläp alarys."
+      },
+      "intercity": {
+        "title": "Şäherara",
+        "description": "Bir şäherden alyp, beýlekisine eltip bereris."
+      },
+      "customers": {
+        "title": "Müşderilere eltip bermek",
+        "description": "Islendik ýüki siziň müşderiňize eltip bereris."
+      }
+    }
+  },
+  "meta": {
+    "title": "tmGo — Işewürlik üçin platforma",
+    "description": "Ýük daşamak üçin köpsebitli platforma. Sargytçylary we daşaýjylary birleşdirýäris."
+  }
+}
