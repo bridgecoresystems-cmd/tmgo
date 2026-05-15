@@ -34,11 +34,11 @@
             </thead>
             <tbody>
               <tr v-for="order in recentOrders" :key="order.id">
-                <td>#{{ order.id }}</td>
+                <td style="font-family: monospace; font-weight: 600;">ORD{{ order.seqNo || order.id.split('-')[0] }}</td>
                 <td>{{ order.route }}</td>
                 <td>
-                  <n-tag :type="getStatusType(order.status)" size="small" round>
-                    {{ order.status }}
+                  <n-tag :type="getStatusType(order.status)" size="small" round :bordered="false">
+                    {{ statusLabel(order.status) }}
                   </n-tag>
                 </td>
                 <td>{{ order.price }} TMT</td>
@@ -129,21 +129,23 @@ const stats = computed(() => [
 const recentOrders = computed(() => dashboardData.value?.recentOrders || [])
 const recentUsers = computed(() => dashboardData.value?.recentUsers || [])
 
+const statusLabel = (status: string) => {
+  const key = `client.orders.status_${status}`
+  const label = t(key)
+  return label !== key ? label : status
+}
+
 const getStatusType = (status: string) => {
-  // Try to match both EN status and RU translated status if needed
   switch (status.toLowerCase()) {
     case 'in_transit':
     case 'pickup':
-    case 'delivering':
-    case 'в пути': return 'info'
+    case 'delivering': return 'info'
     case 'completed':
-    case 'delivered':
-    case 'выполнен': return 'success'
-    case 'pending':
-    case 'published':
-    case 'ожидание': return 'warning'
+    case 'delivered': return 'success'
+    case 'published': return 'info'
+    case 'negotiating': return 'warning'
     case 'cancelled':
-    case 'отменен': return 'error'
+    case 'expired': return 'error'
     default: return 'default'
   }
 }

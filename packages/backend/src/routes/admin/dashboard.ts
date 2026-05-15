@@ -67,7 +67,8 @@ export const adminDashboardRoutes = new Elysia({ prefix: '/admin/dashboard' })
         }
       },
       recentOrders: recentOrdersList.map(o => ({
-        id: o.id.toString().slice(0, 8), // short id for display
+        id: o.id,
+        seqNo: o.seqNo,
         route: `${o.fromCity} → ${o.toCity}`,
         status: o.status,
         price: parseFloat(o.price || '0').toLocaleString('ru-RU')

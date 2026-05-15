@@ -31,7 +31,7 @@
     <n-modal v-model:show="showDetailModal" preset="card" :title="t('admin.ordersPage.modalTitle')" style="width: 600px">
       <div v-if="selectedOrder">
         <n-descriptions label-placement="left" bordered :column="1">
-          <n-descriptions-item :label="t('admin.ordersPage.labelOrderId')">#{{ selectedOrder.id }}</n-descriptions-item>
+          <n-descriptions-item :label="t('admin.ordersPage.labelOrderId')">{{ selectedOrder.shortId || `ORD${selectedOrder.seqNo || selectedOrder.id.split('-')[0]}` }}</n-descriptions-item>
           <n-descriptions-item :label="t('admin.ordersPage.labelClient')">{{ selectedOrder.client }}</n-descriptions-item>
           <n-descriptions-item :label="t('admin.ordersPage.labelCarrier')">{{ selectedOrder.carrier || t('admin.ordersPage.notAssigned') }}</n-descriptions-item>
           <n-descriptions-item :label="t('admin.ordersPage.labelRoute')">{{ selectedOrder.route }}</n-descriptions-item>
@@ -39,7 +39,7 @@
           <n-descriptions-item :label="t('admin.ordersPage.labelPrice')">{{ selectedOrder.price }} TMT</n-descriptions-item>
           <n-descriptions-item :label="t('admin.ordersPage.labelCreatedAt')">{{ selectedOrder.date }}</n-descriptions-item>
           <n-descriptions-item :label="t('admin.ordersPage.labelStatus')">
-            <n-tag :type="getStatusType(selectedOrder.status)">{{ selectedOrder.status }}</n-tag>
+            <n-tag :type="getStatusType(selectedOrder.status)" :bordered="false">{{ getStatusLabel(selectedOrder.status) }}</n-tag>
           </n-descriptions-item>
         </n-descriptions>
       </div>
@@ -114,16 +114,13 @@ const getStatusType = (status: string) => {
   switch (status.toLowerCase()) {
     case 'in_transit':
     case 'pickup':
-    case 'delivering':
-    case 'в пути': return 'info'
+    case 'delivering': return 'info'
     case 'completed':
-    case 'delivered':
-    case 'выполнен': return 'success'
-    case 'pending':
-    case 'published':
-    case 'ожидание': return 'warning'
+    case 'delivered': return 'success'
+    case 'published': return 'info'
+    case 'negotiating': return 'warning'
     case 'cancelled':
-    case 'отменен': return 'error'
+    case 'expired': return 'error'
     default: return 'default'
   }
 }
