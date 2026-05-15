@@ -48,8 +48,8 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from 'vue'
-import { NTag, NButton, NSpace, useMessage } from 'naive-ui'
+import { h, ref, computed, onMounted } from 'vue'
+import { NTag, NButton, NSpace, useMessage, useDialog } from 'naive-ui'
 
 definePageMeta({
   layout: 'admin'
@@ -57,45 +57,98 @@ definePageMeta({
 
 const { t } = useI18n()
 const message = useMessage()
+const dialog = useDialog()
+const { apiBase: API } = useApiBase()
+
 const searchQuery = ref('')
 const statusFilter = ref(null)
 const showDetailModal = ref(false)
 const selectedOrder = ref<any>(null)
+const loading = ref(false)
+const orders = ref<any[]>([])
+
+async function fetchOrders() {
+  loading.value = true
+  try {
+    const data = await $fetch<any[]>(`${API}/admin/orders`, { credentials: 'include' })
+    orders.value = data
+  } catch (e) {
+    console.error('Failed to fetch orders', e)
+    message.error(t('common.loadError'))
+  } finally {
+    loading.value = false
+  }
+}
+
+async function deleteOrder(id: string) {
+  dialog.warning({
+    title: t('common.deleteConfirm'),
+    content: `#${id.slice(0, 8)}`,
+    positiveText: t('common.delete'),
+    negativeText: t('common.cancel'),
+    onPositiveClick: async () => {
+      try {
+        await $fetch(`${API}/admin/orders/${id}`, { method: 'DELETE', credentials: 'include' })
+        message.success(t('common.success'))
+        fetchOrders()
+      } catch (e) {
+        message.error(t('common.error'))
+      }
+    }
+  })
+}
+
+onMounted(() => {
+  fetchOrders()
+})
 
 const statusOptions = computed(() => [
-  { label: t('admin.ordersPage.statusInTransit'), value: t('admin.ordersPage.statusInTransit') },
-  { label: t('admin.ordersPage.statusDone'), value: t('admin.ordersPage.statusDone') },
-  { label: t('admin.ordersPage.statusPending'), value: t('admin.ordersPage.statusPending') },
-  { label: t('admin.ordersPage.statusCancelled'), value: t('admin.ordersPage.statusCancelled') }
+  { label: t('client.orders.status_published'), value: 'published' },
+  { label: t('client.orders.status_negotiating'), value: 'negotiating' },
+  { label: t('client.orders.status_in_transit'), value: 'in_transit' },
+  { label: t('client.orders.status_completed'), value: 'completed' },
+  { label: t('client.orders.status_cancelled'), value: 'cancelled' }
 ])
 
-const orders = [
-  { id: '1024', client: 'ООО "ТрансЛогистик"', carrier: 'Аман Аманов', route: 'Ашхабад → Мары', status: 'В пути', price: '1,200', date: '12.03.2026', cargoType: 'Запчасти', weight: '2.5' },
-  { id: '1023', client: 'ИП "Оразов"', carrier: 'Сердар С.', route: 'Балканабат → Туркменбаши', status: 'Выполнен', price: '850', date: '11.03.2026', cargoType: 'Продукты', weight: '1.2' },
-  { id: '1022', client: 'ТЦ "Беркарар"', carrier: null, route: 'Дашогуз → Ашхабад', status: 'Ожидание', price: '2,100', date: '12.03.2026', cargoType: 'Одежда', weight: '0.8' },
-  { id: '1021', client: 'Завод "Туркменнебит"', carrier: 'Ораз О.', route: 'Мары → Туркменабат', status: 'Отменен', price: '600', date: '10.03.2026', cargoType: 'Оборудование', weight: '5.0' },
-  { id: '1020', client: 'ООО "СтройМастер"', carrier: 'Керим К.', route: 'Ашхабад → Дашогуз', status: 'Выполнен', price: '3,400', date: '09.03.2026', cargoType: 'Цемент', weight: '20.0' },
-]
-
 const getStatusType = (status: string) => {
-  switch (status) {
-    case 'В пути': return 'info'
-    case 'Выполнен': return 'success'
-    case 'Ожидание': return 'warning'
-    case 'Отменен': return 'error'
+  switch (status.toLowerCase()) {
+    case 'in_transit':
+    case 'pickup':
+    case 'delivering':
+    case 'в пути': return 'info'
+    case 'completed':
+    case 'delivered':
+    case 'выполнен': return 'success'
+    case 'pending':
+    case 'published':
+    case 'ожидание': return 'warning'
+    case 'cancelled':
+    case 'отменен': return 'error'
     default: return 'default'
   }
 }
 
+const getStatusLabel = (status: string) => {
+  // Use client orders translations as they are the source of truth for statuses
+  return t(`client.orders.status_${status.toLowerCase()}`, status)
+}
+
 const columns = computed(() => [
-  { title: t('admin.ordersPage.columnId'), key: 'id', width: 80 },
+  { 
+    title: t('admin.ordersPage.columnId'), 
+    key: 'shortId', 
+    width: 100,
+    render(row: any) {
+      return h('span', { style: 'font-family: monospace; font-weight: bold;' }, row.shortId)
+    }
+  },
   { title: t('admin.ordersPage.columnClient'), key: 'client' },
   { title: t('admin.ordersPage.columnRoute'), key: 'route' },
   {
     title: t('admin.ordersPage.columnStatus'),
     key: 'status',
     render(row: any) {
-      return h(NTag, { type: getStatusType(row.status), round: true, size: 'small' }, { default: () => row.status })
+      return h(NTag, { type: getStatusType(row.status), round: true, size: 'small' }, { default: () => getStatusLabel(row.status) })
     }
   },
   { title: t('admin.ordersPage.columnAmount'), key: 'price', render(row: any) { return `${row.price} TMT` } },
@@ -106,7 +159,7 @@ const columns = computed(() => [
       return h(NSpace, {}, {
         default: () => [
           h(NButton, { size: 'small', quaternary: true, onClick: () => viewDetails(row) }, { default: () => '👁️' }),
-          h(NButton, { size: 'small', quaternary: true, type: 'error', onClick: () => message.info('Удаление #'+row.id) }, { default: () => '🗑️' })
+          h(NButton, { size: 'small', quaternary: true, type: 'error', onClick: () => deleteOrder(row.id) }, { default: () => '🗑️' })
         ]
       })
     }
@@ -114,8 +167,10 @@ const columns = computed(() => [
 ])
 
 const filteredOrders = computed(() => {
-  return orders.filter(o => {
-    const matchesSearch = o.id.includes(searchQuery.value) || o.route.toLowerCase().includes(searchQuery.value.toLowerCase())
+  return orders.value.filter(o => {
+    const matchesSearch = o.shortId.includes(searchQuery.value) || 
+                         o.route.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                         o.client.toLowerCase().includes(searchQuery.value.toLowerCase())
     const matchesStatus = !statusFilter.value || o.status === statusFilter.value
     return matchesSearch && matchesStatus
   })

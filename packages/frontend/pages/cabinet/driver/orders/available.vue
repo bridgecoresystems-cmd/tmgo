@@ -87,7 +87,7 @@
         </div>
 
         <!-- Title -->
-        <div class="order-title">{{ order.title }}</div>
+        <div class="order-title"><strong style="color: #333">#ORD{{ order.seqNo || order.id.split('-')[0] }}</strong> • {{ order.title }}</div>
 
         <!-- Tags -->
         <div class="tags-row">

@@ -14,7 +14,7 @@
               <component :is="BackIcon" />
             </NIcon>
             <span class="ccb-picker__title">
-              {{ level === 'orders' ? t('client.chat.title') : selectedOrder?.title }}
+              {{ level === 'orders' ? t('client.chat.title') : (selectedOrder ? `#ORD${selectedOrder.seqNo || selectedOrder.id.split('-')[0]} • ${selectedOrder.title}` : '') }}
             </span>
           </div>
           <NIcon class="ccb-picker__close" @click="showPicker = false">
@@ -41,7 +41,7 @@
             @click="selectOrder(order)"
           >
             <div class="ccb-picker__item-main">
-              <div class="ccb-picker__item-title">{{ order.title }}</div>
+              <div class="ccb-picker__item-title"><strong style="color: #333">#ORD{{ order.seqNo || order.id.split('-')[0] }}</strong> • {{ order.title }}</div>
               <div class="ccb-picker__item-sub">
                 {{ order.fromCity }} → {{ order.toCity }}
                 <NTag size="tiny" :bordered="false" class="ccb-status-tag">{{ t('client.orders.status_' + order.status) }}</NTag>
@@ -165,7 +165,7 @@ function selectDriver(driver: any) {
   openChat(
     selectedOrder.value.id,
     driver.carrierId,
-    t('client.chat.chatWith', { name: driver.carrierName }),
+    `#ORD${selectedOrder.value.seqNo || selectedOrder.value.id.split('-')[0]} • ` + t('client.chat.chatWith', { name: driver.carrierName }),
   )
 }
 

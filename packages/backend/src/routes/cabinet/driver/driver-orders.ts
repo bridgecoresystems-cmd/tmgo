@@ -39,6 +39,7 @@ export const cabinetDriverOrdersRoutes = new Elysia({ prefix: '/cabinet/driver/o
     const orderIds = myBids.map(b => b.orderId);
     const rows = await db.select({
       id: orders.id,
+      seqNo: orders.seqNo,
       status: orders.status,
       title: orders.title,
       fromCountry: orders.fromCountry,
@@ -95,6 +96,7 @@ export const cabinetDriverOrdersRoutes = new Elysia({ prefix: '/cabinet/driver/o
 
     const rows = await db.select({
       id: orders.id,
+      seqNo: orders.seqNo,
       status: orders.status,
       title: orders.title,
       fromCountry: orders.fromCountry,

@@ -39,7 +39,7 @@
                 {{ statusLabel(order.status) }}
               </n-tag>
             </div>
-            <div v-if="order.title" style="margin-top: 12px; color: #666; font-size: 14px;">{{ order.title }}</div>
+            <div v-if="order.title" style="margin-top: 12px; color: #666; font-size: 14px;"><strong style="color: #333">#ORD{{ order.seqNo || order.id.split('-')[0] }}</strong> • {{ order.title }}</div>
           </n-card>
         </n-grid-item>
 

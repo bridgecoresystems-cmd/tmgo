@@ -44,6 +44,7 @@ export const cabinetOrdersRoutes = new Elysia({ prefix: '/cabinet/orders' })
 
     const rows = await db.select({
       id: orders.id,
+      seqNo: orders.seqNo,
       orderType: orders.orderType,
       status: orders.status,
       title: orders.title,

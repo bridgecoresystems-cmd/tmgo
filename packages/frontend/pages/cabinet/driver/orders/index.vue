@@ -67,8 +67,14 @@ const filteredOrders = computed(() => {
 })
 
 const columns = computed<DataTableColumns<any>>(() => [
-  { title: t('common.from'), key: 'from_city', ellipsis: true },
-  { title: t('common.to'), key: 'to_city', ellipsis: true },
+  {
+    title: t('admin.ordersPage.columnId'),
+    key: 'id',
+    width: 100,
+    render: (row) => h('span', { style: 'font-weight: 600; font-family: monospace;' }, `ORD${row.seqNo || row.id.split('-')[0]}`),
+  },
+  { title: t('common.from'), key: 'fromCity', render: row => row.fromCity || row.from_city, ellipsis: true },
+  { title: t('common.to'), key: 'toCity', render: row => row.toCity || row.to_city, ellipsis: true },
   { title: t('driver.orders.cargo'), key: 'cargo_name', ellipsis: true, width: 140 },
   { title: t('driver.orders.vehicle'), key: 'vehicle_plate', width: 120 },
   { title: t('common.price'), key: 'price', width: 100, render: (row) => `${row.price} ${row.currency || 'TMT'}` },

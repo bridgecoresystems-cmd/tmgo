@@ -575,6 +575,7 @@ export const vehicles = pgTable('vehicles', {
 
 export const orders = pgTable('orders', {
   id: uuid('id').primaryKey().defaultRandom(),
+  seqNo: serial('seq_no'),
   clientProfileId: uuid('client_profile_id')
     .notNull()
     .references(() => clientProfiles.id),

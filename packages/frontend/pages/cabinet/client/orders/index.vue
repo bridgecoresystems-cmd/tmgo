@@ -106,6 +106,12 @@ const filteredOrders = computed(() => {
 
 const columns = computed<DataTableColumns<any>>(() => [
   {
+    title: t('admin.ordersPage.columnId'),
+    key: 'id',
+    width: 100,
+    render: (row) => h('span', { style: 'font-weight: 600; font-family: monospace;' }, `ORD${row.seqNo || row.id.split('-')[0]}`),
+  },
+  {
     title: t('client.orders.route'),
     key: 'route',
     render: (row) => `${row.fromCity ?? '—'} → ${row.toCity ?? '—'}`,

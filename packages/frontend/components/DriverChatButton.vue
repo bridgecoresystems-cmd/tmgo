@@ -27,7 +27,7 @@
           @click="selectRoom(room)"
         >
           <div class="dcb-picker__item-main">
-            <div class="dcb-picker__item-title">{{ room.orderTitle }}</div>
+            <div class="dcb-picker__item-title"><strong style="color: #333">#ORD{{ room.seqNo || room.orderId.split('-')[0] }}</strong> • {{ room.orderTitle }}</div>
             <div class="dcb-picker__item-sub">
               {{ room.fromCity }} → {{ room.toCity }} · {{ room.clientName }}
             </div>
@@ -106,7 +106,11 @@ function selectRoom(room: any) {
   room.unreadCount = 0 // optimistic update
   activeOrderId.value = room.orderId
   showPicker.value = false
-  openChat(room.orderId, room.carrierId, room.clientName || t('driver.chat.client'))
+  openChat(
+    room.orderId,
+    room.carrierId,
+    `#ORD${room.seqNo || room.orderId.split('-')[0]} • ` + (room.clientName || t('driver.chat.client'))
+  )
 }
 
 function handleFabClick() {

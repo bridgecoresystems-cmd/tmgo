@@ -8,7 +8,7 @@
 
     <template v-else-if="order">
       <!-- Order header -->
-      <n-card :title="order.title" style="margin-top: 12px;">
+      <n-card :title="`#ORD${order.seqNo || order.id.split('-')[0]} • ${order.title}`" style="margin-top: 12px;">
         <template #header-extra>
           <n-tag :type="statusType(order.status)" size="medium">{{ statusLabel(order.status) }}</n-tag>
         </template>

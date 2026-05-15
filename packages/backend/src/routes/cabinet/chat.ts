@@ -77,6 +77,7 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
     // All orders belonging to this client
     const myOrders = await db.select({
       id: orders.id,
+      seqNo: orders.seqNo,
       title: orders.title,
       status: orders.status,
       fromCity: orders.fromCity,
@@ -163,11 +164,17 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
             carrierId: cid,
             carrierName: name,
             lastMessage: last.message,
-            lastMessageAt: last.createdAt,
+            createdAt: last.createdAt,
             unreadCount: last.unreadCount,
           };
         });
-        return { ...o, drivers };
+        // Sort drivers by latest message
+        drivers.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        return {
+          ...o,
+          seqNo: o.seqNo,
+          drivers,
+        };
       });
 
     return { orders: result };
@@ -271,6 +278,7 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
 
     const orderRows = await db.select({
       id: orders.id,
+      seqNo: orders.seqNo,
       title: orders.title,
       status: orders.status,
       clientProfileId: orders.clientProfileId,
@@ -337,6 +345,7 @@ export const cabinetChatRoutes = new Elysia({ prefix: '/cabinet/chat' })
       const last = lastMsgMap.get(order.id);
       return {
         orderId: order.id,
+        seqNo: order.seqNo,
         orderTitle: order.title,
         orderStatus: order.status,
         fromCity: order.fromCity,
