@@ -6,6 +6,11 @@
         <div class="logo-container" @click="goHome">
           <img src="/images/logo.png" alt="tmGo Logo" class="logo-img" />
         </div>
+        <n-space align="center" class="nav-links" :size="32">
+          <n-button quaternary @click="navigateTo('/landing')">{{ $t('layout.home') }}</n-button>
+          <n-button quaternary @click="navigateTo('/landing/search')">{{ $t('layout.search') }}</n-button>
+          <n-button quaternary @click="navigateTo('/landing/contacts')">{{ $t('layout.contacts') }}</n-button>
+        </n-space>
         <n-space align="center">
           <n-select
             :value="locale"
@@ -55,7 +60,7 @@ const userOptions = computed(() => [
 const route = useRoute()
 /** Страницы, где копирайт в конце контента, а не в n-layout-footer */
 const pageHasOwnFooter = computed(
-  () => route.path === '/' || route.path === '/auth' || route.path.startsWith('/legal/'),
+  () => route.path === '/' || route.path === '/landing' || route.path === '/auth' || route.path.startsWith('/legal/'),
 )
 
 const goHome = () => navigateTo('/')
@@ -128,6 +133,12 @@ const handleUserSelect = async (key: string) => {
 .user-btn {
   border: 1px solid #f97316;
   border-radius: 6px;
+}
+
+@media (max-width: 900px) {
+  .nav-links {
+    display: none !important;
+  }
 }
 
 @media (max-width: 768px) {

@@ -68,6 +68,8 @@
     "logout": "Sign out",
     "footer": "© 2026 BridgeCore Systems | TMGO Logistics Platform",
     "home": "Home",
+    "search": "Search",
+    "contacts": "Contacts",
     "cabinet": {
       "title": "Personal cabinet",
       "roleDriver": "(Carrier)",

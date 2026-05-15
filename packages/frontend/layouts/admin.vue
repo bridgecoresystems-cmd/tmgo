@@ -183,7 +183,7 @@ async function handleUserSelect(key: string) {
     await signOut()
     navigateTo('/auth')
   } else if (key === 'home') {
-    navigateTo('/')
+    navigateTo('/landing')
   }
 }
 </script>

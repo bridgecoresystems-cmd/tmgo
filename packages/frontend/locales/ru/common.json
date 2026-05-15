@@ -68,6 +68,8 @@
     "logout": "Выйти",
     "footer": "© 2026 BridgeCore Systems | TMGO Logistics Platform",
     "home": "Главная",
+    "search": "Поиск",
+    "contacts": "Контакты",
     "cabinet": {
       "title": "Личный кабинет",
       "roleDriver": "(Перевозчик)",
