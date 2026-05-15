@@ -36,6 +36,8 @@ import { cabinetClientProfileRoutes } from './routes/cabinet/client/client-profi
 import { cabinetChatRoutes } from './routes/cabinet/chat';
 import { cabinetProfileRoutes } from './routes/cabinet/profile';
 import { publicOrdersRoutes } from './routes/public/orders';
+import { publicContactsRoutes } from './routes/public/contacts';
+import { adminContactsRoutes } from './routes/admin/contacts';
 import { startWorker } from './lib/queues';
 
 const app = new Elysia()
@@ -100,6 +102,8 @@ const app = new Elysia()
     }
   })
   .use(authRoutes)
+  .use(publicContactsRoutes)
+  .use(adminContactsRoutes)
   .use(publicCitiesRoutes)
   .use(adminUsersRoutes)
   .use(adminVehiclesRoutes)

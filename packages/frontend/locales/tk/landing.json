@@ -167,5 +167,22 @@
       "t": "t",
       "kg": "kg"
     }
+  },
+  "contactsPage": {
+    "ourContacts": "Biziň kontaktlarymyz",
+    "address": "Salgy:",
+    "addressValue": "Türkmenistan, Aşgabat ş., Magtymguly şaýoly, 10",
+    "phone": "Telefon:",
+    "phoneValue": "+993 (12) 12-34-56",
+    "email": "Email:",
+    "emailValue": "support{'@'}tmgo.com",
+    "writeToUs": "Bize ýazyň",
+    "nameLabel": "Siziň adyňyz",
+    "namePlaceholder": "Ivan Iwanow",
+    "emailLabel": "Siziň Email-yňyz",
+    "emailPlaceholder": "example{'@'}mail.com",
+    "messageLabel": "Habar",
+    "messagePlaceholder": "Habaryňyzy ýazyň...",
+    "submit": "Ugrat"
   }
 }

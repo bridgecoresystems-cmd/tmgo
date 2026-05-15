@@ -5,36 +5,36 @@
         <n-h1 class="section-title">{{ t('layout.contacts') }}</n-h1>
         <n-grid :cols="2" :x-gap="48" responsive="screen">
           <n-gi>
-            <n-card title="Наши контакты" bordered>
+            <n-card :title="t('contactsPage.ourContacts')" bordered>
               <n-space vertical size="large">
                 <div class="contact-item">
-                  <n-text strong>Адрес:</n-text>
-                  <n-p>Туркменистан, г. Ашхабад, ул. Махтумкули, 10</n-p>
+                  <n-text strong>{{ t('contactsPage.address') }}</n-text>
+                  <n-p>{{ t('contactsPage.addressValue') }}</n-p>
                 </div>
                 <div class="contact-item">
-                  <n-text strong>Телефон:</n-text>
-                  <n-p>+993 (12) 12-34-56</n-p>
+                  <n-text strong>{{ t('contactsPage.phone') }}</n-text>
+                  <n-p>{{ t('contactsPage.phoneValue') }}</n-p>
                 </div>
                 <div class="contact-item">
-                  <n-text strong>Email:</n-text>
-                  <n-p>support@tmgo.com</n-p>
+                  <n-text strong>{{ t('contactsPage.email') }}</n-text>
+                  <n-p>{{ t('contactsPage.emailValue') }}</n-p>
                 </div>
               </n-space>
             </n-card>
           </n-gi>
           <n-gi>
-            <n-card title="Напишите нам" bordered>
+            <n-card :title="t('contactsPage.writeToUs')" bordered>
               <n-form>
-                <n-form-item label="Ваше имя">
-                  <n-input placeholder="Иван Иванов" />
+                <n-form-item :label="t('contactsPage.nameLabel')">
+                  <n-input v-model:value="form.name" :placeholder="t('contactsPage.namePlaceholder')" />
                 </n-form-item>
-                <n-form-item label="Ваш Email">
-                  <n-input placeholder="example@mail.com" />
+                <n-form-item :label="t('contactsPage.emailLabel')">
+                  <n-input v-model:value="form.email" :placeholder="t('contactsPage.emailPlaceholder')" />
                 </n-form-item>
-                <n-form-item label="Сообщение">
-                  <n-input type="textarea" placeholder="Введите ваше сообщение..." />
+                <n-form-item :label="t('contactsPage.messageLabel')">
+                  <n-input v-model:value="form.message" type="textarea" :placeholder="t('contactsPage.messagePlaceholder')" />
                 </n-form-item>
-                <n-button type="primary" block>Отправить</n-button>
+                <n-button type="primary" block :loading="loading" @click="handleSubmit">{{ t('contactsPage.submit') }}</n-button>
               </n-form>
             </n-card>
           </n-gi>
@@ -45,7 +45,41 @@
 </template>
 
 <script setup lang="ts">
+import { useMessage } from 'naive-ui';
+
 const { t } = useI18n()
+const { apiBase: API } = useApiBase()
+const message = useMessage()
+
+const form = ref({
+  name: '',
+  email: '',
+  message: ''
+})
+
+const loading = ref(false)
+
+async function handleSubmit() {
+  if (!form.value.name || !form.value.email || !form.value.message) {
+    message.warning(t('common.error')) // Or add a specific key
+    return
+  }
+
+  loading.value = true
+  try {
+    await $fetch(`${API}/public/contacts`, {
+      method: 'POST',
+      body: form.value
+    })
+    message.success(t('common.success'))
+    form.value = { name: '', email: '', message: '' }
+  } catch (e) {
+    console.error(e)
+    message.error(t('common.error'))
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>

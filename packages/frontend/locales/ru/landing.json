@@ -168,5 +168,22 @@
       "t": "т",
       "kg": "кг"
     }
+  },
+  "contactsPage": {
+    "ourContacts": "Наши контакты",
+    "address": "Адрес:",
+    "addressValue": "Туркменистан, г. Ашхабад, ул. Махтумкули, 10",
+    "phone": "Телефон:",
+    "phoneValue": "+993 (12) 12-34-56",
+    "email": "Email:",
+    "emailValue": "support{'@'}tmgo.com",
+    "writeToUs": "Напишите нам",
+    "nameLabel": "Ваше имя",
+    "namePlaceholder": "Иван Иванов",
+    "emailLabel": "Ваш Email",
+    "emailPlaceholder": "example{'@'}mail.com",
+    "messageLabel": "Сообщение",
+    "messagePlaceholder": "Введите ваше сообщение...",
+    "submit": "Отправить"
   }
 }

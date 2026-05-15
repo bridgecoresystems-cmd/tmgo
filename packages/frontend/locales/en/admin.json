@@ -235,7 +235,8 @@
     "statTotalOrders": "Total Orders",
     "statActiveTrips": "Active Trips",
     "statRevenue": "Revenue (month)",
-    "statNewClients": "New Clients"
+    "statNewClients": "New Clients",
+    "contactMessages": "Contact Messages"
   },
   "profile": {
     "changePhoto": "Change photo",

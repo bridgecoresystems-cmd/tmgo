@@ -167,5 +167,22 @@
       "t": "t",
       "kg": "kg"
     }
+  },
+  "contactsPage": {
+    "ourContacts": "Our Contacts",
+    "address": "Address:",
+    "addressValue": "Turkmenistan, Ashgabat, Mahtumkuli str., 10",
+    "phone": "Phone:",
+    "phoneValue": "+993 (12) 12-34-56",
+    "email": "Email:",
+    "emailValue": "support{'@'}tmgo.com",
+    "writeToUs": "Write to Us",
+    "nameLabel": "Your Name",
+    "namePlaceholder": "John Doe",
+    "emailLabel": "Your Email",
+    "emailPlaceholder": "example{'@'}mail.com",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Enter your message...",
+    "submit": "Send"
   }
 }

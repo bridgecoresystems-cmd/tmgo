@@ -908,3 +908,12 @@ export const mvpRoadmapTaskProgress = pgTable('mvp_roadmap_task_progress', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   updatedBy: uuid('updated_by'),
 })
+
+export const contactMessages = pgTable('contact_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  message: text('message').notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('new'), // 'new', 'read', 'archived'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

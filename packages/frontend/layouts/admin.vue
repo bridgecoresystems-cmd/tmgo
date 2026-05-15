@@ -113,6 +113,7 @@ import {
   PersonOutline,
   DocumentTextOutline,
   CalendarOutline,
+  ChatbubbleOutline,
 } from '@vicons/ionicons5'
 
 const { t } = useI18n()
@@ -138,6 +139,7 @@ const pageTitle = computed(() => {
     '/admin/orders': t('layout.admin.allOrders'),
     '/admin/vehicles': t('layout.admin.vehicles'),
     '/admin/profile': t('layout.admin.profile'),
+    '/admin/contacts': t('admin.adminIndex.contactMessages'),
   }
   return titles[route.path] || t('layout.admin.controlPanel')
 })
@@ -153,6 +155,7 @@ const menuOptions = computed<MenuOption[]>(() => [
   { label: t('layout.admin.users'), key: '/admin/users', icon: renderIcon(PeopleOutline) },
   { label: t('layout.admin.mailing'), key: '/admin/mailing', icon: renderIcon(MailOutline) },
   { label: t('layout.admin.vehicles'), key: '/admin/vehicles', icon: renderIcon(CarOutline) },
+  { label: t('admin.adminIndex.contactMessages'), key: '/admin/contacts', icon: renderIcon(ChatbubbleOutline) },
   { label: t('layout.admin.legalDocs'), key: '/admin/legal', icon: renderIcon(DocumentTextOutline) },
   {
     label: t('layout.admin.settings'),

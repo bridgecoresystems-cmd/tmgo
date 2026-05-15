@@ -235,7 +235,8 @@
     "statTotalOrders": "Всего заказов",
     "statActiveTrips": "Активные рейсы",
     "statRevenue": "Выручка (мес)",
-    "statNewClients": "Новые клиенты"
+    "statNewClients": "Новые клиенты",
+    "contactMessages": "Сообщения обратной связи"
   },
   "profile": {
     "changePhoto": "Изменить фото",
