@@ -549,7 +549,10 @@
     "loadError": "Ýüklemek ýalňyşlygy"
   },
   "chat": {
-    "title": "Habarlar"
+    "title": "Habarlar",
+    "loading": "Ýüklenýär...",
+    "noChats": "Habarlar ýok",
+    "client": "Sargytçy"
   },
   "citizenships": {
     "title": "Raýatlyklar",

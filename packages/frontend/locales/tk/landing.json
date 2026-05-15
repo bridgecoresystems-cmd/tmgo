@@ -81,6 +81,19 @@
       }
     }
   },
+  "search": {
+    "from": "Nireden",
+    "to": "Nirä",
+    "swap": "Çalyşmak",
+    "mode": {
+      "cargo": "📦 Ýük gözleýärin",
+      "truck": "🚛 Ulag gözleýärin"
+    },
+    "submit": {
+      "cargo": "Ýük tap",
+      "truck": "Ulag tap"
+    }
+  },
   "meta": {
     "title": "tmGo — Işewürlik üçin platforma",
     "description": "Ýük daşamak üçin köpsebitli platforma. Sargytçylary we daşaýjylary birleşdirýäris."

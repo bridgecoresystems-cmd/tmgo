@@ -15,17 +15,17 @@
             <!-- Mode toggle -->
             <div class="mode-toggle">
               <button :class="['mode-btn', { active: searchMode === 'cargo' }]" @click="searchMode = 'cargo'">
-                📦 Ищу груз
+                {{ $t('search.mode.cargo') }}
               </button>
               <button :class="['mode-btn', { active: searchMode === 'truck' }]" @click="searchMode = 'truck'">
-                🚛 Ищу машину
+                {{ $t('search.mode.truck') }}
               </button>
             </div>
 
             <!-- Route inputs -->
             <div class="hero-route">
               <div class="hero-field">
-                <div class="hero-field-label">Откуда</div>
+                <div class="hero-field-label">{{ $t('search.from') }}</div>
                 <n-select
                   v-model:value="heroForm.fromCountry"
                   :options="countryOptions"
@@ -43,10 +43,10 @@
                 />
               </div>
 
-              <button class="hero-swap" @click="swapHero" title="Поменять местами">⇄</button>
+              <button class="hero-swap" @click="swapHero" :title="$t('search.swap')">⇄</button>
 
               <div class="hero-field">
-                <div class="hero-field-label">Куда</div>
+                <div class="hero-field-label">{{ $t('search.to') }}</div>
                 <n-select
                   v-model:value="heroForm.toCountry"
                   :options="countryOptions"
@@ -66,7 +66,7 @@
             </div>
 
             <n-button type="primary" block size="large" class="hero-btn" @click="heroSearch">
-              {{ searchMode === 'cargo' ? 'Найти груз' : 'Найти машину' }}
+              {{ searchMode === 'cargo' ? $t('search.submit.cargo') : $t('search.submit.truck') }}
             </n-button>
           </div>
         </div>
@@ -180,7 +180,7 @@ function heroSearch() {
   if (heroForm.fromCity) q.fromCity = heroForm.fromCity
   if (heroForm.toCountry) q.toCountry = heroForm.toCountry
   if (heroForm.toCity) q.toCity = heroForm.toCity
-  navigateTo({ path: '/search', query: q })
+  navigateTo({ path: '/landing/search', query: q })
 }
 
 useHead({

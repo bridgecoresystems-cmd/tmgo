@@ -549,7 +549,10 @@
     "loadError": "Load error"
   },
   "chat": {
-    "title": "Messages"
+    "title": "Messages",
+    "loading": "Loading...",
+    "noChats": "No chats",
+    "client": "Client"
   },
   "citizenships": {
     "title": "Citizenships",

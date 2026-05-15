@@ -3,7 +3,10 @@
     "title": "Habarlar",
     "loading": "Gürrüňdeşlikler ýüklenýär...",
     "noChats": "Işjeň gürrüňdeşlikler ýok",
-    "client": "Müşderi"
+    "noDrivers": "Elýeterli daşaýjylar ýok",
+    "client": "Müşderi",
+    "chatWith": "{name} bilen gürrüňdeşlik",
+    "driverCount": "{n} daşaýjy"
   },
   "dashboard": {
     "contactData": "Aragatnaşyk maglumatlary",

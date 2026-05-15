@@ -44,7 +44,7 @@
               <div class="ccb-picker__item-title">{{ order.title }}</div>
               <div class="ccb-picker__item-sub">
                 {{ order.fromCity }} → {{ order.toCity }}
-                <NTag size="tiny" :bordered="false" class="ccb-status-tag">{{ order.status }}</NTag>
+                <NTag size="tiny" :bordered="false" class="ccb-status-tag">{{ t('client.orders.status_' + order.status) }}</NTag>
               </div>
               <div class="ccb-picker__item-meta">
                 {{ t('client.chat.driverCount', { n: order.drivers.length }) }}

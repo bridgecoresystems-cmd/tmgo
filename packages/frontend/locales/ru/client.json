@@ -3,7 +3,10 @@
     "title": "Сообщения",
     "loading": "Загрузка чатов...",
     "noChats": "Нет активных чатов",
-    "client": "Заказчик"
+    "noDrivers": "Нет доступных перевозчиков",
+    "client": "Заказчик",
+    "chatWith": "Чат с {name}",
+    "driverCount": "{n} перевозчиков"
   },
   "dashboard": {
     "contactData": "Контактные данные",

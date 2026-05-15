@@ -424,7 +424,7 @@ function applyFilters() {
   page.value = 1
   const q = buildQuery()
   delete q.page; delete q.limit
-  router.push({ path: '/search', query: q })
+  router.push({ path: '/landing/search', query: q })
   showMobileFilters.value = false
   fetchOrders()
 }

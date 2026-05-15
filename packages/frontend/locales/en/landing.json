@@ -81,6 +81,19 @@
       }
     }
   },
+  "search": {
+    "from": "From",
+    "to": "To",
+    "swap": "Swap",
+    "mode": {
+      "cargo": "📦 Find cargo",
+      "truck": "🚛 Find truck"
+    },
+    "submit": {
+      "cargo": "Find cargo",
+      "truck": "Find truck"
+    }
+  },
   "meta": {
     "title": "tmGo — Business Platform",
     "description": "Multi-regional freight platform. Connecting shippers and carriers."

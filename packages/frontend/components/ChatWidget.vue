@@ -607,7 +607,7 @@ onUnmounted(() => {
 
 .cw-footer-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 6px;
 }
 

@@ -3,7 +3,10 @@
     "title": "Messages",
     "loading": "Loading chats...",
     "noChats": "No active chats",
-    "client": "Client"
+    "noDrivers": "No available carriers",
+    "client": "Client",
+    "chatWith": "Chat with {name}",
+    "driverCount": "{n} carriers"
   },
   "dashboard": {
     "contactData": "Contact information",
