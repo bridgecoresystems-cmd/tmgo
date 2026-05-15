@@ -97,5 +97,75 @@
   "meta": {
     "title": "tmGo — Платформа для бизнеса",
     "description": "Мультирегиональная платформа для грузоперевозок. Объединяем заказчиков и перевозчиков."
+  },
+  "searchPage": {
+    "filters": {
+      "title": "Фильтры",
+      "resetAll": "Сбросить всё",
+      "route": "Маршрут",
+      "from": "Откуда",
+      "to": "Куда",
+      "country": "Страна",
+      "city": "Город",
+      "cargo": "Груз",
+      "cargoType": "Тип груза",
+      "anyType": "Любой",
+      "weight": "Вес, кг",
+      "volume": "Объём, м³",
+      "packaging": "Упаковка",
+      "anyPackaging": "Любая",
+      "date": "Дата",
+      "loadingFrom": "Погрузка с",
+      "anyDate": "Любая дата",
+      "rangeFrom": "От",
+      "rangeTo": "До",
+      "find": "Найти"
+    },
+    "view": {
+      "list": "Список",
+      "map": "Карта"
+    },
+    "map": {
+      "pickFrom": "Откуда",
+      "pickTo": "Куда",
+      "geocoding": "Определяю...",
+      "clickOnMap": "Кликни на карте",
+      "nearMe": "Рядом со мной",
+      "locating": "Определяю...",
+      "legendPublished": "Открытый",
+      "legendNegotiating": "В переговорах",
+      "youAreHere": "Вы здесь",
+      "respondLink": "Откликнуться →",
+      "noGeo": "Геолокация не поддерживается",
+      "geoError": "Не удалось получить геолокацию. Проверьте разрешения браузера."
+    },
+    "results": {
+      "loading": "Поиск...",
+      "loadingCargo": "Ищем грузы...",
+      "empty": "Грузов по вашему запросу не найдено",
+      "resetFilters": "Сбросить фильтры",
+      "loadingDate": "Погрузка:",
+      "published": "Открытый",
+      "negotiating": "В переговорах",
+      "respond": "Откликнуться",
+      "ordersOne": "груз",
+      "ordersFew": "груза",
+      "ordersMany": "грузов"
+    },
+    "routeSummary": {
+      "from": "Из {city}",
+      "to": "В {city}"
+    },
+    "packaging": {
+      "bulk": "Навалом",
+      "boxes": "Коробки",
+      "pallets": "Паллеты",
+      "container": "Контейнер",
+      "other": "Другое"
+    },
+    "weight": {
+      "t": "т",
+      "kg": "кг"
+    }
   }
 }

@@ -78,33 +78,72 @@ definePageMeta({
 })
 
 const { t } = useI18n()
+const { apiBase: API } = useApiBase()
+
+const loading = ref(true)
+const dashboardData = ref<any>(null)
+
+async function fetchDashboard() {
+  loading.value = true
+  try {
+    const data = await $fetch<any>(`${API}/admin/dashboard/stats`, { credentials: 'include' })
+    dashboardData.value = data
+  } catch (e) {
+    console.error('Failed to fetch dashboard stats', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchDashboard()
+})
 
 const stats = computed(() => [
-  { title: t('admin.adminIndex.statTotalOrders'), value: 124, icon: '📦', trend: 12 },
-  { title: t('admin.adminIndex.statActiveTrips'), value: 18, icon: '🚛', trend: 5 },
-  { title: t('admin.adminIndex.statRevenue'), value: '45,200', icon: '💰', trend: 8 },
-  { title: t('admin.adminIndex.statNewClients'), value: 32, icon: '👥', trend: -2 }
+  { 
+    title: t('admin.adminIndex.statTotalOrders'), 
+    value: dashboardData.value?.stats?.totalOrders || 0, 
+    icon: '📦', 
+    trend: dashboardData.value?.stats?.trends?.totalOrders || 0 
+  },
+  { 
+    title: t('admin.adminIndex.statActiveTrips'), 
+    value: dashboardData.value?.stats?.activeTrips || 0, 
+    icon: '🚛', 
+    trend: dashboardData.value?.stats?.trends?.activeTrips || 0 
+  },
+  { 
+    title: t('admin.adminIndex.statRevenue'), 
+    value: dashboardData.value?.stats?.revenue || '0', 
+    icon: '💰', 
+    trend: dashboardData.value?.stats?.trends?.revenue || 0 
+  },
+  { 
+    title: t('admin.adminIndex.statNewClients'), 
+    value: dashboardData.value?.stats?.newClients || 0, 
+    icon: '👥', 
+    trend: dashboardData.value?.stats?.trends?.newClients || 0 
+  }
 ])
 
-const recentOrders = [
-  { id: '1024', route: 'Ашхабад → Мары', status: 'В пути', price: '1,200' },
-  { id: '1023', route: 'Балканабат → Туркменбаши', status: 'Выполнен', price: '850' },
-  { id: '1022', route: 'Дашогуз → Ашхабад', status: 'Ожидание', price: '2,100' },
-  { id: '1021', route: 'Мары → Туркменабат', status: 'Отменен', price: '600' }
-]
-
-const recentUsers = [
-  { name: 'Аман Аманов', email: 'aman@mail.com', role: 'Перевозчик' },
-  { name: 'Ораз Оразов', email: 'oraz@mail.com', role: 'Заказчик' },
-  { name: 'Дженнет С.', email: 'jennet@mail.com', role: 'Заказчик' }
-]
+const recentOrders = computed(() => dashboardData.value?.recentOrders || [])
+const recentUsers = computed(() => dashboardData.value?.recentUsers || [])
 
 const getStatusType = (status: string) => {
-  switch (status) {
-    case 'В пути': return 'info'
-    case 'Выполнен': return 'success'
-    case 'Ожидание': return 'warning'
-    case 'Отменен': return 'error'
+  // Try to match both EN status and RU translated status if needed
+  switch (status.toLowerCase()) {
+    case 'in_transit':
+    case 'pickup':
+    case 'delivering':
+    case 'в пути': return 'info'
+    case 'completed':
+    case 'delivered':
+    case 'выполнен': return 'success'
+    case 'pending':
+    case 'published':
+    case 'ожидание': return 'warning'
+    case 'cancelled':
+    case 'отменен': return 'error'
     default: return 'default'
   }
 }

@@ -5,7 +5,7 @@
       <!-- Mobile: filter toggle -->
       <div class="mobile-filter-bar">
         <button class="mobile-filter-btn" @click="showMobileFilters = !showMobileFilters">
-          ⚙ Фильтры<span v-if="activeFilterCount > 0" class="filter-count">{{ activeFilterCount }}</span>
+          ⚙ {{ $t('searchPage.filters.title') }}<span v-if="activeFilterCount > 0" class="filter-count">{{ activeFilterCount }}</span>
         </button>
         <div class="mobile-view-toggle">
           <button :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'">☰</button>
@@ -16,20 +16,20 @@
       <!-- Sidebar filters -->
       <aside class="filters-sidebar" :class="{ 'mobile-open': showMobileFilters }">
         <div class="filters-head">
-          <span class="filters-title">Фильтры</span>
-          <button v-if="activeFilterCount > 0" class="btn-reset" @click="clearFilters">Сбросить всё</button>
+          <span class="filters-title">{{ $t('searchPage.filters.title') }}</span>
+          <button v-if="activeFilterCount > 0" class="btn-reset" @click="clearFilters">{{ $t('searchPage.filters.resetAll') }}</button>
         </div>
 
-        <n-divider title-placement="left"><span class="divider-label">Маршрут</span></n-divider>
+        <n-divider title-placement="left"><span class="divider-label">{{ $t('searchPage.filters.route') }}</span></n-divider>
 
         <div class="filter-group">
-          <div class="filter-label">Откуда</div>
-          <n-select v-model:value="filters.fromCountry" :options="countryOptions" placeholder="Страна" clearable filterable size="small" style="margin-bottom: 8px" />
+          <div class="filter-label">{{ $t('searchPage.filters.from') }}</div>
+          <n-select v-model:value="filters.fromCountry" :options="countryOptions" :placeholder="$t('searchPage.filters.country')" clearable filterable size="small" style="margin-bottom: 8px" />
           <n-auto-complete
             v-model:value="filters.fromCity"
             :options="fromCitySuggestions"
             :loading="fromCityLoading"
-            placeholder="Город"
+            :placeholder="$t('searchPage.filters.city')"
             size="small"
             clearable
             blur-after-select
@@ -38,13 +38,13 @@
         </div>
 
         <div class="filter-group">
-          <div class="filter-label">Куда</div>
-          <n-select v-model:value="filters.toCountry" :options="countryOptions" placeholder="Страна" clearable filterable size="small" style="margin-bottom: 8px" />
+          <div class="filter-label">{{ $t('searchPage.filters.to') }}</div>
+          <n-select v-model:value="filters.toCountry" :options="countryOptions" :placeholder="$t('searchPage.filters.country')" clearable filterable size="small" style="margin-bottom: 8px" />
           <n-auto-complete
             v-model:value="filters.toCity"
             :options="toCitySuggestions"
             :loading="toCityLoading"
-            placeholder="Город"
+            :placeholder="$t('searchPage.filters.city')"
             size="small"
             clearable
             blur-after-select
@@ -52,44 +52,44 @@
           />
         </div>
 
-        <n-divider title-placement="left"><span class="divider-label">Груз</span></n-divider>
+        <n-divider title-placement="left"><span class="divider-label">{{ $t('searchPage.filters.cargo') }}</span></n-divider>
 
         <div class="filter-group">
-          <div class="filter-label">Тип груза</div>
-          <n-input v-model:value="filters.cargoType" placeholder="Любой" size="small" clearable />
+          <div class="filter-label">{{ $t('searchPage.filters.cargoType') }}</div>
+          <n-input v-model:value="filters.cargoType" :placeholder="$t('searchPage.filters.anyType')" size="small" clearable />
         </div>
 
         <div class="filter-group">
-          <div class="filter-label">Вес, кг</div>
+          <div class="filter-label">{{ $t('searchPage.filters.weight') }}</div>
           <div class="range-row">
-            <n-input-number v-model:value="filters.weightMin" placeholder="От" size="small" :min="0" :show-button="false" style="flex: 1" />
+            <n-input-number v-model:value="filters.weightMin" :placeholder="$t('searchPage.filters.rangeFrom')" size="small" :min="0" :show-button="false" style="flex: 1" />
             <span class="range-sep">—</span>
-            <n-input-number v-model:value="filters.weightMax" placeholder="До" size="small" :min="0" :show-button="false" style="flex: 1" />
+            <n-input-number v-model:value="filters.weightMax" :placeholder="$t('searchPage.filters.rangeTo')" size="small" :min="0" :show-button="false" style="flex: 1" />
           </div>
         </div>
 
         <div class="filter-group">
-          <div class="filter-label">Объём, м³</div>
+          <div class="filter-label">{{ $t('searchPage.filters.volume') }}</div>
           <div class="range-row">
-            <n-input-number v-model:value="filters.volumeMin" placeholder="От" size="small" :min="0" :show-button="false" style="flex: 1" />
+            <n-input-number v-model:value="filters.volumeMin" :placeholder="$t('searchPage.filters.rangeFrom')" size="small" :min="0" :show-button="false" style="flex: 1" />
             <span class="range-sep">—</span>
-            <n-input-number v-model:value="filters.volumeMax" placeholder="До" size="small" :min="0" :show-button="false" style="flex: 1" />
+            <n-input-number v-model:value="filters.volumeMax" :placeholder="$t('searchPage.filters.rangeTo')" size="small" :min="0" :show-button="false" style="flex: 1" />
           </div>
         </div>
 
         <div class="filter-group">
-          <div class="filter-label">Упаковка</div>
-          <n-select v-model:value="filters.packaging" :options="packagingOptions" placeholder="Любая" clearable size="small" />
+          <div class="filter-label">{{ $t('searchPage.filters.packaging') }}</div>
+          <n-select v-model:value="filters.packaging" :options="packagingOptions" :placeholder="$t('searchPage.filters.anyPackaging')" clearable size="small" />
         </div>
 
-        <n-divider title-placement="left"><span class="divider-label">Дата</span></n-divider>
+        <n-divider title-placement="left"><span class="divider-label">{{ $t('searchPage.filters.date') }}</span></n-divider>
 
         <div class="filter-group">
-          <div class="filter-label">Погрузка с</div>
-          <n-date-picker v-model:value="readyFromMs" type="date" placeholder="Любая дата" clearable size="small" style="width: 100%" />
+          <div class="filter-label">{{ $t('searchPage.filters.loadingFrom') }}</div>
+          <n-date-picker v-model:value="readyFromMs" type="date" :placeholder="$t('searchPage.filters.anyDate')" clearable size="small" style="width: 100%" />
         </div>
 
-        <n-button type="primary" block style="margin-top: 20px" @click="applyFilters">Найти</n-button>
+        <n-button type="primary" block style="margin-top: 20px" @click="applyFilters">{{ $t('searchPage.filters.find') }}</n-button>
       </aside>
 
       <!-- Results area -->
@@ -97,7 +97,7 @@
         <div class="results-header">
           <div class="results-meta">
             <span class="results-count">
-              <template v-if="loading">Поиск...</template>
+              <template v-if="loading">{{ $t('searchPage.results.loading') }}</template>
               <template v-else><strong>{{ total }}</strong> {{ pluralOrders(total) }}</template>
             </span>
             <div v-if="routeSummary" class="route-summary-label">{{ routeSummary }}</div>
@@ -106,10 +106,10 @@
           <!-- View toggle (desktop) -->
           <div class="view-toggle">
             <button :class="['toggle-btn', { active: viewMode === 'list' }]" @click="viewMode = 'list'">
-              ☰ Список
+              ☰ {{ $t('searchPage.view.list') }}
             </button>
             <button :class="['toggle-btn', { active: viewMode === 'map' }]" @click="viewMode = 'map'">
-              🗺 Карта
+              🗺 {{ $t('searchPage.view.map') }}
             </button>
           </div>
         </div>
@@ -123,14 +123,14 @@
                 :disabled="geocoding"
                 @click="pickMode = pickMode === 'from' ? null : 'from'"
               >
-                🔵 {{ pickMode === 'from' ? (geocoding ? 'Определяю...' : 'Кликни на карте') : 'Откуда' }}
+                🔵 {{ pickMode === 'from' ? (geocoding ? $t('searchPage.map.geocoding') : $t('searchPage.map.clickOnMap')) : $t('searchPage.map.pickFrom') }}
               </button>
               <button
                 :class="['btn-pick', { active: pickMode === 'to' }]"
                 :disabled="geocoding"
                 @click="pickMode = pickMode === 'to' ? null : 'to'"
               >
-                🔴 {{ pickMode === 'to' ? (geocoding ? 'Определяю...' : 'Кликни на карте') : 'Куда' }}
+                🔴 {{ pickMode === 'to' ? (geocoding ? $t('searchPage.map.geocoding') : $t('searchPage.map.clickOnMap')) : $t('searchPage.map.pickTo') }}
               </button>
               <div v-if="filters.fromCity || filters.toCity" class="pick-summary">
                 <span v-if="filters.fromCity">{{ filters.fromCity }}</span>
@@ -141,11 +141,11 @@
             </div>
             <div class="toolbar-right">
               <button class="btn-near-me" @click="nearMe" :disabled="locating">
-                {{ locating ? '⏳ Определяю...' : '📍 Рядом со мной' }}
+                {{ locating ? ('⏳ ' + $t('searchPage.map.locating')) : ('📍 ' + $t('searchPage.map.nearMe')) }}
               </button>
               <div class="map-legend">
-                <span class="legend-dot published" /> Открытый
-                <span class="legend-dot negotiating" /> В переговорах
+                <span class="legend-dot published" /> {{ $t('searchPage.map.legendPublished') }}
+                <span class="legend-dot negotiating" /> {{ $t('searchPage.map.legendNegotiating') }}
               </div>
             </div>
           </div>
@@ -156,12 +156,12 @@
         <template v-if="viewMode === 'list'">
           <div v-if="loading" class="state-center">
             <n-spin size="large" />
-            <p class="state-text">Ищем грузы...</p>
+            <p class="state-text">{{ $t('searchPage.results.loadingCargo') }}</p>
           </div>
 
-          <n-empty v-else-if="orders.length === 0" description="Грузов по вашему запросу не найдено" style="padding: 80px 0">
+          <n-empty v-else-if="orders.length === 0" :description="$t('searchPage.results.empty')" style="padding: 80px 0">
             <template #extra>
-              <n-button @click="clearFilters">Сбросить фильтры</n-button>
+              <n-button @click="clearFilters">{{ $t('searchPage.results.resetFilters') }}</n-button>
             </template>
           </n-empty>
 
@@ -196,12 +196,12 @@
               </div>
 
               <div class="card-footer">
-                <span class="card-date" v-if="order.readyDate">📅 Погрузка: {{ formatDate(order.readyDate) }}</span>
+                <span class="card-date" v-if="order.readyDate">📅 {{ $t('searchPage.results.loadingDate') }} {{ formatDate(order.readyDate) }}</span>
                 <div class="card-footer-right">
                   <n-tag :type="order.status === 'published' ? 'success' : 'warning'" size="small" :bordered="false">
-                    {{ order.status === 'published' ? 'Открытый' : 'В переговорах' }}
+                    {{ order.status === 'published' ? $t('searchPage.results.published') : $t('searchPage.results.negotiating') }}
                   </n-tag>
-                  <n-button size="small" type="primary" ghost @click="navigateTo('/auth')">Откликнуться</n-button>
+                  <n-button size="small" type="primary" ghost @click="navigateTo('/auth')">{{ $t('searchPage.results.respond') }}</n-button>
                 </div>
               </div>
             </div>
@@ -225,6 +225,7 @@ const route = useRoute()
 const router = useRouter()
 const { COUNTRY_LIST } = useCountryConfig()
 const { apiBase } = useApiBase()
+const { t, locale } = useI18n()
 
 // ── Filters ──────────────────────────────────────────────────────────────────
 const filters = reactive({
@@ -287,13 +288,13 @@ function onToCityInput(val: string) {
 watch(() => filters.fromCountry, () => { filters.fromCity = ''; fromCitySuggestions.value = [] })
 watch(() => filters.toCountry,   () => { filters.toCity   = ''; toCitySuggestions.value   = [] })
 
-const packagingOptions = [
-  { label: 'Навалом',    value: 'bulk'      },
-  { label: 'Коробки',    value: 'boxes'     },
-  { label: 'Паллеты',    value: 'pallets'   },
-  { label: 'Контейнер',  value: 'container' },
-  { label: 'Другое',     value: 'other'     },
-]
+const packagingOptions = computed(() => [
+  { label: t('searchPage.packaging.bulk'),      value: 'bulk'      },
+  { label: t('searchPage.packaging.boxes'),     value: 'boxes'     },
+  { label: t('searchPage.packaging.pallets'),   value: 'pallets'   },
+  { label: t('searchPage.packaging.container'), value: 'container' },
+  { label: t('searchPage.packaging.other'),     value: 'other'     },
+])
 
 // ── City coords (для карты) ───────────────────────────────────────────────────
 const CITY_COORDS: Record<string, [number, number]> = {
@@ -353,8 +354,8 @@ const routeSummary = computed(() => {
   const from = [countryLabel(filters.fromCountry), filters.fromCity].filter(Boolean).join(', ')
   const to   = [countryLabel(filters.toCountry),   filters.toCity  ].filter(Boolean).join(', ')
   if (from && to) return `${from} → ${to}`
-  if (from) return `Из ${from}`
-  if (to)   return `В ${to}`
+  if (from) return t('searchPage.routeSummary.from', { city: from })
+  if (to)   return t('searchPage.routeSummary.to',   { city: to })
   return ''
 })
 
@@ -365,26 +366,34 @@ function countryLabel(code: string | null) {
 }
 
 function packagingLabel(val: string | null) {
-  return packagingOptions.find(p => p.value === val)?.label ?? val ?? ''
+  return packagingOptions.value.find(p => p.value === val)?.label ?? val ?? ''
 }
 
 function formatWeight(w: string | null) {
   if (!w) return ''
   const n = parseFloat(w)
-  return n >= 1000 ? `${(n / 1000).toFixed(1)} т` : `${n} кг`
+  return n >= 1000
+    ? `${(n / 1000).toFixed(1)} ${t('searchPage.weight.t')}`
+    : `${n} ${t('searchPage.weight.kg')}`
 }
 
+const DATE_LOCALE_MAP: Record<string, string> = { ru: 'ru-RU', en: 'en-US', tk: 'tk-TM' }
+
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+  return new Date(d).toLocaleDateString(DATE_LOCALE_MAP[locale.value] ?? 'ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 function pluralOrders(n: number) {
-  const r = n % 100
-  if (r >= 11 && r <= 19) return 'грузов'
-  const r2 = n % 10
-  if (r2 === 1) return 'груз'
-  if (r2 >= 2 && r2 <= 4) return 'груза'
-  return 'грузов'
+  if (locale.value === 'ru') {
+    const r = n % 100
+    if (r >= 11 && r <= 19) return t('searchPage.results.ordersMany')
+    const r2 = n % 10
+    if (r2 === 1) return t('searchPage.results.ordersOne')
+    if (r2 >= 2 && r2 <= 4) return t('searchPage.results.ordersFew')
+    return t('searchPage.results.ordersMany')
+  }
+  if (n === 1) return t('searchPage.results.ordersOne')
+  return t('searchPage.results.ordersMany')
 }
 
 function buildQuery() {
@@ -568,7 +577,7 @@ function updateMapMarkers() {
                style="display:inline-block;background:#ff6b4a;color:#fff;
                       border-radius:6px;padding:4px 12px;font-size:12px;
                       font-weight:600;text-decoration:none">
-              Откликнуться →
+              ${t('searchPage.map.respondLink')}
             </a>
           </div>
         </div>
@@ -577,7 +586,7 @@ function updateMapMarkers() {
 }
 
 async function nearMe() {
-  if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return }
+  if (!navigator.geolocation) { alert(t('searchPage.map.noGeo')); return }
   if (!leafletMap) await initMap()
 
   locating.value = true
@@ -602,14 +611,14 @@ async function nearMe() {
         }),
       })
         .addTo(leafletMap)
-        .bindPopup('<b>📍 Вы здесь</b>')
+        .bindPopup(`<b>📍 ${t('searchPage.map.youAreHere')}</b>`)
         .openPopup()
 
       leafletMap.setView([lat, lng], 7)
     },
     () => {
       locating.value = false
-      alert('Не удалось получить геолокацию. Проверьте разрешения браузера.')
+      alert(t('searchPage.map.geoError'))
     }
   )
 }

@@ -97,5 +97,75 @@
   "meta": {
     "title": "tmGo — Business Platform",
     "description": "Multi-regional freight platform. Connecting shippers and carriers."
+  },
+  "searchPage": {
+    "filters": {
+      "title": "Filters",
+      "resetAll": "Reset all",
+      "route": "Route",
+      "from": "From",
+      "to": "To",
+      "country": "Country",
+      "city": "City",
+      "cargo": "Cargo",
+      "cargoType": "Cargo type",
+      "anyType": "Any",
+      "weight": "Weight, kg",
+      "volume": "Volume, m³",
+      "packaging": "Packaging",
+      "anyPackaging": "Any",
+      "date": "Date",
+      "loadingFrom": "Loading from",
+      "anyDate": "Any date",
+      "rangeFrom": "From",
+      "rangeTo": "To",
+      "find": "Search"
+    },
+    "view": {
+      "list": "List",
+      "map": "Map"
+    },
+    "map": {
+      "pickFrom": "From",
+      "pickTo": "To",
+      "geocoding": "Locating...",
+      "clickOnMap": "Click on map",
+      "nearMe": "Near me",
+      "locating": "Locating...",
+      "legendPublished": "Open",
+      "legendNegotiating": "In negotiation",
+      "youAreHere": "You are here",
+      "respondLink": "Respond →",
+      "noGeo": "Geolocation is not supported",
+      "geoError": "Could not get your location. Check browser permissions."
+    },
+    "results": {
+      "loading": "Searching...",
+      "loadingCargo": "Searching cargoes...",
+      "empty": "No cargo found for your query",
+      "resetFilters": "Reset filters",
+      "loadingDate": "Loading:",
+      "published": "Open",
+      "negotiating": "In negotiation",
+      "respond": "Respond",
+      "ordersOne": "cargo",
+      "ordersFew": "cargoes",
+      "ordersMany": "cargoes"
+    },
+    "routeSummary": {
+      "from": "From {city}",
+      "to": "To {city}"
+    },
+    "packaging": {
+      "bulk": "Bulk",
+      "boxes": "Boxes",
+      "pallets": "Pallets",
+      "container": "Container",
+      "other": "Other"
+    },
+    "weight": {
+      "t": "t",
+      "kg": "kg"
+    }
   }
 }

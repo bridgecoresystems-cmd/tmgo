@@ -97,5 +97,75 @@
   "meta": {
     "title": "tmGo — Işewürlik üçin platforma",
     "description": "Ýük daşamak üçin köpsebitli platforma. Sargytçylary we daşaýjylary birleşdirýäris."
+  },
+  "searchPage": {
+    "filters": {
+      "title": "Süzgüçler",
+      "resetAll": "Hemmesini arassala",
+      "route": "Ugur",
+      "from": "Nireden",
+      "to": "Nirä",
+      "country": "Ýurt",
+      "city": "Şäher",
+      "cargo": "Ýük",
+      "cargoType": "Ýük görnüşi",
+      "anyType": "Islendik",
+      "weight": "Agramy, kg",
+      "volume": "Göwrümi, m³",
+      "packaging": "Gaplaýyş",
+      "anyPackaging": "Islendik",
+      "date": "Sene",
+      "loadingFrom": "Ýüklemeden başlap",
+      "anyDate": "Islendik sene",
+      "rangeFrom": "Dan",
+      "rangeTo": "Çenli",
+      "find": "Gözle"
+    },
+    "view": {
+      "list": "Sanaw",
+      "map": "Karta"
+    },
+    "map": {
+      "pickFrom": "Nireden",
+      "pickTo": "Nirä",
+      "geocoding": "Anyklaýaryn...",
+      "clickOnMap": "Kartada basyň",
+      "nearMe": "Ýanymda",
+      "locating": "Anyklaýaryn...",
+      "legendPublished": "Açyk",
+      "legendNegotiating": "Gepleşiklerde",
+      "youAreHere": "Siz şu ýerdesiniz",
+      "respondLink": "Jogap ber →",
+      "noGeo": "Geolokasiya goldanylmaýar",
+      "geoError": "Ýeriňizi almak başartmady. Brauzeriň rugsat bermelerini barlaň."
+    },
+    "results": {
+      "loading": "Gözleýär...",
+      "loadingCargo": "Ýükleri gözleýär...",
+      "empty": "Siziň soragyňyza laýyk ýük tapylmady",
+      "resetFilters": "Süzgüçleri arassala",
+      "loadingDate": "Ýüklemek:",
+      "published": "Açyk",
+      "negotiating": "Gepleşiklerde",
+      "respond": "Jogap ber",
+      "ordersOne": "ýük",
+      "ordersFew": "ýük",
+      "ordersMany": "ýük"
+    },
+    "routeSummary": {
+      "from": "Nireden: {city}",
+      "to": "Nirä: {city}"
+    },
+    "packaging": {
+      "bulk": "Dökme",
+      "boxes": "Gutular",
+      "pallets": "Palletler",
+      "container": "Kontýeýner",
+      "other": "Beýleki"
+    },
+    "weight": {
+      "t": "t",
+      "kg": "kg"
+    }
   }
 }
