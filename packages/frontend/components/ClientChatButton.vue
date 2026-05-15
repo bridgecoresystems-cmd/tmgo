@@ -375,9 +375,9 @@ defineExpose({ openPicker })
 
 .ccb-unread {
   flex-shrink: 0;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
   background: #ff6b4a;
   color: white;
   font-size: 11px;
@@ -385,7 +385,7 @@ defineExpose({ openPicker })
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 5px;
+  padding: 0 4px;
 }
 .ccb-status-tag { font-size: 10px !important; }
 

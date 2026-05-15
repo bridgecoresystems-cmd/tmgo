@@ -215,6 +215,7 @@ async function loadMessages(orderId: string) {
     console.error('ChatWidget: load messages failed', e)
   } finally {
     loading.value = false
+    scrollBottom()
   }
 }
 
@@ -268,6 +269,10 @@ function closeWs() {
 // WS presence is tied to the chat panel being visible. If we kept it open after
 // modelValue=false, the backend would treat us as "still in the room" and auto-mark
 // every incoming message as read — badges would never appear.
+watch(messages, () => {
+  scrollBottom()
+}, { deep: true })
+
 watch(
   () => ({ open: props.modelValue, orderId: props.orderId, carrierId: props.carrierId }),
   (curr, prev) => {
@@ -507,9 +512,10 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-.cw-body::-webkit-scrollbar { width: 5px; }
-.cw-body::-webkit-scrollbar-track { background: #f8f8f8; }
-.cw-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+.cw-body::-webkit-scrollbar { width: 4px; }
+.cw-body::-webkit-scrollbar-track { background: transparent; }
+.cw-body::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 10px; }
+.cw-body:hover::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.2); }
 
 .cw-center {
   display: flex;

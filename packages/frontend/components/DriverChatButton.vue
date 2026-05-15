@@ -237,6 +237,9 @@ defineExpose({ openPicker })
 }
 
 .dcb-picker__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 12px 16px;
   cursor: pointer;
   border-bottom: 1px solid #f3f4f6;
@@ -244,6 +247,10 @@ defineExpose({ openPicker })
 }
 .dcb-picker__item:last-child { border-bottom: none; }
 .dcb-picker__item:hover { background: #f9fafb; }
+.dcb-picker__item-main {
+  flex: 1;
+  min-width: 0;
+}
 .dcb-picker__item--active { background: #ede9fe; }
 
 .dcb-picker__item-title {
@@ -270,17 +277,17 @@ defineExpose({ openPicker })
 
 .dcb-unread {
   flex-shrink: 0;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 10px;
-  background: #667eea;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: #ef4444;
   color: white;
   font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 5px;
+  padding: 0 4px;
 }
 
 .dcb-slide-enter-active {
