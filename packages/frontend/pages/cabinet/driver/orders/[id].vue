@@ -18,7 +18,7 @@
               <div class="route-stop">
                 <span class="dot from-dot" />
                 <div>
-                  <div class="stop-city">{{ order.fromCity }}</div>
+                  <div class="stop-city">{{ order.fromRegion ? order.fromRegion + ', ' : '' }}{{ order.fromCity }}</div>
                   <div class="stop-country">{{ order.fromCountry }}</div>
                 </div>
               </div>
@@ -26,7 +26,7 @@
               <div class="route-stop">
                 <span class="dot to-dot" />
                 <div>
-                  <div class="stop-city">{{ order.toCity }}</div>
+                  <div class="stop-city">{{ order.toRegion ? order.toRegion + ', ' : '' }}{{ order.toCity }}</div>
                   <div class="stop-country">{{ order.toCountry }}</div>
                 </div>
               </div>

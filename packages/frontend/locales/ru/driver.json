@@ -509,7 +509,10 @@
     "cargoType": "Тип груза",
     "packaging": "Упаковка",
     "myBidAmountLabel": "Ставка",
-    "respondHint": "Откликнуться →"
+    "respondHint": "Откликнуться →",
+    "filterTitle": "Фильтры поиска",
+    "regionPlaceholder": "Регион/область",
+    "cityPlaceholder": "Город"
   },
   "services": {
     "title": "Мои услуги",

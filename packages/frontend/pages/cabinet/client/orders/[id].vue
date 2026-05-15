@@ -15,7 +15,7 @@
 
         <n-descriptions bordered :column="2" size="small">
           <n-descriptions-item :label="t('client.orders.route')">
-            {{ order.fromCity }} ({{ order.fromCountry }}) → {{ order.toCity }} ({{ order.toCountry }})
+            {{ order.fromRegion ? order.fromRegion + ', ' : '' }}{{ order.fromCity }} ({{ order.fromCountry }}) → {{ order.toRegion ? order.toRegion + ', ' : '' }}{{ order.toCity }} ({{ order.toCountry }})
           </n-descriptions-item>
           <n-descriptions-item :label="t('client.orders.readyDate')">
             {{ order.readyDate ?? '—' }}

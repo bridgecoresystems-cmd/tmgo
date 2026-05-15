@@ -28,18 +28,39 @@
                 <div class="hero-field-label">{{ $t('search.from') }}</div>
                 <n-select
                   v-model:value="heroForm.fromCountry"
-                  :options="countryOptions"
-                  placeholder="Страна"
+                  :options="fromCountryOptions"
+                  :placeholder="$t('searchPage.filters.country')"
                   filterable
+                  remote
                   clearable
+                  :loading="fromCountryLoading"
+                  @search="onFromCountrySearch"
                   size="small"
                   class="hero-select"
                 />
-                <n-input
-                  v-model:value="heroForm.fromCity"
-                  placeholder="Город"
+                <n-auto-complete
+                  v-model:value="heroForm.fromRegion"
+                  :options="fromRegionSuggestions"
+                  :loading="fromRegionLoading"
+                  :placeholder="$t('searchPage.filters.region')"
                   size="small"
+                  clearable
+                  blur-after-select
+                  @update:value="onFromRegionInput"
                   class="hero-input"
+                  style="margin-top: 8px;"
+                />
+                <n-auto-complete
+                  v-model:value="heroForm.fromCity"
+                  :options="fromCitySuggestions"
+                  :loading="fromCityLoading"
+                  :placeholder="$t('searchPage.filters.city')"
+                  size="small"
+                  clearable
+                  blur-after-select
+                  @update:value="onFromCityInput"
+                  class="hero-input"
+                  style="margin-top: 8px;"
                 />
               </div>
 
@@ -49,18 +70,39 @@
                 <div class="hero-field-label">{{ $t('search.to') }}</div>
                 <n-select
                   v-model:value="heroForm.toCountry"
-                  :options="countryOptions"
-                  placeholder="Страна"
+                  :options="toCountryOptions"
+                  :placeholder="$t('searchPage.filters.country')"
                   filterable
+                  remote
                   clearable
+                  :loading="toCountryLoading"
+                  @search="onToCountrySearch"
                   size="small"
                   class="hero-select"
                 />
-                <n-input
-                  v-model:value="heroForm.toCity"
-                  placeholder="Город"
+                <n-auto-complete
+                  v-model:value="heroForm.toRegion"
+                  :options="toRegionSuggestions"
+                  :loading="toRegionLoading"
+                  :placeholder="$t('searchPage.filters.region')"
                   size="small"
+                  clearable
+                  blur-after-select
+                  @update:value="onToRegionInput"
                   class="hero-input"
+                  style="margin-top: 8px;"
+                />
+                <n-auto-complete
+                  v-model:value="heroForm.toCity"
+                  :options="toCitySuggestions"
+                  :loading="toCityLoading"
+                  :placeholder="$t('searchPage.filters.city')"
+                  size="small"
+                  clearable
+                  blur-after-select
+                  @update:value="onToCityInput"
+                  class="hero-input"
+                  style="margin-top: 8px;"
                 />
               </div>
             </div>
@@ -149,6 +191,40 @@
 const { t } = useI18n()
 const { session, loading } = useAuth()
 const { COUNTRY_LIST } = useCountryConfig()
+const { fetchCountrySuggestions, fetchRegionSuggestions, fetchCitySuggestions } = useNominatim()
+
+const countryOptions = computed(() =>
+  COUNTRY_LIST.map(c => ({ label: `${c.flag} ${c.name}`, value: c.code }))
+)
+
+const fromCountryOptions = ref([...countryOptions.value])
+const toCountryOptions = ref([...countryOptions.value])
+const fromCountryLoading = ref(false)
+const toCountryLoading = ref(false)
+let fromCountryTimer: ReturnType<typeof setTimeout> | null = null
+let toCountryTimer: ReturnType<typeof setTimeout> | null = null
+
+function onFromCountrySearch(query: string) {
+  if (!query) { fromCountryOptions.value = [...countryOptions.value]; return }
+  if (fromCountryTimer) clearTimeout(fromCountryTimer)
+  fromCountryTimer = setTimeout(async () => {
+    fromCountryLoading.value = true
+    const res = await fetchCountrySuggestions(query)
+    fromCountryOptions.value = res.length ? res : [...countryOptions.value]
+    fromCountryLoading.value = false
+  }, 350)
+}
+
+function onToCountrySearch(query: string) {
+  if (!query) { toCountryOptions.value = [...countryOptions.value]; return }
+  if (toCountryTimer) clearTimeout(toCountryTimer)
+  toCountryTimer = setTimeout(async () => {
+    toCountryLoading.value = true
+    const res = await fetchCountrySuggestions(query)
+    toCountryOptions.value = res.length ? res : [...countryOptions.value]
+    toCountryLoading.value = false
+  }, 350)
+}
 
 
 
@@ -159,14 +235,12 @@ const services = [{ key: 'office' }, { key: 'warehouse' }, { key: 'intercity' },
 const searchMode = ref<'cargo' | 'truck'>('cargo')
 const heroForm = reactive({
   fromCountry: null as string | null,
+  fromRegion: '',
   fromCity: '',
   toCountry: null as string | null,
+  toRegion: '',
   toCity: '',
 })
-
-const countryOptions = computed(() =>
-  COUNTRY_LIST.map(c => ({ label: `${c.flag} ${c.name}`, value: c.code }))
-)
 
 function swapHero() {
   const tc = heroForm.fromCountry; const tx = heroForm.fromCity
@@ -177,11 +251,68 @@ function swapHero() {
 function heroSearch() {
   const q: Record<string, string> = {}
   if (heroForm.fromCountry) q.fromCountry = heroForm.fromCountry
-  if (heroForm.fromCity) q.fromCity = heroForm.fromCity
-  if (heroForm.toCountry) q.toCountry = heroForm.toCountry
-  if (heroForm.toCity) q.toCity = heroForm.toCity
+  if (heroForm.fromRegion)  q.fromRegion  = heroForm.fromRegion
+  if (heroForm.fromCity)    q.fromCity    = heroForm.fromCity
+  if (heroForm.toCountry)   q.toCountry   = heroForm.toCountry
+  if (heroForm.toRegion)    q.toRegion    = heroForm.toRegion
+  if (heroForm.toCity)      q.toCity      = heroForm.toCity
   navigateTo({ path: '/landing/search', query: q })
 }
+
+const fromRegionSuggestions = ref<string[]>([])
+const toRegionSuggestions   = ref<string[]>([])
+const fromRegionLoading = ref(false)
+const toRegionLoading   = ref(false)
+let fromRegionTimer: ReturnType<typeof setTimeout> | null = null
+let toRegionTimer:   ReturnType<typeof setTimeout> | null = null
+
+function onFromRegionInput(val: string) {
+  if (fromRegionTimer) clearTimeout(fromRegionTimer)
+  fromRegionTimer = setTimeout(async () => {
+    fromRegionLoading.value = true
+    fromRegionSuggestions.value = await fetchRegionSuggestions(val, heroForm.fromCountry)
+    fromRegionLoading.value = false
+  }, 350)
+}
+
+function onToRegionInput(val: string) {
+  if (toRegionTimer) clearTimeout(toRegionTimer)
+  toRegionTimer = setTimeout(async () => {
+    toRegionLoading.value = true
+    toRegionSuggestions.value = await fetchRegionSuggestions(val, heroForm.toCountry)
+    toRegionLoading.value = false
+  }, 350)
+}
+
+const fromCitySuggestions = ref<string[]>([])
+const toCitySuggestions   = ref<string[]>([])
+const fromCityLoading = ref(false)
+const toCityLoading   = ref(false)
+let fromCityTimer: ReturnType<typeof setTimeout> | null = null
+let toCityTimer:   ReturnType<typeof setTimeout> | null = null
+
+function onFromCityInput(val: string) {
+  if (fromCityTimer) clearTimeout(fromCityTimer)
+  fromCityTimer = setTimeout(async () => {
+    fromCityLoading.value = true
+    fromCitySuggestions.value = await fetchCitySuggestions(val, heroForm.fromCountry, heroForm.fromRegion)
+    fromCityLoading.value = false
+  }, 350)
+}
+
+function onToCityInput(val: string) {
+  if (toCityTimer) clearTimeout(toCityTimer)
+  toCityTimer = setTimeout(async () => {
+    toCityLoading.value = true
+    toCitySuggestions.value = await fetchCitySuggestions(val, heroForm.toCountry, heroForm.toRegion)
+    toCityLoading.value = false
+  }, 350)
+}
+
+watch(() => heroForm.fromCountry, () => { heroForm.fromRegion = ''; heroForm.fromCity = ''; fromRegionSuggestions.value = []; fromCitySuggestions.value = [] })
+watch(() => heroForm.toCountry,   () => { heroForm.toRegion   = ''; heroForm.toCity   = ''; toRegionSuggestions.value   = []; toCitySuggestions.value   = [] })
+watch(() => heroForm.fromRegion,  () => { heroForm.fromCity = ''; fromCitySuggestions.value = [] })
+watch(() => heroForm.toRegion,    () => { heroForm.toCity   = ''; toCitySuggestions.value   = [] })
 
 useHead({
   title: () => t('meta.title'),

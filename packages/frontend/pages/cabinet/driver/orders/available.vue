@@ -12,31 +12,82 @@
     </n-alert>
 
     <!-- Filters -->
-    <n-card style="margin-bottom: 16px">
-      <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
-        <div style="flex: 1; min-width: 140px;">
+    <n-card style="margin-bottom: 16px" :bordered="false" size="small">
+      <div style="font-weight: 600; margin-bottom: 12px; color: #555;">{{ t('driver.orders.filterTitle') || 'Фильтры поиска' }}</div>
+      <n-grid :cols="2" :x-gap="16" :y-gap="12" responsive="screen">
+        <n-gi>
           <div class="filter-label">{{ t('driver.orders.filterFrom') }}</div>
-          <n-select
-            v-model:value="fromCountry"
-            :options="countryOptions"
-            clearable
-            :placeholder="t('driver.orders.filterAny')"
-          />
-        </div>
-        <div style="flex: 1; min-width: 140px;">
+          <n-space vertical :size="8">
+            <n-select
+              v-model:value="fromCountry"
+              :options="fromCountryOptions"
+              clearable
+              filterable
+              remote
+              :loading="fromCountryLoading"
+              @search="onFromCountrySearch"
+              :placeholder="t('driver.orders.filterAny')"
+            />
+            <n-auto-complete
+              v-model:value="fromRegion"
+              :options="fromRegionSuggestions"
+              :loading="fromRegionLoading"
+              :placeholder="t('driver.orders.regionPlaceholder')"
+              clearable
+              blur-after-select
+              @update:value="onFromRegionInput"
+            />
+            <n-auto-complete
+              v-model:value="fromCity"
+              :options="fromCitySuggestions"
+              :loading="fromCityLoading"
+              :placeholder="t('driver.orders.cityPlaceholder')"
+              clearable
+              blur-after-select
+              @update:value="onFromCityInput"
+            />
+          </n-space>
+        </n-gi>
+        <n-gi>
           <div class="filter-label">{{ t('driver.orders.filterTo') }}</div>
-          <n-select
-            v-model:value="toCountry"
-            :options="countryOptions"
-            clearable
-            :placeholder="t('driver.orders.filterAny')"
-          />
-        </div>
+          <n-space vertical :size="8">
+            <n-select
+              v-model:value="toCountry"
+              :options="toCountryOptions"
+              clearable
+              filterable
+              remote
+              :loading="toCountryLoading"
+              @search="onToCountrySearch"
+              :placeholder="t('driver.orders.filterAny')"
+            />
+            <n-auto-complete
+              v-model:value="toRegion"
+              :options="toRegionSuggestions"
+              :loading="toRegionLoading"
+              :placeholder="t('driver.orders.regionPlaceholder')"
+              clearable
+              blur-after-select
+              @update:value="onToRegionInput"
+            />
+            <n-auto-complete
+              v-model:value="toCity"
+              :options="toCitySuggestions"
+              :loading="toCityLoading"
+              :placeholder="t('driver.orders.cityPlaceholder')"
+              clearable
+              blur-after-select
+              @update:value="onToCityInput"
+            />
+          </n-space>
+        </n-gi>
+      </n-grid>
+      <div style="display: flex; gap: 12px; margin-top: 16px; align-items: center;">
         <n-input
           v-model:value="search"
           :placeholder="t('driver.orders.searchPlaceholder')"
           clearable
-          style="min-width: 200px; flex: 1;"
+          style="flex: 1;"
         />
         <n-button type="primary" @click="loadOrders">{{ t('driver.orders.filterApply') }}</n-button>
         <n-button v-if="fromCountry || toCountry || search" @click="resetFilters">{{ t('driver.orders.filterReset') }}</n-button>
@@ -132,7 +183,11 @@ const orders    = ref<any[]>([])
 const vehicles  = ref<any[]>([])
 const search    = ref('')
 const fromCountry = ref<string | null>(null)
+const fromRegion  = ref('')
+const fromCity    = ref('')
 const toCountry   = ref<string | null>(null)
+const toRegion    = ref('')
+const toCity      = ref('')
 
 const COUNTRIES = [
   { value: 'TM', label: '🇹🇲 Туркменистан' },
@@ -149,6 +204,94 @@ const COUNTRIES = [
 ]
 
 const countryOptions = COUNTRIES
+
+const { fetchCountrySuggestions, fetchRegionSuggestions } = useNominatim()
+
+const fromCountryOptions = ref([...countryOptions])
+const toCountryOptions = ref([...countryOptions])
+const fromCountryLoading = ref(false)
+const toCountryLoading = ref(false)
+let fromCountryTimer: ReturnType<typeof setTimeout> | null = null
+let toCountryTimer: ReturnType<typeof setTimeout> | null = null
+
+function onFromCountrySearch(query: string) {
+  if (!query) { fromCountryOptions.value = [...countryOptions]; return }
+  if (fromCountryTimer) clearTimeout(fromCountryTimer)
+  fromCountryTimer = setTimeout(async () => {
+    fromCountryLoading.value = true
+    const res = await fetchCountrySuggestions(query)
+    fromCountryOptions.value = res.length ? res : [...countryOptions]
+    fromCountryLoading.value = false
+  }, 350)
+}
+
+function onToCountrySearch(query: string) {
+  if (!query) { toCountryOptions.value = [...countryOptions]; return }
+  if (toCountryTimer) clearTimeout(toCountryTimer)
+  toCountryTimer = setTimeout(async () => {
+    toCountryLoading.value = true
+    const res = await fetchCountrySuggestions(query)
+    toCountryOptions.value = res.length ? res : [...countryOptions]
+    toCountryLoading.value = false
+  }, 350)
+}
+
+const fromRegionSuggestions = ref<string[]>([])
+const toRegionSuggestions   = ref<string[]>([])
+const fromRegionLoading = ref(false)
+const toRegionLoading   = ref(false)
+let fromRegionTimer: ReturnType<typeof setTimeout> | null = null
+let toRegionTimer:   ReturnType<typeof setTimeout> | null = null
+
+function onFromRegionInput(val: string) {
+  if (fromRegionTimer) clearTimeout(fromRegionTimer)
+  fromRegionTimer = setTimeout(async () => {
+    fromRegionLoading.value = true
+    fromRegionSuggestions.value = await fetchRegionSuggestions(val, fromCountry.value)
+    fromRegionLoading.value = false
+  }, 350)
+}
+
+function onToRegionInput(val: string) {
+  if (toRegionTimer) clearTimeout(toRegionTimer)
+  toRegionTimer = setTimeout(async () => {
+    toRegionLoading.value = true
+    toRegionSuggestions.value = await fetchRegionSuggestions(val, toCountry.value)
+    toRegionLoading.value = false
+  }, 350)
+}
+
+const fromCitySuggestions = ref<string[]>([])
+const toCitySuggestions   = ref<string[]>([])
+const fromCityLoading = ref(false)
+const toCityLoading   = ref(false)
+let fromCityTimer: ReturnType<typeof setTimeout> | null = null
+let toCityTimer:   ReturnType<typeof setTimeout> | null = null
+
+function onFromCityInput(val: string) {
+  if (fromCityTimer) clearTimeout(fromCityTimer)
+  fromCityTimer = setTimeout(async () => {
+    fromCityLoading.value = true
+    fromCitySuggestions.value = await fetchCitySuggestions(val, fromCountry.value, fromRegion.value)
+    fromCityLoading.value = false
+  }, 350)
+}
+
+function onToCityInput(val: string) {
+  if (toCityTimer) clearTimeout(toCityTimer)
+  toCityTimer = setTimeout(async () => {
+    toCityLoading.value = true
+    toCitySuggestions.value = await fetchCitySuggestions(val, toCountry.value, toRegion.value)
+    toCityLoading.value = false
+  }, 350)
+}
+
+watch(fromCountry, () => { fromRegion.value = ''; fromCity.value = ''; fromRegionSuggestions.value = []; fromCitySuggestions.value = [] })
+watch(toCountry,   () => { toRegion.value   = ''; toCity.value   = ''; toRegionSuggestions.value   = []; toCitySuggestions.value   = [] })
+watch(fromRegion,  () => { fromCity.value   = ''; fromCitySuggestions.value = [] })
+watch(toRegion,    () => { toCity.value     = ''; toCitySuggestions.value   = [] })
+
+
 
 const filtered = computed(() => {
   if (!search.value) return orders.value
@@ -172,8 +315,8 @@ function formatWeight(w: string | null) {
 }
 
 function resetFilters() {
-  fromCountry.value = null
-  toCountry.value = null
+  fromCountry.value = null; fromRegion.value = ''; fromCity.value = ''
+  toCountry.value = null; toRegion.value = ''; toCity.value = ''
   search.value = ''
   loadOrders()
 }
@@ -183,7 +326,11 @@ async function loadOrders() {
   try {
     const q = new URLSearchParams()
     if (fromCountry.value) q.set('fromCountry', fromCountry.value)
+    if (fromRegion.value)  q.set('fromRegion',  fromRegion.value)
+    if (fromCity.value)    q.set('fromCity',    fromCity.value)
     if (toCountry.value)   q.set('toCountry',   toCountry.value)
+    if (toRegion.value)    q.set('toRegion',    toRegion.value)
+    if (toCity.value)      q.set('toCity',      toCity.value)
     const qs = q.toString() ? `?${q}` : ''
     const data = await $fetch<any>(`${API}/cabinet/driver/orders/available${qs}`, { credentials: 'include' })
     orders.value = data.orders ?? []

@@ -19,24 +19,38 @@
           </n-form-item>
 
           <n-divider title-placement="left">{{ t('client.orders.route') }}</n-divider>
-          <n-grid :cols="2" :x-gap="16">
+          <n-grid :cols="2" :x-gap="24">
             <n-gi>
+              <div style="font-weight: 600; margin-bottom: 12px; color: #555;">{{ t('search.from') }}</div>
               <n-form-item :label="t('client.orders.fromCountry')" path="fromCountry" required>
                 <n-select
                   v-model:value="form.fromCountry"
-                  :options="countryOptions"
+                  :options="fromCountryOptions"
                   :placeholder="t('client.orders.selectCountry')"
                   filterable
+                  remote
+                  clearable
+                  :loading="fromCountryLoading"
+                  @search="onFromCountrySearch"
                 />
               </n-form-item>
-            </n-gi>
-            <n-gi>
+              <n-form-item :label="t('client.orders.regionPlaceholder')" path="fromRegion">
+                <n-auto-complete
+                  v-model:value="form.fromRegion"
+                  :options="fromRegionSuggestions"
+                  :loading="fromRegionLoading"
+                  :placeholder="t('client.orders.regionPlaceholder')"
+                  clearable
+                  blur-after-select
+                  @update:value="onFromRegionInput"
+                />
+              </n-form-item>
               <n-form-item :label="t('client.orders.fromCity')" path="fromCity" required>
                 <n-auto-complete
                   v-model:value="form.fromCity"
                   :options="fromCitySuggestions"
                   :loading="fromCityLoading"
-                  :placeholder="form.fromCountry ? 'Начните вводить город...' : t('client.orders.cityPlaceholder')"
+                  :placeholder="form.fromRegion || form.fromCountry ? t('client.orders.cityPlaceholder') : t('client.orders.cityPlaceholder')"
                   clearable
                   blur-after-select
                   @update:value="onFromCityInput"
@@ -44,22 +58,36 @@
               </n-form-item>
             </n-gi>
             <n-gi>
+              <div style="font-weight: 600; margin-bottom: 12px; color: #555;">{{ t('search.to') }}</div>
               <n-form-item :label="t('client.orders.toCountry')" path="toCountry" required>
                 <n-select
                   v-model:value="form.toCountry"
-                  :options="countryOptions"
+                  :options="toCountryOptions"
                   :placeholder="t('client.orders.selectCountry')"
                   filterable
+                  remote
+                  clearable
+                  :loading="toCountryLoading"
+                  @search="onToCountrySearch"
                 />
               </n-form-item>
-            </n-gi>
-            <n-gi>
+              <n-form-item :label="t('client.orders.regionPlaceholder')" path="toRegion">
+                <n-auto-complete
+                  v-model:value="form.toRegion"
+                  :options="toRegionSuggestions"
+                  :loading="toRegionLoading"
+                  :placeholder="t('client.orders.regionPlaceholder')"
+                  clearable
+                  blur-after-select
+                  @update:value="onToRegionInput"
+                />
+              </n-form-item>
               <n-form-item :label="t('client.orders.toCity')" path="toCity" required>
                 <n-auto-complete
                   v-model:value="form.toCity"
                   :options="toCitySuggestions"
                   :loading="toCityLoading"
-                  :placeholder="form.toCountry ? 'Начните вводить город...' : t('client.orders.cityPlaceholder')"
+                  :placeholder="form.toRegion || form.toCountry ? t('client.orders.cityPlaceholder') : t('client.orders.cityPlaceholder')"
                   clearable
                   blur-after-select
                   @update:value="onToCityInput"
@@ -216,8 +244,10 @@ const deadlineDateMs = ref<number | null>(null)
 const form = reactive({
   title: '',
   fromCountry: null as string | null,
+  fromRegion: '',
   fromCity: '',
   toCountry: null as string | null,
+  toRegion: '',
   toCity: '',
   price: null as number | null,
   currency: 'USD',
@@ -238,7 +268,61 @@ const countryOptions = computed(() =>
 )
 
 // ── City autocomplete via Nominatim ───────────────────────────────────────────
-const { fetchCitySuggestions } = useNominatimCities()
+const { fetchCountrySuggestions, fetchRegionSuggestions, fetchCitySuggestions } = useNominatim()
+
+const fromCountryOptions = ref([...countryOptions.value])
+const toCountryOptions = ref([...countryOptions.value])
+const fromCountryLoading = ref(false)
+const toCountryLoading = ref(false)
+let fromCountryTimer: ReturnType<typeof setTimeout> | null = null
+let toCountryTimer: ReturnType<typeof setTimeout> | null = null
+
+function onFromCountrySearch(query: string) {
+  if (!query) { fromCountryOptions.value = [...countryOptions.value]; return }
+  if (fromCountryTimer) clearTimeout(fromCountryTimer)
+  fromCountryTimer = setTimeout(async () => {
+    fromCountryLoading.value = true
+    const res = await fetchCountrySuggestions(query)
+    fromCountryOptions.value = res.length ? res : [...countryOptions.value]
+    fromCountryLoading.value = false
+  }, 350)
+}
+
+function onToCountrySearch(query: string) {
+  if (!query) { toCountryOptions.value = [...countryOptions.value]; return }
+  if (toCountryTimer) clearTimeout(toCountryTimer)
+  toCountryTimer = setTimeout(async () => {
+    toCountryLoading.value = true
+    const res = await fetchCountrySuggestions(query)
+    toCountryOptions.value = res.length ? res : [...countryOptions.value]
+    toCountryLoading.value = false
+  }, 350)
+}
+
+const fromRegionSuggestions = ref<string[]>([])
+const toRegionSuggestions   = ref<string[]>([])
+const fromRegionLoading = ref(false)
+const toRegionLoading   = ref(false)
+let fromRegionTimer: ReturnType<typeof setTimeout> | null = null
+let toRegionTimer:   ReturnType<typeof setTimeout> | null = null
+
+function onFromRegionInput(val: string) {
+  if (fromRegionTimer) clearTimeout(fromRegionTimer)
+  fromRegionTimer = setTimeout(async () => {
+    fromRegionLoading.value = true
+    fromRegionSuggestions.value = await fetchRegionSuggestions(val, form.fromCountry)
+    fromRegionLoading.value = false
+  }, 350)
+}
+
+function onToRegionInput(val: string) {
+  if (toRegionTimer) clearTimeout(toRegionTimer)
+  toRegionTimer = setTimeout(async () => {
+    toRegionLoading.value = true
+    toRegionSuggestions.value = await fetchRegionSuggestions(val, form.toCountry)
+    toRegionLoading.value = false
+  }, 350)
+}
 
 const fromCitySuggestions = ref<string[]>([])
 const toCitySuggestions   = ref<string[]>([])
@@ -251,7 +335,7 @@ function onFromCityInput(val: string) {
   if (fromCityTimer) clearTimeout(fromCityTimer)
   fromCityTimer = setTimeout(async () => {
     fromCityLoading.value = true
-    fromCitySuggestions.value = await fetchCitySuggestions(val, form.fromCountry)
+    fromCitySuggestions.value = await fetchCitySuggestions(val, form.fromCountry, form.fromRegion)
     fromCityLoading.value = false
   }, 350)
 }
@@ -260,14 +344,16 @@ function onToCityInput(val: string) {
   if (toCityTimer) clearTimeout(toCityTimer)
   toCityTimer = setTimeout(async () => {
     toCityLoading.value = true
-    toCitySuggestions.value = await fetchCitySuggestions(val, form.toCountry)
+    toCitySuggestions.value = await fetchCitySuggestions(val, form.toCountry, form.toRegion)
     toCityLoading.value = false
   }, 350)
 }
 
-// Сброс города при смене страны
-watch(() => form.fromCountry, () => { form.fromCity = ''; fromCitySuggestions.value = [] })
-watch(() => form.toCountry,   () => { form.toCity   = ''; toCitySuggestions.value   = [] })
+// Сброс региона и города при смене
+watch(() => form.fromCountry, () => { form.fromRegion = ''; form.fromCity = ''; fromRegionSuggestions.value = []; fromCitySuggestions.value = [] })
+watch(() => form.toCountry,   () => { form.toRegion   = ''; form.toCity   = ''; toRegionSuggestions.value   = []; toCitySuggestions.value   = [] })
+watch(() => form.fromRegion,  () => { form.fromCity = ''; fromCitySuggestions.value = [] })
+watch(() => form.toRegion,    () => { form.toCity   = ''; toCitySuggestions.value   = [] })
 
 const currencyOptions = [
   { label: 'USD', value: 'USD' },
@@ -310,8 +396,10 @@ async function handleCreate() {
       body: {
         title: form.title,
         fromCountry: form.fromCountry,
+        fromRegion: form.fromRegion || undefined,
         fromCity: form.fromCity,
         toCountry: form.toCountry,
+        toRegion: form.toRegion || undefined,
         toCity: form.toCity,
         readyDate: msToDateString(readyDateMs.value)!,
         deadlineDate: msToDateString(deadlineDateMs.value),

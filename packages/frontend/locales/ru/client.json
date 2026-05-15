@@ -182,7 +182,8 @@
     "statusPublished": "Опубликован",
     "statusNegotiating": "Переговоры",
     "statusConfirmed": "Подтверждён",
-    "statusCompleted": "Завершён"
+    "statusCompleted": "Завершён",
+    "regionPlaceholder": "Регион/область"
   },
   "services": {
     "title": "Услуги перевозчиков",

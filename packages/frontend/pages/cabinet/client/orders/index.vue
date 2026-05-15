@@ -114,7 +114,7 @@ const columns = computed<DataTableColumns<any>>(() => [
   {
     title: t('client.orders.route'),
     key: 'route',
-    render: (row) => `${row.fromCity ?? '—'} → ${row.toCity ?? '—'}`,
+    render: (row) => `${row.fromRegion ? row.fromRegion + ', ' : ''}${row.fromCity ?? '—'} → ${row.toRegion ? row.toRegion + ', ' : ''}${row.toCity ?? '—'}`,
   },
   {
     title: t('client.orders.cargoType'),

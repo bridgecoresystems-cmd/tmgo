@@ -10,6 +10,8 @@ export const publicOrdersRoutes = new Elysia({ prefix: '/public/orders' })
       toCity?: string;
       fromCountry?: string;
       toCountry?: string;
+      fromRegion?: string;
+      toRegion?: string;
       cargoType?: string;
       weightMin?: string;
       weightMax?: string;
@@ -37,6 +39,12 @@ export const publicOrdersRoutes = new Elysia({ prefix: '/public/orders' })
     }
     if (params.toCountry) {
       conditions.push(eq(orders.toCountry, params.toCountry));
+    }
+    if (params.fromRegion) {
+      conditions.push(ilike(orders.fromRegion, `%${params.fromRegion}%`));
+    }
+    if (params.toRegion) {
+      conditions.push(ilike(orders.toRegion, `%${params.toRegion}%`));
     }
     if (params.cargoType) {
       conditions.push(ilike(orderCargo.cargoType, `%${params.cargoType}%`));
