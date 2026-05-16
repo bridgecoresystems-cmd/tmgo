@@ -758,7 +758,7 @@ onMounted(fetchOrders)
 <style scoped>
 .search-page {
   background: #f5f6f8;
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 64px);
   padding: 24px 40px;
 }
 
@@ -782,7 +782,7 @@ onMounted(fetchOrders)
   padding: 20px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   position: sticky;
-  top: 104px;
+  top: 88px;
 }
 
 .filters-head {
@@ -1009,7 +1009,7 @@ onMounted(fetchOrders)
     background: #fff;
     border-bottom: 1px solid #eee;
     position: sticky;
-    top: 80px;
+    top: 64px;
     z-index: 10;
   }
 

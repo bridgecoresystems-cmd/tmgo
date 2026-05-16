@@ -326,7 +326,7 @@ useHead({
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 64px);
 }
 
 .page-footer {
@@ -536,17 +536,62 @@ useHead({
   background: rgba(255,255,255,0.3);
 }
 
+@media (max-width: 900px) {
+  .hero-card { max-width: 100%; }
+}
+
 @media (max-width: 768px) {
   .hero-section {
-    height: 500px;
+    height: auto;
+    min-height: calc(100dvh - 64px);
+    padding: 32px 0 40px;
+    align-items: flex-start;
   }
+
+  .hero-container { padding: 0 16px; }
+
   .hero-card {
-    margin: 0 20px;
-    padding: 32px;
+    max-width: 100%;
+    margin: 0;
+    padding: 24px 18px;
+    border-radius: 20px;
+    border-top-left-radius: 24px;
+    border-bottom-right-radius: 24px;
   }
+
   .hero-title {
-    font-size: 32px;
+    font-size: 26px;
+    margin-bottom: 10px;
   }
+
+  .hero-subtitle {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .search-widget {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .hero-route {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .hero-swap {
+    transform: rotate(90deg);
+    align-self: center;
+    margin: 0;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .section { padding: 48px 0; }
+  .section-title { font-size: 24px; margin-bottom: 32px; }
+  .control-center-section { padding: 48px 0; }
 }
 
 /* Advantages */
@@ -628,12 +673,6 @@ useHead({
 }
 
 @media (max-width: 992px) {
-  .hero-section {
-    flex-direction: column;
-    text-align: center;
-  }
-  .hero-title {
-    font-size: 36px;
-  }
+  .hero-title { font-size: 34px; }
 }
 </style>
