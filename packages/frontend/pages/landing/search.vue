@@ -261,8 +261,16 @@
             </div>
           </div>
 
-          <div v-if="!loading && total > limit" class="pagination-wrap">
-            <n-pagination v-model:page="page" :page-count="Math.ceil(total / limit)" @update:page="onPageChange" />
+          <div v-if="!loading && total > 0" class="pagination-wrap">
+            <n-pagination 
+              v-model:page="page" 
+              v-model:page-size="limit"
+              :page-count="Math.ceil(total / limit)" 
+              show-size-picker 
+              :page-sizes="[10, 20, 30, 50, 100]" 
+              @update:page="onPageChange"
+              @update:page-size="onPageSizeChange"
+            />
           </div>
         </template>
       </main>
@@ -302,7 +310,7 @@ const readyFromMs = ref<number | null>(
 )
 
 const page  = ref(1)
-const limit = 20
+const limit = ref(20)
 const loading = ref(false)
 const orders  = ref<any[]>([])
 const total   = ref(0)
@@ -527,7 +535,7 @@ function buildQuery() {
   if (filters.packaging)   q.packaging   = filters.packaging
   if (readyFromMs.value)   q.readyFrom   = new Date(readyFromMs.value).toISOString().split('T')[0]
   q.page  = String(page.value)
-  q.limit = String(limit)
+  q.limit = String(limit.value)
   return q
 }
 
@@ -582,6 +590,16 @@ let   userMarker:     any = null
 let   pickMarker:     any = null
 let   L:              any = null
 
+const mapCenter = ref<[number, number]>([40, 62])
+const mapZoom = ref(4)
+
+function onPageSizeChange(size: number) {
+  limit.value = size
+  localStorage.setItem('tmgo_search_limit', String(size))
+  page.value = 1
+  fetchOrders()
+}
+
 async function initMap() {
   if (!mapEl.value) return
   if (leafletMap) { updateMapMarkers(); return }
@@ -596,13 +614,20 @@ async function initMap() {
     shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   })
 
-  leafletMap   = L.map(mapEl.value, { center: [40, 62], zoom: 4, tap: false, scrollWheelZoom: false })
+  leafletMap   = L.map(mapEl.value, { center: mapCenter.value, zoom: mapZoom.value, tap: false, scrollWheelZoom: false })
   markersLayer = L.layerGroup().addTo(leafletMap)
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://www.openstreetmap.org">OpenStreetMap</a>',
     maxZoom: 18,
   }).addTo(leafletMap)
+
+  leafletMap.on('moveend', () => {
+    const center = leafletMap.getCenter()
+    mapCenter.value = [center.lat, center.lng]
+    mapZoom.value = leafletMap.getZoom()
+    localStorage.setItem('tmgo_search_map', JSON.stringify({ center: mapCenter.value, zoom: mapZoom.value }))
+  })
 
   // Клик по карте — выбор точки откуда/куда
   leafletMap.on('click', async (e: any) => {
@@ -756,7 +781,23 @@ watch(orders, () => {
   if (viewMode.value === 'map') updateMapMarkers()
 })
 
-onMounted(fetchOrders)
+onMounted(() => {
+  const savedLimit = localStorage.getItem('tmgo_search_limit')
+  if (savedLimit) limit.value = Number(savedLimit)
+
+  const sm = localStorage.getItem('tmgo_search_map')
+  if (sm) {
+    try {
+      const parsed = JSON.parse(sm)
+      if (parsed.center && parsed.zoom) {
+        mapCenter.value = parsed.center
+        mapZoom.value = parsed.zoom
+      }
+    } catch {}
+  }
+  
+  fetchOrders()
+})
 </script>
 
 <style>
