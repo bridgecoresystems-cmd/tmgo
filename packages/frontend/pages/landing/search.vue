@@ -13,11 +13,19 @@
         </div>
       </div>
 
+      <!-- Mobile backdrop -->
+      <Transition name="fade">
+        <div v-if="showMobileFilters" class="mobile-filters-backdrop" @click="showMobileFilters = false" />
+      </Transition>
+
       <!-- Sidebar filters -->
       <aside class="filters-sidebar" :class="{ 'mobile-open': showMobileFilters }">
         <div class="filters-head">
           <span class="filters-title">{{ $t('searchPage.filters.title') }}</span>
-          <button v-if="activeFilterCount > 0" class="btn-reset" @click="clearFilters">{{ $t('searchPage.filters.resetAll') }}</button>
+          <div class="filters-head-right">
+            <button v-if="activeFilterCount > 0" class="btn-reset" @click="clearFilters">{{ $t('searchPage.filters.resetAll') }}</button>
+            <button class="btn-close-filters" @click="showMobileFilters = false">✕</button>
+          </div>
         </div>
 
         <n-divider title-placement="left"><span class="divider-label">{{ $t('searchPage.filters.route') }}</span></n-divider>
@@ -793,7 +801,10 @@ onMounted(fetchOrders)
 }
 
 .filters-title { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+.filters-head-right { display: flex; align-items: center; gap: 12px; }
 .btn-reset { background: none; border: none; color: #ff6b4a; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; }
+.btn-close-filters { display: none; background: none; border: none; font-size: 18px; color: #999; cursor: pointer; padding: 0; line-height: 1; }
+.btn-close-filters:hover { color: #333; }
 .divider-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #999; }
 .filter-group { margin-bottom: 16px; }
 .filter-label { font-size: 12px; color: #888; font-weight: 500; margin-bottom: 6px; }
@@ -997,8 +1008,10 @@ onMounted(fetchOrders)
 .pagination-wrap { display: flex; justify-content: center; margin-top: 32px; }
 
 /* Mobile */
+.mobile-filters-backdrop { display: none; }
+
 @media (max-width: 768px) {
-  .search-page { padding: 0 0 80px; }
+  .search-page { padding: 0; min-height: 0; }
   .search-layout { flex-direction: column; gap: 0; }
 
   .mobile-filter-bar {
@@ -1051,22 +1064,53 @@ onMounted(fetchOrders)
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
 
-  .filters-sidebar {
+  /* Bottom sheet */
+  .mobile-filters-backdrop {
+    display: block;
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 100;
-    border-radius: 0;
-    overflow-y: auto;
-    transform: translateX(-100%);
-    transition: transform 0.3s;
-    width: 100%;
+    inset: 0;
+    z-index: 99;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
   }
 
-  .filters-sidebar.mobile-open { transform: translateX(0); }
+  .filters-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    max-height: 85vh;
+    width: 100%;
+    z-index: 100;
+    border-radius: 20px 20px 0 0;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .filters-sidebar.mobile-open { transform: translateY(0); }
+
+  .btn-close-filters { display: block; }
+  .filters-head { padding-bottom: 8px; }
+  .filters-head::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
 
   .results-main { padding: 12px 16px; }
   .view-toggle  { display: none; }
   .map-container { height: 400px; }
   .route-city { max-width: 100px; font-size: 14px; }
 }
+
+/* Backdrop fade transition */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

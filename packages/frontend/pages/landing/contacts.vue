@@ -3,7 +3,7 @@
     <section class="section">
       <div class="container">
         <n-h1 class="section-title">{{ t('layout.contacts') }}</n-h1>
-        <n-grid :cols="2" :x-gap="48" responsive="screen">
+        <n-grid :cols="{ xs: 1, md: 2 }" :x-gap="48" :y-gap="24" responsive="screen">
           <n-gi>
             <n-card :title="t('contactsPage.ourContacts')" bordered>
               <n-space vertical size="large">
@@ -97,5 +97,11 @@ async function handleSubmit() {
 .section-title {
   text-align: center;
   margin-bottom: 48px;
+}
+
+@media (max-width: 768px) {
+  .section { padding: 40px 0; }
+  .container { padding: 0 16px; }
+  .section-title { font-size: 22px; margin-bottom: 28px; }
 }
 </style>

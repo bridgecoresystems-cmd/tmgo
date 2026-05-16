@@ -119,7 +119,7 @@
     <section class="section advantages-section" id="advantages">
       <div class="container">
         <n-h2 class="section-title">{{ $t('advantages.title') }}</n-h2>
-        <n-grid :cols="3" :x-gap="24" :y-gap="24" responsive="screen">
+        <n-grid :cols="{ xs: 1, sm: 2, lg: 3 }" :x-gap="24" :y-gap="24" responsive="screen">
           <n-gi v-for="adv in advantages" :key="adv.key">
             <n-card class="advantage-card" hoverable>
               <template #header>
@@ -135,7 +135,7 @@
     <!-- Control Center Section -->
     <section class="section control-center-section" id="cabinet">
       <div class="container">
-        <n-grid :cols="2" :x-gap="48" responsive="screen" item-responsive>
+        <n-grid :cols="{ xs: 1, md: 2 }" :x-gap="48" :y-gap="32" responsive="screen">
           <n-gi class="flex-center">
             <div class="text-content">
               <n-h2>{{ $t('cabinet.title') }}</n-h2>
@@ -156,7 +156,7 @@
     <section class="section how-it-works-section" id="how-it-works">
       <div class="container">
         <n-h2 class="section-title">{{ $t('steps.title') }}</n-h2>
-        <n-grid :cols="3" :x-gap="24" responsive="screen">
+        <n-grid :cols="{ xs: 1, md: 3 }" :x-gap="24" :y-gap="24" responsive="screen">
           <n-gi v-for="(step, index) in steps" :key="step.key">
             <div class="step-card">
               <div class="step-number">{{ index + 1 }}</div>
@@ -172,7 +172,7 @@
     <section class="section services-section" id="services">
       <div class="container">
         <n-h2 class="section-title">{{ $t('services.title') }}</n-h2>
-        <n-grid :cols="4" :x-gap="20" :y-gap="20" responsive="screen">
+        <n-grid :cols="{ xs: 1, sm: 2, lg: 4 }" :x-gap="20" :y-gap="20" responsive="screen">
           <n-gi v-for="service in services" :key="service.key">
             <n-card class="service-card" hoverable>
               <n-h3 class="service-title">{{ $t(`services.items.${service.key}.title`) }}</n-h3>
