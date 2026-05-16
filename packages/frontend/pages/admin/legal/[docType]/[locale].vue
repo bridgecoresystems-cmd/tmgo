@@ -100,6 +100,7 @@
 
 <script setup lang="ts">
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { useMessage } from 'naive-ui'
 
 definePageMeta({ layout: 'admin',  })
@@ -131,7 +132,7 @@ const effectiveDateTs = ref<number | null>(null)
 
 const renderedContent = computed(() => {
   if (!form.content) return ''
-  return marked.parse(form.content) as string
+  return DOMPurify.sanitize(marked.parse(form.content) as string)
 })
 
 async function loadDoc() {

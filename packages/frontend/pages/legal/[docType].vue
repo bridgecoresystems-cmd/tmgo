@@ -35,6 +35,7 @@
 
 <script setup lang="ts">
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 definePageMeta({ layout: 'default' })
 const { t, locale } = useI18n()
@@ -48,7 +49,7 @@ const doc = ref<any>(null)
 
 const renderedContent = computed(() => {
   if (!doc.value?.content) return ''
-  return marked.parse(doc.value.content) as string
+  return DOMPurify.sanitize(marked.parse(doc.value.content) as string)
 })
 
 async function loadDoc() {

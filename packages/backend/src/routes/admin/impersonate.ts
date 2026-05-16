@@ -15,7 +15,12 @@ function generateToken() {
 export const adminImpersonateRoutes = new Elysia({ prefix: '/admin' })
 
   // Важно: /stop должен быть раньше /:userId чтобы не перехватился параметром
-  .post('/impersonate/stop', async ({ set }) => {
+  .post('/impersonate/stop', async ({ request, set }) => {
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      set.status = 401;
+      return { error: 'Unauthorized' };
+    }
     set.headers['Set-Cookie'] = IMPERSONATE_COOKIE_CLEAR;
     return { success: true };
   })

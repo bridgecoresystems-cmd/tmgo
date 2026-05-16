@@ -197,6 +197,14 @@ export const cabinetOrdersRoutes = new Elysia({ prefix: '/cabinet/orders' })
       return { error: 'not_found' };
     }
 
+    const isOwner = profile && order.clientProfileId === profile.id;
+    const isPublicStatus = ['published', 'negotiating'].includes(order.status);
+
+    if (!isOwner && !isPublicStatus) {
+      set.status = 403;
+      return { error: 'forbidden' };
+    }
+
     const [cargo] = await db.select().from(orderCargo)
       .where(eq(orderCargo.orderId, order.id)).limit(1);
 
@@ -205,7 +213,6 @@ export const cabinetOrdersRoutes = new Elysia({ prefix: '/cabinet/orders' })
       .orderBy(desc(orderStatusLog.createdAt));
 
     // Ставки видны только владельцу заказа
-    const isOwner = profile && order.clientProfileId === profile.id;
     const bids = isOwner
       ? await db.select().from(orderBids).where(eq(orderBids.orderId, order.id))
       : [];

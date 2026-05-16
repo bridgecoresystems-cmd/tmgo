@@ -5,9 +5,14 @@ import { desc, eq } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 
 export const adminContactsRoutes = new Elysia({ prefix: '/admin/contacts' })
-  .get('', async ({ set }) => {
+  .get('', async ({ request, set }) => {
+    const user = await getUserFromRequest(request);
+    if (!user || user.role !== 'admin') {
+      set.status = 401;
+      return { error: 'Unauthorized' };
+    }
+
     try {
-      console.log('GET /admin/contacts (no auth check)');
       const messages = await db.select()
         .from(contactMessages)
         .orderBy(desc(contactMessages.createdAt));
