@@ -160,4 +160,20 @@ useSeoMeta({
 .legal-content :deep(em) {
   color: #555;
 }
+
+@media (max-width: 768px) {
+  .legal-container {
+    padding: 24px 16px;
+  }
+  .legal-title {
+    font-size: 24px;
+  }
+  .legal-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+  .legal-content {
+    font-size: 14px;
+  }
+}
 </style>

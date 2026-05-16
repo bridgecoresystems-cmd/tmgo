@@ -102,7 +102,7 @@ const userOptions = computed(() => [
 
 const route = useRoute()
 const pageHasOwnFooter = computed(
-  () => route.path === '/' || route.path === '/landing' || route.path === '/auth' || route.path.startsWith('/legal/'),
+  () => route.path === '/' || route.path.startsWith('/landing') || route.path === '/auth' || route.path.startsWith('/legal/'),
 )
 
 const mobileMenuOpen = ref(false)
@@ -185,6 +185,7 @@ const handleUserSelect = async (key: string) => {
   flex: 1;
   padding-top: 0;
   padding-bottom: 0;
+  min-height: calc(100vh - 124px);
 }
 .main-content--no-pad-bottom {
   padding-bottom: 0;

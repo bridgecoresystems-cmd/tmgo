@@ -41,6 +41,7 @@
         </n-grid>
       </div>
     </section>
+    <footer class="page-footer">{{ $t('layout.footer') }}</footer>
   </div>
 </template>
 
@@ -85,6 +86,20 @@ async function handleSubmit() {
 <style scoped>
 .contacts-page {
   background: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px);
+}
+.page-footer {
+  margin-top: auto;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+  font-size: 14px;
+  color: #666;
+  border-top: 1px solid #e8e8e8;
 }
 .container {
   max-width: 1200px;

@@ -267,6 +267,7 @@
         </template>
       </main>
     </div>
+    <footer class="page-footer">{{ $t('layout.footer') }}</footer>
   </div>
 </template>
 
@@ -595,7 +596,7 @@ async function initMap() {
     shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   })
 
-  leafletMap   = L.map(mapEl.value, { center: [40, 62], zoom: 4 })
+  leafletMap   = L.map(mapEl.value, { center: [40, 62], zoom: 4, tap: false, scrollWheelZoom: false })
   markersLayer = L.layerGroup().addTo(leafletMap)
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -767,15 +768,32 @@ onMounted(fetchOrders)
 .search-page {
   background: #f5f6f8;
   min-height: calc(100vh - 64px);
-  padding: 24px 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-footer {
+  margin-top: auto;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+  font-size: 14px;
+  color: #666;
+  border-top: 1px solid #e8e8e8;
 }
 
 .search-layout {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
+  padding: 24px 40px;
   display: flex;
   gap: 24px;
   align-items: flex-start;
+  flex: 1;
+  box-sizing: border-box;
 }
 
 /* Mobile bar */
@@ -791,6 +809,7 @@ onMounted(fetchOrders)
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   position: sticky;
   top: 88px;
+  box-sizing: border-box;
 }
 
 .filters-head {
@@ -1011,8 +1030,8 @@ onMounted(fetchOrders)
 .mobile-filters-backdrop { display: none; }
 
 @media (max-width: 768px) {
-  .search-page { padding: 0; min-height: 0; }
-  .search-layout { flex-direction: column; gap: 0; }
+  .search-page { padding: 0; min-height: calc(100vh - 64px); }
+  .search-layout { flex-direction: column; gap: 0; padding: 0; }
 
   .mobile-filter-bar {
     display: flex;
@@ -1076,32 +1095,27 @@ onMounted(fetchOrders)
 
   .filters-sidebar {
     position: fixed;
+    top: 0;
     bottom: 0;
     left: 0;
-    right: 0;
-    top: auto;
-    max-height: 85vh;
-    width: 100%;
+    right: auto;
+    max-height: 100vh;
+    width: 85vw;
+    max-width: 320px;
     z-index: 100;
-    border-radius: 20px 20px 0 0;
+    border-radius: 0;
     overflow-y: auto;
-    transform: translateY(100%);
+    transform: translateX(-100%);
     transition: transform 0.3s ease;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
   }
 
-  .filters-sidebar.mobile-open { transform: translateY(0); }
+  .filters-sidebar.mobile-open { transform: translateX(0); }
 
   .btn-close-filters { display: block; }
   .filters-head { padding-bottom: 8px; }
   .filters-head::before {
-    content: '';
-    display: block;
-    width: 36px;
-    height: 4px;
-    background: #e0e0e0;
-    border-radius: 2px;
-    margin: 0 auto 16px;
+    display: none;
   }
 
   .results-main { padding: 12px 16px; }
