@@ -47,9 +47,14 @@ export function useNominatim() {
       })
       const res = await fetch(`https://suggest-maps.yandex.ru/v1/suggest?${params}`)
       const data: any = await res.json()
+      const EXCLUDE = ['street', 'house', 'metro', 'route', 'station', 'airport']
       return [...new Set(
         (data.results ?? [])
-          .filter((r: any) => r.tags?.includes('locality'))
+          .filter((r: any) => {
+            const tags: string[] = r.tags ?? []
+            if (tags.some(t => EXCLUDE.includes(t))) return false
+            return tags.includes('locality') || tags.includes('geo')
+          })
           .map((r: any) => r.title?.text ?? '')
           .filter(Boolean)
       )] as string[]

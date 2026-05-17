@@ -64,6 +64,7 @@
             clearable
             blur-after-select
             @update:value="onFromCityInput"
+            @select="() => applyFilters()"
           />
         </div>
 
@@ -101,6 +102,7 @@
             clearable
             blur-after-select
             @update:value="onToCityInput"
+            @select="() => applyFilters()"
           />
         </div>
 
