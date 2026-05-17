@@ -1,21 +1,19 @@
 <template>
   <div class="admin-dashboard">
-    <n-grid :cols="{ xs: 1, sm: 2, lg: 4 }" :x-gap="24" :y-gap="24" responsive="screen">
-      <n-gi v-for="stat in stats" :key="stat.title">
-        <n-card class="stat-card shadow-sm">
-          <n-statistic :label="stat.title" :value="stat.value">
-            <template #prefix>
-              <span class="stat-icon">{{ stat.icon }}</span>
-            </template>
-            <template #suffix>
-              <n-text :type="stat.trend > 0 ? 'success' : 'error'" class="stat-trend">
-                {{ stat.trend > 0 ? '↑' : '↓' }} {{ Math.abs(stat.trend) }}%
-              </n-text>
-            </template>
-          </n-statistic>
-        </n-card>
-      </n-gi>
-    </n-grid>
+    <div class="stats-grid">
+      <n-card v-for="stat in stats" :key="stat.title" class="stat-card shadow-sm">
+        <n-statistic :label="stat.title" :value="stat.value">
+          <template #prefix>
+            <span class="stat-icon">{{ stat.icon }}</span>
+          </template>
+          <template #suffix>
+            <n-text :type="stat.trend > 0 ? 'success' : 'error'" class="stat-trend">
+              {{ stat.trend > 0 ? '↑' : '↓' }} {{ Math.abs(stat.trend) }}%
+            </n-text>
+          </template>
+        </n-statistic>
+      </n-card>
+    </div>
 
     <n-grid :cols="{ xs: 1, md: 2 }" :x-gap="24" :y-gap="24" class="mt-24" responsive="screen">
       <n-gi>
@@ -156,6 +154,20 @@ const getStatusType = (status: string) => {
 <style scoped>
 .mt-24 {
   margin-top: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
 }
 
 .stat-card {
