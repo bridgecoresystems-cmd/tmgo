@@ -190,7 +190,7 @@
                 <span v-if="filters.fromCity && filters.toCity"> → </span>
                 <span v-if="filters.toRegion">{{ filters.toRegion }}, </span>
                 <span v-if="filters.toCity">{{ filters.toCity }}</span>
-                <button class="pick-clear" @click="filters.fromCity=''; filters.toCity=''; filters.fromRegion=''; filters.toRegion=''; filters.fromCountry=null; filters.toCountry=null; if(pickMarker){ pickMarker.remove(); pickMarker=null }">✕</button>
+                <button class="pick-clear" @click="clearPickSelection">✕</button>
               </div>
             </div>
             <div class="toolbar-right">
@@ -584,14 +584,16 @@ const mapEl      = ref<HTMLDivElement | null>(null)
 const locating   = ref(false)
 const geocoding  = ref(false)
 const pickMode   = ref<null | 'from' | 'to'>(null)
-let   leafletMap:     any = null
-let   markersLayer:   any = null
-let   userMarker:     any = null
-let   pickMarker:     any = null
-let   L:              any = null
+const rCfg       = useRuntimeConfig()
+
+let leafletMap:   any = null
+let markersLayer: any = null
+let userMarker:   any = null
+let pickMarker:   any = null
+let L:            any = null
 
 const mapCenter = ref<[number, number]>([40, 62])
-const mapZoom = ref(4)
+const mapZoom   = ref(4)
 
 function onPageSizeChange(size: number) {
   limit.value = size
@@ -605,8 +607,6 @@ async function initMap() {
   if (leafletMap) { updateMapMarkers(); return }
 
   L = (await import('leaflet')).default
-
-  // Fix broken icons when bundled with Vite
   delete (L.Icon.Default.prototype as any)._getIconUrl
   L.Icon.Default.mergeOptions({
     iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -623,46 +623,47 @@ async function initMap() {
   }).addTo(leafletMap)
 
   leafletMap.on('moveend', () => {
-    const center = leafletMap.getCenter()
-    mapCenter.value = [center.lat, center.lng]
+    const c = leafletMap.getCenter()
+    mapCenter.value = [c.lat, c.lng]
     mapZoom.value = leafletMap.getZoom()
     localStorage.setItem('tmgo_search_map', JSON.stringify({ center: mapCenter.value, zoom: mapZoom.value }))
   })
 
-  // Клик по карте — выбор точки откуда/куда
   leafletMap.on('click', async (e: any) => {
     if (!pickMode.value) return
     const { lat, lng } = e.latlng
     geocoding.value = true
 
-    // Визуальный маркер в точке клика
     if (pickMarker) pickMarker.remove()
     pickMarker = L.circleMarker([lat, lng], {
       radius: 8, color: '#ff6b4a', fillColor: '#ff6b4a', fillOpacity: 0.8, weight: 2,
     }).addTo(leafletMap)
 
     try {
+      const geoKey = rCfg.public.yandexGeocoderKey as string
       const res  = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ru`,
-        { headers: { 'User-Agent': 'TMGO-logistics/1.0' } }
+        `https://geocode-maps.yandex.ru/1.x/?apikey=${geoKey}&geocode=${lng},${lat}&format=json&lang=ru_RU&results=1`
       )
       const data = await res.json()
-      const addr = data.address ?? {}
-      const city = addr.city || addr.town || addr.village || addr.county || ''
-      const state = addr.state || addr.region || ''
-      const code = (addr.country_code ?? '').toUpperCase()
+      const geo  = data.response?.GeoObjectCollection?.featureMember?.[0]?.GeoObject
+      const addr = geo?.metaDataProperty?.GeocoderMetaData?.Address
+      const parts: any[] = addr?.Components ?? []
+
+      const code  = (addr?.CountryCode ?? '').toUpperCase()
+      const state = parts.find((c: any) => c.kind === 'province')?.name ?? ''
+      const city  = parts.find((c: any) => c.kind === 'locality')?.name
+                 ?? parts.find((c: any) => c.kind === 'area')?.name ?? ''
 
       if (pickMode.value === 'from') {
         filters.fromCountry = code || null
         filters.fromRegion  = state
         filters.fromCity    = city
-        pickMode.value      = 'to'   // автопереход к "куда"
+        pickMode.value      = 'to'
       } else {
         filters.toCountry   = code || null
         filters.toRegion    = state
         filters.toCity      = city
         pickMode.value      = null
-        // автозапуск поиска когда оба поля выбраны
         await fetchOrders()
       }
     } finally {
@@ -673,25 +674,14 @@ async function initMap() {
   updateMapMarkers()
 }
 
-// Меняем курсор карты в зависимости от режима выбора
 watch(pickMode, val => {
   if (!mapEl.value) return
-  if (val) {
-    mapEl.value.style.cursor = 'crosshair'
-  } else {
-    mapEl.value.style.cursor = ''
-  }
+  mapEl.value.style.cursor = val ? 'crosshair' : ''
 })
 
 function dotIcon(color: string) {
   return L.divIcon({
-    html: `<div style="
-      width:14px;height:14px;
-      background:${color};
-      border:2px solid #fff;
-      border-radius:50%;
-      box-shadow:0 1px 4px rgba(0,0,0,.35);
-    "></div>`,
+    html: `<div style="width:14px;height:14px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
     className: '',
     iconSize: [14, 14],
     iconAnchor: [7, 7],
@@ -710,18 +700,17 @@ function updateMapMarkers() {
     const color  = order.status === 'published' ? '#18a058' : '#f0a020'
     const weight = order.weightKg ? `<div style="color:#888;font-size:12px">⚖ ${formatWeight(order.weightKg)}</div>` : ''
     const cargo  = order.cargoType ? `<div style="margin-top:4px;color:#444">${order.cargoType}</div>` : ''
+    const from   = (order.fromRegion ? order.fromRegion + ', ' : '') + order.fromCity
+    const to     = (order.toRegion   ? order.toRegion   + ', ' : '') + order.toCity
 
     L.marker(coords, { icon: dotIcon(color) })
       .addTo(markersLayer)
       .bindPopup(`
         <div style="min-width:180px;font-family:inherit">
-          <b style="font-size:14px">${order.fromRegion ? order.fromRegion + ', ' : ''}${order.fromCity} → ${order.toRegion ? order.toRegion + ', ' : ''}${order.toCity}</b>
+          <b style="font-size:14px">${from} → ${to}</b>
           ${cargo}${weight}
           <div style="margin-top:10px">
-            <a href="/auth"
-               style="display:inline-block;background:#ff6b4a;color:#fff;
-                      border-radius:6px;padding:4px 12px;font-size:12px;
-                      font-weight:600;text-decoration:none">
+            <a href="/auth" style="display:inline-block;background:#ff6b4a;color:#fff;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;text-decoration:none">
               ${t('searchPage.map.respondLink')}
             </a>
           </div>
@@ -733,7 +722,6 @@ function updateMapMarkers() {
 async function nearMe() {
   if (!navigator.geolocation) { alert(t('searchPage.map.noGeo')); return }
   if (!leafletMap) await initMap()
-
   locating.value = true
   navigator.geolocation.getCurrentPosition(
     pos => {
@@ -743,13 +731,7 @@ async function nearMe() {
       if (userMarker) userMarker.remove()
       userMarker = L.marker([lat, lng], {
         icon: L.divIcon({
-          html: `<div style="
-            width:18px;height:18px;
-            background:#1a5bc4;
-            border:3px solid #fff;
-            border-radius:50%;
-            box-shadow:0 2px 8px rgba(26,91,196,.5);
-          "></div>`,
+          html: `<div style="width:18px;height:18px;background:#1a5bc4;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(26,91,196,.5)"></div>`,
           className: '',
           iconSize: [18, 18],
           iconAnchor: [9, 9],
@@ -766,6 +748,13 @@ async function nearMe() {
       alert(t('searchPage.map.geoError'))
     }
   )
+}
+
+function clearPickSelection() {
+  filters.fromCity = ''; filters.toCity = ''
+  filters.fromRegion = ''; filters.toRegion = ''
+  filters.fromCountry = null; filters.toCountry = null
+  if (pickMarker) { pickMarker.remove(); pickMarker = null }
 }
 
 // Switch to map → init
@@ -801,7 +790,6 @@ onMounted(() => {
 </script>
 
 <style>
-/* Leaflet CSS — non-scoped so it applies globally */
 @import 'leaflet/dist/leaflet.css';
 </style>
 
@@ -1024,6 +1012,18 @@ onMounted(() => {
   border-radius: 0 0 12px 12px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.map-error {
+  width: 100%;
+  height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f6f8;
+  border-radius: 0 0 12px 12px;
+  color: #999;
+  font-size: 15px;
+  gap: 8px;
 }
 
 /* List */

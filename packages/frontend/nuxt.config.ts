@@ -36,12 +36,21 @@ const apiBase =
   process.env.NUXT_PUBLIC_API_BASE || dotEnv.NUXT_PUBLIC_API_BASE || 'http://localhost:8000'
 const wsUrl =
   process.env.NUXT_PUBLIC_WS_URL || dotEnv.NUXT_PUBLIC_WS_URL || 'ws://localhost:8000'
+const yandexMapsKey =
+  process.env.NUXT_PUBLIC_YANDEX_MAPS_KEY || dotEnv.NUXT_PUBLIC_YANDEX_MAPS_KEY || ''
+const yandexGeocoderKey =
+  process.env.NUXT_PUBLIC_YANDEX_GEOCODER_KEY || dotEnv.NUXT_PUBLIC_YANDEX_GEOCODER_KEY || ''
+const yandexSuggestKey =
+  process.env.NUXT_PUBLIC_YANDEX_SUGGEST_KEY || dotEnv.NUXT_PUBLIC_YANDEX_SUGGEST_KEY || ''
 
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase,
       wsUrl,
+      yandexMapsKey,
+      yandexGeocoderKey,
+      yandexSuggestKey,
     },
   },
   devServer: {

@@ -137,7 +137,8 @@
       "youAreHere": "Siz şu ýerdesiniz",
       "respondLink": "Jogap ber →",
       "noGeo": "Geolokasiya goldanylmaýar",
-      "geoError": "Ýeriňizi almak başartmady. Brauzeriň rugsat bermelerini barlaň."
+      "geoError": "Ýeriňizi almak başartmady. Brauzeriň rugsat bermelerini barlaň.",
+      "loadError": "Karty ýüklemek başartmady"
     },
     "results": {
       "loading": "Gözleýär...",

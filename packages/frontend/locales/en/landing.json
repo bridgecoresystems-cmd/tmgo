@@ -137,7 +137,8 @@
       "youAreHere": "You are here",
       "respondLink": "Respond →",
       "noGeo": "Geolocation is not supported",
-      "geoError": "Could not get your location. Check browser permissions."
+      "geoError": "Could not get your location. Check browser permissions.",
+      "loadError": "Failed to load the map"
     },
     "results": {
       "loading": "Searching...",
