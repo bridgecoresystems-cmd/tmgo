@@ -51,7 +51,7 @@
             </n-space>
           </n-card>
 
-          <n-descriptions v-if="!editMode" :column="1" bordered label-placement="left" label-width="200">
+          <n-descriptions v-if="!editMode" :column="1" bordered :label-placement="isMobile ? 'top' : 'left'" :label-width="isMobile ? undefined : 200">
             <n-descriptions-item :label="t('admin.vehicles.status')">
               <n-tag :type="vehicle.isActive ? 'success' : 'default'">
                 {{ vehicle.isActive ? t('admin.vehicles.active') : t('admin.vehicles.inactive') }}
@@ -217,7 +217,13 @@ import {
 } from '@tmgo/shared'
 
 const { t, locale } = useI18n()
-definePageMeta({ layout: 'admin',  })
+definePageMeta({ layout: 'admin' })
+
+const isMobile = ref(false)
+onMounted(() => {
+  isMobile.value = window.innerWidth < 640
+  window.addEventListener('resize', () => { isMobile.value = window.innerWidth < 640 })
+})
 
 const route = useRoute()
 const { apiBase: API } = useApiBase()
@@ -524,3 +530,19 @@ async function handleDeactivate() {
 
 watch(() => route.params.id, loadVehicle, { immediate: true })
 </script>
+
+<style scoped>
+:deep(.n-card__header-extra .n-space) {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  :deep(.n-card__header) {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  :deep(.n-card__header-extra) {
+    width: 100%;
+  }
+}
+</style>

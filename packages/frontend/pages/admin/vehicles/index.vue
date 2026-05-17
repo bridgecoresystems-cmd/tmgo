@@ -6,18 +6,18 @@
         <n-button size="small" @click="loadVehicles">{{ t('common.retry') }}</n-button>
       </template>
     </n-alert>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+    <div class="page-header">
       <n-h3 style="margin: 0;">{{ t('admin.vehicles.title') }}</n-h3>
-      <n-space>
+      <div class="filters-row">
         <n-select
           v-model:value="statusFilter"
           :options="statusFilterOptions"
           :placeholder="t('admin.vehicles.statusPlaceholder')"
           clearable
-          style="width: 180px"
+          class="filter-status"
         />
-        <n-input v-model:value="search" :placeholder="t('admin.vehicles.searchPlaceholder')" style="width: 240px" clearable />
-      </n-space>
+        <n-input v-model:value="search" :placeholder="t('admin.vehicles.searchPlaceholder')" clearable class="filter-search" />
+      </div>
     </div>
 
     <n-data-table
@@ -25,6 +25,7 @@
       :data="filteredVehicles"
       :loading="loading"
       :pagination="{ pageSize: 20 }"
+      :scroll-x="940"
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => navigateTo(`/admin/vehicles/${row.id}`) })"
       striped
     />
@@ -212,3 +213,29 @@ async function handleDeactivate(row: { id: string }) {
 onMounted(loadVehicles)
 watch(statusFilter, loadVehicles)
 </script>
+
+<style scoped>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filters-row {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.filter-status { width: 180px; }
+.filter-search { width: 240px; }
+
+@media (max-width: 640px) {
+  .page-header { flex-direction: column; align-items: stretch; }
+  .filters-row { flex-direction: column; }
+  .filter-status, .filter-search { width: 100%; }
+}
+</style>
