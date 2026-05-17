@@ -4,8 +4,8 @@
       <n-h3 style="margin: 0;">{{ t('client.services.title') }}</n-h3>
     </div>
 
-    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-      <n-input v-model:value="search" :placeholder="t('client.services.searchPlaceholder')" clearable style="width: 280px" />
+    <div class="filters-row">
+      <n-input v-model:value="search" :placeholder="t('client.services.searchPlaceholder')" clearable style="width: 280px; max-width: 100%" />
     </div>
 
     <n-data-table
@@ -13,6 +13,7 @@
       :data="filteredServices"
       :loading="loading"
       :pagination="{ pageSize: 10 }"
+      :scroll-x="650"
       striped
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => navigateTo(`/cabinet/client/services/${row.id}`) })"
     />
@@ -70,5 +71,12 @@ onMounted(loadServices)
 <style scoped>
 :deep(.n-data-table-tr:hover) {
   background-color: rgba(255, 107, 74, 0.06);
+}
+
+.filters-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 </style>

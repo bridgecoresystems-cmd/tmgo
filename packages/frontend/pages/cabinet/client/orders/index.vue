@@ -14,19 +14,19 @@
       </n-button>
     </div>
 
-    <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+    <div class="filters-row">
       <n-input
         v-model:value="search"
         :placeholder="t('client.orders.searchPlaceholder')"
         clearable
-        style="width: 260px"
+        style="width: 260px; max-width: 100%"
       />
       <n-select
         v-model:value="statusFilter"
         :options="statusOptions"
         :placeholder="t('common.status')"
         clearable
-        style="width: 180px"
+        style="width: 180px; max-width: 100%"
       />
     </div>
 
@@ -35,6 +35,7 @@
       :data="filteredOrders"
       :loading="loading"
       :pagination="{ pageSize: 15 }"
+      :scroll-x="800"
       striped
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => navigateTo(`/cabinet/client/orders/${row.id}`) })"
     />
@@ -180,5 +181,12 @@ onMounted(loadOrders)
 <style scoped>
 :deep(.n-data-table-tr:hover) {
   background-color: rgba(255, 107, 74, 0.06);
+}
+
+.filters-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 </style>

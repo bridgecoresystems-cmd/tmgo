@@ -19,7 +19,7 @@
           </n-form-item>
 
           <n-divider title-placement="left">{{ t('client.orders.route') }}</n-divider>
-          <n-grid :cols="2" :x-gap="24">
+          <n-grid :cols="isMobile ? 1 : 2" :x-gap="24">
             <n-gi>
               <div style="font-weight: 600; margin-bottom: 12px; color: #555;">{{ t('search.from') }}</div>
               <n-form-item :label="t('client.orders.fromCountry')" path="fromCountry" required>
@@ -97,7 +97,7 @@
           </n-grid>
 
           <n-divider title-placement="left">{{ t('client.orders.dates') }}</n-divider>
-          <n-grid :cols="2" :x-gap="16">
+          <n-grid :cols="isMobile ? 1 : 2" :x-gap="16">
             <n-gi>
               <n-form-item :label="t('client.orders.readyDate')" path="readyDate" required>
                 <n-date-picker
@@ -124,7 +124,7 @@
           </n-grid>
 
           <n-divider title-placement="left">{{ t('client.orders.pricing') }}</n-divider>
-          <n-grid :cols="2" :x-gap="16">
+          <n-grid :cols="isMobile ? 1 : 2" :x-gap="16">
             <n-gi>
               <n-form-item :label="t('client.orders.price')">
                 <n-input-number
@@ -154,7 +154,7 @@
       <!-- Step 2: Cargo -->
       <div v-show="step === 2">
         <n-form ref="form2Ref" :model="form" label-placement="top">
-          <n-grid :cols="2" :x-gap="16">
+          <n-grid :cols="isMobile ? 1 : 2" :x-gap="16">
             <n-gi :span="2">
               <n-form-item :label="t('client.orders.cargoType')" path="cargo.cargoType" required>
                 <n-input
@@ -232,6 +232,12 @@ const { t } = useI18n()
 const { apiBase: API } = useApiBase()
 const { COUNTRY_LIST } = useCountryConfig()
 const message = useMessage()
+
+const isMobile = ref(false)
+onMounted(() => {
+  isMobile.value = window.innerWidth < 640
+  window.addEventListener('resize', () => { isMobile.value = window.innerWidth < 640 })
+})
 
 const step = ref(1)
 const creating = ref(false)

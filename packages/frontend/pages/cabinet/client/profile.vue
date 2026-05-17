@@ -52,7 +52,7 @@
       <n-gi :span="2">
         <n-tabs type="line" animated>
           <n-tab-pane name="basic" :tab="t('client.profile.basicData')">
-            <n-form class="mt-20" style="max-width: 400px">
+            <n-form class="mt-20 profile-form">
               <n-form-item :label="t('common.name')">
                 <n-input v-model:value="basicForm.name" :placeholder="t('client.profile.namePlaceholder')" />
               </n-form-item>
@@ -74,7 +74,7 @@
           </n-tab-pane>
 
           <n-tab-pane name="security" :tab="t('client.profile.security')">
-            <n-form class="mt-20" style="max-width: 400px">
+            <n-form class="mt-20 profile-form">
               <n-form-item :label="t('client.profile.currentPassword')">
                 <n-input
                   v-model:value="passwordForm.currentPassword"
@@ -285,5 +285,16 @@ onMounted(() => {
 }
 .avatar-upload-btn {
   margin-top: 8px;
+}
+
+.profile-form {
+  max-width: 400px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .profile-page :deep(.n-grid) {
+    grid-template-columns: 1fr !important;
+  }
 }
 </style>

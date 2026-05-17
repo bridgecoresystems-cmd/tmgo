@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="page-header">
       <n-h3 style="margin: 0;">{{ t('client.mailing.title') }}</n-h3>
       <n-button v-if="unreadCount > 0" secondary @click="handleMarkAllRead" :loading="markingAll">
         {{ t('client.mailing.markAllRead') }}
@@ -115,5 +115,14 @@ onMounted(loadMessages)
 <style scoped>
 .unread-card {
   border-left: 4px solid #ff6b4a;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 </style>

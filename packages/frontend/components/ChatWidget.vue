@@ -414,7 +414,7 @@ onUnmounted(() => {
 .cw-panel {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  left: 20px;
   width: 360px;
   height: 480px;
   background: #fff;
@@ -666,9 +666,10 @@ onUnmounted(() => {
 
 @media (max-width: 480px) {
   .cw-panel {
-    width: calc(100vw - 24px);
-    right: 12px;
+    left: 12px;
+    right: auto;
     bottom: 12px;
+    width: calc(100vw - 24px);
     height: 72vh;
     max-height: 520px;
   }

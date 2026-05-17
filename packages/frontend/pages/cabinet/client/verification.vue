@@ -50,7 +50,7 @@
       <!-- Step 2: Country -->
       <div v-if="step === 2">
         <p style="color: #666; margin-bottom: 24px;">{{ t('verification.step2Desc') }}</p>
-        <n-grid :cols="5" :x-gap="12" :y-gap="12">
+        <n-grid :cols="isMobile ? 3 : 5" :x-gap="12" :y-gap="12">
           <n-gi v-for="c in COUNTRY_LIST" :key="c.code">
             <div
               class="country-card"
@@ -308,6 +308,11 @@ const selectedCountry = ref<string | null>(null)
 const saving = ref(false)
 const formRef = ref()
 const isMobile = ref(false)
+
+onMounted(() => {
+  isMobile.value = window.innerWidth < 640
+  window.addEventListener('resize', () => { isMobile.value = window.innerWidth < 640 })
+})
 
 const countryConfig = computed(() =>
   selectedCountry.value ? getConfig(selectedCountry.value) : null

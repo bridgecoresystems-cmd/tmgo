@@ -12,7 +12,7 @@
           {{ t('client.orders.editPendingOnly') }}
         </n-alert>
 
-        <n-grid :cols="3" :x-gap="16">
+        <n-grid :cols="isMobile ? 1 : 3" :x-gap="16">
           <n-gi>
             <n-form-item :label="t('common.from')" path="from_city_id" required>
               <n-select
@@ -40,12 +40,12 @@
               <n-input-number v-model:value="form.price" :min="0.01" :precision="2" placeholder="0.00" style="width: 100%" :disabled="order.status !== 'PENDING'" />
             </n-form-item>
           </n-gi>
-          <n-gi :span="3">
+          <n-gi :span="isMobile ? 1 : 3">
             <n-form-item :label="t('client.orders.cargoName')" path="cargo_name">
               <n-input v-model:value="form.cargo_name" :placeholder="t('client.orders.cargoNamePlaceholder')" :disabled="order.status !== 'PENDING'" />
             </n-form-item>
           </n-gi>
-          <n-gi :span="3">
+          <n-gi :span="isMobile ? 1 : 3">
             <n-form-item :label="t('client.orders.cargoDescriptionLabel')" path="cargo_description">
               <n-input v-model:value="form.cargo_description" type="textarea" :placeholder="t('client.orders.cargoDescriptionPlaceholder')" :rows="3" :disabled="order.status !== 'PENDING'" />
             </n-form-item>
@@ -66,9 +66,15 @@
 import { useMessage } from 'naive-ui'
 
 const { t } = useI18n()
-definePageMeta({ layout: 'cabinet-client',  })
+definePageMeta({ layout: 'cabinet-client' })
 
 const { apiBase: API } = useApiBase()
+
+const isMobile = ref(false)
+onMounted(() => {
+  isMobile.value = window.innerWidth < 640
+  window.addEventListener('resize', () => { isMobile.value = window.innerWidth < 640 })
+})
 const message = useMessage()
 const route = useRoute()
 const formRef = ref()

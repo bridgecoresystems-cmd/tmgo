@@ -13,7 +13,7 @@
           <n-tag :type="statusType(order.status)" size="medium">{{ statusLabel(order.status) }}</n-tag>
         </template>
 
-        <n-descriptions bordered :column="2" size="small">
+        <n-descriptions bordered :column="isMobile ? 1 : 2" :label-placement="isMobile ? 'top' : 'left'" size="small">
           <n-descriptions-item :label="t('client.orders.route')">
             {{ order.fromRegion ? order.fromRegion + ', ' : '' }}{{ order.fromCity }} ({{ order.fromCountry }}) → {{ order.toRegion ? order.toRegion + ', ' : '' }}{{ order.toCity }} ({{ order.toCountry }})
           </n-descriptions-item>
@@ -66,7 +66,7 @@
 
       <!-- Cargo -->
       <n-card v-if="cargo" :title="t('client.orders.cargoInfo')" style="margin-top: 16px;">
-        <n-descriptions bordered :column="3" size="small">
+        <n-descriptions bordered :column="isMobile ? 1 : 3" :label-placement="isMobile ? 'top' : 'left'" size="small">
           <n-descriptions-item :label="t('client.orders.cargoType')">{{ cargo.cargoType }}</n-descriptions-item>
           <n-descriptions-item v-if="cargo.weightKg" :label="t('client.orders.weightKg')">{{ cargo.weightKg }} кг</n-descriptions-item>
           <n-descriptions-item v-if="cargo.volumeM3" :label="t('client.orders.volumeM3')">{{ cargo.volumeM3 }} м³</n-descriptions-item>
@@ -154,6 +154,12 @@
 import { useMessage, useDialog } from 'naive-ui'
 
 definePageMeta({ layout: 'cabinet-client' })
+
+const isMobile = ref(false)
+onMounted(() => {
+  isMobile.value = window.innerWidth < 640
+  window.addEventListener('resize', () => { isMobile.value = window.innerWidth < 640 })
+})
 
 const { t } = useI18n()
 const { apiBase: API } = useApiBase()
@@ -288,6 +294,7 @@ onMounted(loadOrder)
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
 }
 .bid-amount {
   font-size: 18px;
