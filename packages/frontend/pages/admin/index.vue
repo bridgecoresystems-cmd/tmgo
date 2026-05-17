@@ -190,6 +190,11 @@ const getStatusType = (status: string) => {
 
 .table-scroll {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll :deep(table) {
+  min-width: 520px;
 }
 
 @media (max-width: 640px) {
