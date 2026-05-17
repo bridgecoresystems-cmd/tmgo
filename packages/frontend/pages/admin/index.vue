@@ -15,9 +15,8 @@
       </n-card>
     </div>
 
-    <n-grid :cols="{ xs: 1, md: 2 }" :x-gap="24" :y-gap="24" class="mt-24" responsive="screen">
-      <n-gi>
-        <n-card :title="$t('admin.adminIndex.recentOrders')" class="shadow-sm">
+    <div class="bottom-grid mt-24">
+      <n-card :title="$t('admin.adminIndex.recentOrders')" class="shadow-sm">
           <template #header-extra>
             <n-button text type="primary" @click="navigateTo('/admin/orders')">{{ $t('admin.adminIndex.allOrders') }}</n-button>
           </template>
@@ -46,9 +45,7 @@
           </n-table>
           </div>
         </n-card>
-      </n-gi>
-      <n-gi>
-        <n-card :title="$t('admin.adminIndex.newUsers')" class="shadow-sm">
+      <n-card :title="$t('admin.adminIndex.newUsers')" class="shadow-sm">
           <template #header-extra>
             <n-button text type="primary" @click="navigateTo('/admin/users')">{{ $t('admin.adminIndex.allUsers') }}</n-button>
           </template>
@@ -67,8 +64,7 @@
             </n-list-item>
           </n-list>
         </n-card>
-      </n-gi>
-    </n-grid>
+    </div>
   </div>
 </template>
 
@@ -186,6 +182,16 @@ const getStatusType = (status: string) => {
 
 .shadow-sm {
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+}
+
+.bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .bottom-grid { grid-template-columns: 1fr; }
 }
 
 .table-scroll {
