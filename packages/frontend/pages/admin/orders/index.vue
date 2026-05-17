@@ -1,19 +1,19 @@
 <template>
   <div class="admin-orders">
     <div class="page-actions-top">
-      <n-space>
-        <n-input v-model:value="searchQuery" :placeholder="t('admin.ordersPage.searchPlaceholder')" clearable>
+      <div class="filters-row">
+        <n-input v-model:value="searchQuery" :placeholder="t('admin.ordersPage.searchPlaceholder')" clearable class="search-input">
           <template #prefix>🔍</template>
         </n-input>
         <n-select
           v-model:value="statusFilter"
           :placeholder="t('admin.ordersPage.statusPlaceholder')"
           :options="statusOptions"
-          style="width: 160px"
+          class="status-select"
           clearable
         />
-      </n-space>
-      <n-button type="primary">
+      </div>
+      <n-button type="primary" class="create-btn">
         <template #icon>➕</template>
         {{ t('admin.ordersPage.createOrder') }}
       </n-button>
@@ -24,11 +24,12 @@
       :data="filteredOrders"
       :pagination="pagination"
       :bordered="false"
+      :scroll-x="760"
       class="mt-20"
     />
 
     <!-- Модалка деталей заказа -->
-    <n-modal v-model:show="showDetailModal" preset="card" :title="t('admin.ordersPage.modalTitle')" style="width: 600px">
+    <n-modal v-model:show="showDetailModal" preset="card" :title="t('admin.ordersPage.modalTitle')" style="max-width: 600px; width: calc(100vw - 32px)">
       <div v-if="selectedOrder">
         <n-descriptions label-placement="left" bordered :column="1">
           <n-descriptions-item :label="t('admin.ordersPage.labelOrderId')">{{ selectedOrder.shortId || `ORD${selectedOrder.seqNo || selectedOrder.id.split('-')[0]}` }}</n-descriptions-item>
@@ -186,7 +187,26 @@ const viewDetails = (order: any) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filters-row {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-input { flex: 1; min-width: 140px; }
+.status-select { width: 160px; flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .page-actions-top { flex-direction: column; align-items: stretch; }
+  .filters-row { flex-wrap: wrap; }
+  .status-select { width: auto; flex: 1; min-width: 120px; }
+  .create-btn { width: 100%; }
 }
 
 .mt-20 {
