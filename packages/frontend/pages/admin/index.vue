@@ -190,6 +190,10 @@ const getStatusType = (status: string) => {
   gap: 24px;
 }
 
+.bottom-grid > * {
+  min-width: 0;
+}
+
 @media (max-width: 768px) {
   .bottom-grid { grid-template-columns: 1fr; }
 }
