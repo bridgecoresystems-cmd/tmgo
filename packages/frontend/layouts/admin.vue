@@ -253,6 +253,9 @@ async function handleUserSelect(key: string) {
   justify-content: space-between;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .user-profile-trigger {

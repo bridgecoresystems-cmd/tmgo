@@ -9,6 +9,7 @@
         :data="messages"
         :loading="loading"
         :pagination="{ pageSize: 15 }"
+        :scroll-x="1030"
         striped
       />
     </n-card>
