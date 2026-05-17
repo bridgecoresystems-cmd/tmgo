@@ -94,4 +94,7 @@ defineEmits<{
   flex-wrap: wrap;
   gap: 12px;
 }
+.user-detail-header :deep(.n-space) {
+  flex-wrap: wrap;
+}
 </style>

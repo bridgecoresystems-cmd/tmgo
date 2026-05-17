@@ -1,6 +1,6 @@
 <template>
   <div>
-    <n-modal :show="rejectModal" preset="card" :title="t('admin.rejectVerification')" style="max-width: 450px" @update:show="$emit('update:rejectModal', $event)">
+    <n-modal :show="rejectModal" preset="card" :title="t('admin.rejectVerification')" style="max-width: 450px; width: calc(100vw - 32px)" @update:show="$emit('update:rejectModal', $event)">
       <n-form-item :label="t('admin.rejectReasonRequired')">
         <n-input :value="actionComment" type="textarea" :placeholder="t('admin.specifyReason')" :rows="3" @update:value="$emit('update:actionComment', $event)" />
       </n-form-item>
@@ -12,7 +12,7 @@
       </template>
     </n-modal>
 
-    <n-modal :show="suspendModal" preset="card" :title="t('admin.suspendDriver')" style="max-width: 450px" @update:show="$emit('update:suspendModal', $event)">
+    <n-modal :show="suspendModal" preset="card" :title="t('admin.suspendDriver')" style="max-width: 450px; width: calc(100vw - 32px)" @update:show="$emit('update:suspendModal', $event)">
       <n-form-item :label="t('admin.suspendReasonRequired')">
         <n-input :value="actionComment" type="textarea" :placeholder="t('admin.specifyReason')" :rows="3" @update:value="$emit('update:actionComment', $event)" />
       </n-form-item>
@@ -24,7 +24,7 @@
       </template>
     </n-modal>
 
-    <n-modal :show="approveRequestModal" preset="card" :title="t('admin.approveRequest')" style="max-width: 400px" @update:show="$emit('update:approveRequestModal', $event)">
+    <n-modal :show="approveRequestModal" preset="card" :title="t('admin.approveRequest')" style="max-width: 400px; width: calc(100vw - 32px)" @update:show="$emit('update:approveRequestModal', $event)">
       <n-form-item :label="t('admin.commentOptional')">
         <n-input :value="approveRequestComment" type="textarea" :placeholder="t('admin.commentForDriver')" :rows="2" @update:value="$emit('update:approveRequestComment', $event)" />
       </n-form-item>
@@ -39,7 +39,7 @@
       </template>
     </n-modal>
 
-    <n-modal :show="rejectRequestModal" preset="card" :title="t('admin.rejectRequest')" style="max-width: 400px" @update:show="$emit('update:rejectRequestModal', $event)">
+    <n-modal :show="rejectRequestModal" preset="card" :title="t('admin.rejectRequest')" style="max-width: 400px; width: calc(100vw - 32px)" @update:show="$emit('update:rejectRequestModal', $event)">
       <n-form-item :label="t('admin.rejectReasonRequiredShort')">
         <n-input :value="rejectRequestComment" type="textarea" :placeholder="t('admin.specifyReason')" :rows="3" @update:value="$emit('update:rejectRequestComment', $event)" />
       </n-form-item>

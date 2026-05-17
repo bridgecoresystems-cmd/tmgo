@@ -1,35 +1,35 @@
 <template>
-  <div style="max-width: 560px;">
+  <div class="city-form-wrap">
     <n-h3>{{ $t('admin.citiesPage.addCity') }}</n-h3>
 
     <n-form :model="form" :rules="rules" ref="formRef" label-placement="top">
-      <n-grid :cols="2" :x-gap="16">
-        <n-gi>
+      <n-grid :cols="2" :x-gap="16" responsive="screen" item-responsive>
+        <n-gi span="2 s:1">
           <n-form-item :label="$t('admin.citiesPage.labelName')" path="name">
             <n-input v-model:value="form.name" placeholder="Ashgabat" />
           </n-form-item>
         </n-gi>
-        <n-gi>
+        <n-gi span="2 s:1">
           <n-form-item :label="$t('admin.citiesPage.labelNameRu')" path="nameRu">
             <n-input v-model:value="form.nameRu" placeholder="Ашхабад" />
           </n-form-item>
         </n-gi>
-        <n-gi>
+        <n-gi span="2 s:1">
           <n-form-item :label="$t('admin.citiesPage.labelRegion')" path="region">
             <n-input v-model:value="form.region" placeholder="Ahal" />
           </n-form-item>
         </n-gi>
-        <n-gi>
+        <n-gi span="2 s:1">
           <n-form-item :label="$t('admin.citiesPage.labelCountry')" path="country">
             <n-input v-model:value="form.country" placeholder="TM" />
           </n-form-item>
         </n-gi>
-        <n-gi>
+        <n-gi span="2 s:1">
           <n-form-item :label="$t('admin.citiesPage.labelSortOrder')" path="sortOrder">
             <n-input-number v-model:value="form.sortOrder" :min="0" style="width: 100%;" />
           </n-form-item>
         </n-gi>
-        <n-gi>
+        <n-gi span="2 s:1">
           <n-form-item :label="$t('admin.citiesPage.labelStatus')" path="isActive">
             <n-switch v-model:value="form.isActive">
               <template #checked>{{ $t('admin.citiesPage.statusActive') }}</template>
@@ -39,10 +39,10 @@
         </n-gi>
       </n-grid>
 
-      <n-space style="margin-top: 8px;">
+      <div class="form-actions">
         <n-button type="primary" :loading="loading" @click="handleSubmit">{{ $t('admin.citiesPage.save') }}</n-button>
         <n-button quaternary @click="navigateTo('/admin/cities')">{{ $t('admin.citiesPage.cancel') }}</n-button>
-      </n-space>
+      </div>
     </n-form>
   </div>
 </template>
@@ -89,3 +89,15 @@ async function handleSubmit() {
   }
 }
 </script>
+
+<style scoped>
+.city-form-wrap {
+  max-width: 560px;
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+</style>

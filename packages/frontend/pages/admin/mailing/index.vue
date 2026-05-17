@@ -6,7 +6,7 @@
         <n-button size="small" @click="loadMessages">{{ t('admin.mailing.retry') }}</n-button>
       </template>
     </n-alert>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="page-header">
       <n-h3 style="margin: 0;">{{ t('admin.mailing.title') }}</n-h3>
       <n-button type="primary" @click="showCreate = true">
         {{ t('admin.mailing.create') }}
@@ -19,11 +19,12 @@
       :loading="loading"
       :pagination="{ pageSize: 10 }"
       striped
+      :scroll-x="760"
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => openDetail(row) })"
     />
   </div>
 
-  <n-modal v-model:show="showCreate" preset="card" :title="t('admin.mailing.modalTitle')" style="width: 500px">
+  <n-modal v-model:show="showCreate" preset="card" :title="t('admin.mailing.modalTitle')" style="max-width: 500px; width: calc(100vw - 32px)">
     <n-form ref="formRef" :model="form" :rules="rules">
       <n-form-item :label="t('admin.mailing.labelTitle')" path="title" required>
         <n-input v-model:value="form.title" :placeholder="t('admin.mailing.placeholderSubject')" />
@@ -205,3 +206,14 @@ function openDetail(row: any) {
 
 onMounted(loadMessages)
 </script>
+
+<style scoped>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+</style>

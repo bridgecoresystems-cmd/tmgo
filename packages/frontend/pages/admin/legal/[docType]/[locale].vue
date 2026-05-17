@@ -7,11 +7,11 @@
         <n-h3 style="margin:0;">{{ t(`legalDocs.docTypes.${docType}`) }} — {{ localeFlag[locale as string] }} {{ (locale as string).toUpperCase() }}</n-h3>
         <n-text depth="3" style="font-size:13px;">{{ t('legalDocs.editor.markdownHint') }}</n-text>
       </div>
-      <n-space>
+      <div>
         <n-tag :type="form.isPublished ? 'success' : 'warning'" size="medium">
           {{ form.isPublished ? t('legalDocs.status.published') : t('legalDocs.status.draft') }}
         </n-tag>
-      </n-space>
+      </div>
     </div>
 
     <n-spin :show="loading">
@@ -55,7 +55,7 @@
               </n-form>
 
               <div class="action-row">
-                <n-space>
+                <div class="action-buttons">
                   <n-button type="primary" :loading="saving" @click="saveDraft">
                     {{ t('legalDocs.editor.saveDraft') }}
                   </n-button>
@@ -75,7 +75,7 @@
                     :loading="unpublishing"
                     @confirm="unpublish"
                   />
-                </n-space>
+                </div>
                 <n-text depth="3" style="font-size:12px" v-if="form.updatedAt">
                   {{ t('legalDocs.editor.lastUpdated') }}: {{ new Date(form.updatedAt).toLocaleString('ru-RU') }}
                 </n-text>
@@ -241,6 +241,12 @@ onMounted(loadDoc)
   align-items: flex-start;
   margin: 16px 0 20px;
   gap: 16px;
+  flex-wrap: wrap;
+}
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .editor-body {
   margin-top: 4px;

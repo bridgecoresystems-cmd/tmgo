@@ -21,6 +21,7 @@
       :pagination="{ pageSize: 20 }"
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => navigateTo(`/admin/users/${row.id}`) })"
       striped
+      :scroll-x="740"
     />
   </div>
 </template>
@@ -152,3 +153,6 @@ async function loadUsers() {
 
 onMounted(loadUsers)
 </script>
+
+<style scoped>
+</style>

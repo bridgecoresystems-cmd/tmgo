@@ -15,15 +15,15 @@
 
       <n-tabs type="line" animated>
         <n-tab-pane name="from" :tab="t('admin.citiesPage.fromTab')">
-          <n-data-table :columns="columns" :data="fromCities" :bordered="false" />
+          <n-data-table :columns="columns" :data="fromCities" :bordered="false" :scroll-x="400" />
         </n-tab-pane>
         <n-tab-pane name="to" :tab="t('admin.citiesPage.toTab')">
-          <n-data-table :columns="columns" :data="toCities" :bordered="false" />
+          <n-data-table :columns="columns" :data="toCities" :bordered="false" :scroll-x="400" />
         </n-tab-pane>
       </n-tabs>
     </n-card>
 
-    <n-modal v-model:show="showAddModal" preset="card" :title="t('admin.citiesPage.addNewCity')" style="width: 400px">
+    <n-modal v-model:show="showAddModal" preset="card" :title="t('admin.citiesPage.addNewCity')" style="max-width: 400px; width: calc(100vw - 32px)">
       <n-form :model="newCity">
         <n-form-item :label="t('admin.citiesPage.cityName')">
           <n-input v-model:value="newCity.name" :placeholder="t('admin.citiesPage.cityNamePlaceholder')" />
