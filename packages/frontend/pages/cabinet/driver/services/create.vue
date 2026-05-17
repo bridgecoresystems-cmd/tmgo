@@ -11,33 +11,25 @@
 
     <n-card :title="t('driver.services.addService')">
       <n-form ref="formRef" :model="form" :rules="rules" label-placement="top">
-        <n-grid :cols="3" :x-gap="16">
-          <n-gi>
-            <n-form-item :label="t('common.from')" path="from_city_id" required>
-              <n-select v-model:value="form.from_city_id" :options="cityOptions" :placeholder="t('driver.services.selectCity')" filterable />
-            </n-form-item>
-          </n-gi>
-          <n-gi>
-            <n-form-item :label="t('common.to')" path="to_city_id" required>
-              <n-select v-model:value="form.to_city_id" :options="cityOptions" :placeholder="t('driver.services.selectCity')" filterable />
-            </n-form-item>
-          </n-gi>
-          <n-gi>
-            <n-form-item :label="t('common.transport')" path="vehicle_id" required>
-              <n-select v-model:value="form.vehicle_id" :options="vehicleOptions" :placeholder="t('common.selectVehicle')" />
-            </n-form-item>
-          </n-gi>
-          <n-gi>
-            <n-form-item :label="t('driver.services.priceTmt')" path="price" required>
-              <n-input-number v-model:value="form.price" :min="0.01" :precision="2" style="width: 100%" />
-            </n-form-item>
-          </n-gi>
-          <n-gi :span="3">
+        <div class="form-grid">
+          <n-form-item :label="t('common.from')" path="from_city_id" required>
+            <n-select v-model:value="form.from_city_id" :options="cityOptions" :placeholder="t('driver.services.selectCity')" filterable />
+          </n-form-item>
+          <n-form-item :label="t('common.to')" path="to_city_id" required>
+            <n-select v-model:value="form.to_city_id" :options="cityOptions" :placeholder="t('driver.services.selectCity')" filterable />
+          </n-form-item>
+          <n-form-item :label="t('common.transport')" path="vehicle_id" required>
+            <n-select v-model:value="form.vehicle_id" :options="vehicleOptions" :placeholder="t('common.selectVehicle')" />
+          </n-form-item>
+          <n-form-item :label="t('driver.services.priceTmt')" path="price" required>
+            <n-input-number v-model:value="form.price" :min="0.01" :precision="2" style="width: 100%" />
+          </n-form-item>
+          <div class="form-grid__full">
             <n-form-item :label="t('driver.services.serviceDescription')" path="description">
               <n-input v-model:value="form.description" type="textarea" :placeholder="t('driver.services.descriptionPlaceholder')" :rows="3" />
             </n-form-item>
-          </n-gi>
-        </n-grid>
+          </div>
+        </div>
         <n-space>
           <UiSaveBtn :loading="creating" @click="handleCreate" />
           <UiCancelBtn @click="navigateTo('/cabinet/driver/services')" />
@@ -46,6 +38,20 @@
     </n-card>
   </div>
 </template>
+
+<style scoped>
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0 16px;
+}
+.form-grid__full {
+  grid-column: 1 / -1;
+}
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+</style>
 
 <script setup lang="ts">
 import { useMessage } from 'naive-ui'

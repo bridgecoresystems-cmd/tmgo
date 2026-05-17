@@ -58,7 +58,7 @@
       </n-space>
     </n-spin>
 
-    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.documents.addDocumentModal')" style="max-width: 500px">
+    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.documents.addDocumentModal')" style="max-width: 500px; width: calc(100vw - 32px)">
       <n-form ref="addFormRef" :model="addForm" label-placement="top">
         <n-form-item :label="t('driver.documents.docType')" required>
           <n-select v-model:value="addForm.doc_type" :options="docTypeOptions" :placeholder="t('driver.documents.select')" :render-label="renderDocTypeOption" />

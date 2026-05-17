@@ -84,220 +84,170 @@
           <template v-if="!editMode">
             <!-- Section 1: Основная информация -->
             <n-card :title="t('driver.vehicles.sectionBasic')" embedded class="section-card">
-              <n-grid :cols="2" :x-gap="24" :y-gap="8" responsive="screen" item-responsive>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.type') }}</div>
-                    <div class="field-value">
-                      <n-tag v-if="vehicle.vehicleType" type="info" size="small" round>{{ vehicleTypeLabel }}</n-tag>
-                      <span v-else class="empty-val">—</span>
-                    </div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.chassisType') }}</div>
-                    <div class="field-value">{{ chassisTypeLabel }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.brand') }}</div>
-                    <div class="field-value field-value--strong">{{ vehicle.brand || vehicle.customMake || '—' }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.model') }}</div>
-                    <div class="field-value field-value--strong">{{ vehicle.model || vehicle.customModel || '—' }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.year') }}</div>
-                    <div class="field-value">{{ vehicle.year || '—' }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.color') }}</div>
-                    <div class="field-value color-chip" v-if="vehicle.color">
-                      <span class="color-dot" :style="{ background: colorHex }"></span>
-                      {{ colorLabel }}
-                    </div>
+              <div class="fields-grid fields-grid--2">
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.type') }}</div>
+                  <div class="field-value">
+                    <n-tag v-if="vehicle.vehicleType" type="info" size="small" round>{{ vehicleTypeLabel }}</n-tag>
                     <span v-else class="empty-val">—</span>
                   </div>
-                </n-gi>
-              </n-grid>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.chassisType') }}</div>
+                  <div class="field-value">{{ chassisTypeLabel }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.brand') }}</div>
+                  <div class="field-value field-value--strong">{{ vehicle.brand || vehicle.customMake || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.model') }}</div>
+                  <div class="field-value field-value--strong">{{ vehicle.model || vehicle.customModel || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.year') }}</div>
+                  <div class="field-value">{{ vehicle.year || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.color') }}</div>
+                  <div class="field-value color-chip" v-if="vehicle.color">
+                    <span class="color-dot" :style="{ background: colorHex }"></span>
+                    {{ colorLabel }}
+                  </div>
+                  <span v-else class="empty-val">—</span>
+                </div>
+              </div>
             </n-card>
 
             <!-- Section 2: Регистрация -->
             <n-card :title="t('driver.vehicles.sectionRegistration')" embedded class="section-card">
-              <n-grid :cols="2" :x-gap="24" :y-gap="8" responsive="screen" item-responsive>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.vin') }}</div>
-                    <div class="field-value" style="font-family:monospace;letter-spacing:1px">
-                      {{ vehicle.vin || '—' }}
-                    </div>
+              <div class="fields-grid fields-grid--2">
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.vin') }}</div>
+                  <div class="field-value" style="font-family:monospace;letter-spacing:1px">
+                    {{ vehicle.vin || '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.chassisNumber') }}</div>
-                    <div class="field-value">{{ vehicle.chassisNumber || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.chassisNumber') }}</div>
+                  <div class="field-value">{{ vehicle.chassisNumber || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.plateNumber') }}</div>
+                  <div class="field-value">
+                    <n-tag type="default" size="small" style="font-family:monospace;font-weight:700;letter-spacing:1px">
+                      {{ vehicle.plateNumber }}
+                    </n-tag>
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.plateNumber') }}</div>
-                    <div class="field-value">
-                      <n-tag type="default" size="small" style="font-family:monospace;font-weight:700;letter-spacing:1px">
-                        {{ vehicle.plateNumber }}
-                      </n-tag>
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.capacityTons') }}</div>
+                  <div class="field-value field-value--strong">
+                    {{ vehicle.capacityTons != null ? `${vehicle.capacityTons} т` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.capacityTons') }}</div>
-                    <div class="field-value field-value--strong">
-                      {{ vehicle.capacityTons != null ? `${vehicle.capacityTons} т` : '—' }}
-                    </div>
+                </div>
+                <div class="field-block fields-grid__full">
+                  <div class="field-label">{{ t('driver.vehicles.hasGps') }}</div>
+                  <div class="field-value">
+                    <n-tag :type="vehicle.hasGps ? 'success' : 'default'" size="small" round>
+                      {{ vehicle.hasGps ? '✓ ' + t('common.yes') : t('common.no') }}
+                    </n-tag>
                   </div>
-                </n-gi>
-                <n-gi span="2">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.hasGps') }}</div>
-                    <div class="field-value">
-                      <n-tag :type="vehicle.hasGps ? 'success' : 'default'" size="small" round>
-                        {{ vehicle.hasGps ? '✓ ' + t('common.yes') : t('common.no') }}
-                      </n-tag>
-                    </div>
-                  </div>
-                </n-gi>
-              </n-grid>
+                </div>
+              </div>
             </n-card>
 
             <!-- Section 3: Страхование -->
             <n-card :title="t('driver.vehicles.sectionInsurance')" embedded class="section-card">
-              <n-grid :cols="2" :x-gap="24" :y-gap="8" responsive="screen" item-responsive>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.insurancePolicyNum') }}</div>
-                    <div class="field-value">{{ vehicle.insurancePolicyNum || '—' }}</div>
+              <div class="fields-grid fields-grid--2">
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.insurancePolicyNum') }}</div>
+                  <div class="field-value">{{ vehicle.insurancePolicyNum || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.insuranceExpiresAt') }}</div>
+                  <div class="field-value">
+                    <n-tag v-if="vehicle.insuranceExpiresAt" :type="insuranceTagType" size="small">
+                      {{ insuranceExpiresLabel }}
+                    </n-tag>
+                    <span v-else class="empty-val">—</span>
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.insuranceExpiresAt') }}</div>
-                    <div class="field-value">
-                      <n-tag v-if="vehicle.insuranceExpiresAt" :type="insuranceTagType" size="small">
-                        {{ insuranceExpiresLabel }}
-                      </n-tag>
-                      <span v-else class="empty-val">—</span>
-                    </div>
-                  </div>
-                </n-gi>
-              </n-grid>
+                </div>
+              </div>
             </n-card>
 
             <!-- Section 4: Технические параметры -->
             <n-card :title="t('driver.vehicles.sectionTechnical')" embedded class="section-card">
-              <n-grid :cols="3" :x-gap="24" :y-gap="8" responsive="screen" item-responsive>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.axleConfig') }}</div>
-                    <div class="field-value">
-                      <n-tag v-if="vehicle.axleConfig" type="default" size="small">{{ axleConfigLabel }}</n-tag>
-                      <span v-else class="empty-val">—</span>
-                    </div>
+              <div class="fields-grid fields-grid--3">
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.axleConfig') }}</div>
+                  <div class="field-value">
+                    <n-tag v-if="vehicle.axleConfig" type="default" size="small">{{ axleConfigLabel }}</n-tag>
+                    <span v-else class="empty-val">—</span>
                   </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.ownership') }}</div>
-                    <div class="field-value">{{ ownershipLabel }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.ownership') }}</div>
+                  <div class="field-value">{{ ownershipLabel }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.fuelType') }}</div>
+                  <div class="field-value">{{ fuelTypeLabel }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.engineVolumeL') }}</div>
+                  <div class="field-value">
+                    {{ vehicle.engineVolumeL != null ? `${vehicle.engineVolumeL} л` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.fuelType') }}</div>
-                    <div class="field-value">{{ fuelTypeLabel }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.powerHp') }}</div>
+                  <div class="field-value">
+                    {{ vehicle.powerHp != null ? `${vehicle.powerHp} л.с.` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.engineVolumeL') }}</div>
-                    <div class="field-value">
-                      {{ vehicle.engineVolumeL != null ? `${vehicle.engineVolumeL} л` : '—' }}
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.transmission') }}</div>
+                  <div class="field-value">{{ transmissionLabel }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.fuelTank1L') }}</div>
+                  <div class="field-value">
+                    {{ vehicle.fuelTank1L != null ? `${vehicle.fuelTank1L} л` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.powerHp') }}</div>
-                    <div class="field-value">
-                      {{ vehicle.powerHp != null ? `${vehicle.powerHp} л.с.` : '—' }}
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.fuelTank2L') }}</div>
+                  <div class="field-value">
+                    {{ vehicle.fuelTank2L != null ? `${vehicle.fuelTank2L} л` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.transmission') }}</div>
-                    <div class="field-value">{{ transmissionLabel }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.euroClass') }}</div>
+                  <div class="field-value">
+                    <n-tag v-if="vehicle.euroClass" type="success" size="small">{{ euroClassLabel }}</n-tag>
+                    <span v-else class="empty-val">—</span>
                   </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.fuelTank1L') }}</div>
-                    <div class="field-value">
-                      {{ vehicle.fuelTank1L != null ? `${vehicle.fuelTank1L} л` : '—' }}
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.fuelConsumption') }}</div>
+                  <div class="field-value">
+                    {{ vehicle.fuelConsumptionPer100km != null ? `${vehicle.fuelConsumptionPer100km} л/100 км` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.fuelTank2L') }}</div>
-                    <div class="field-value">
-                      {{ vehicle.fuelTank2L != null ? `${vehicle.fuelTank2L} л` : '—' }}
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.fifthWheelCapacity') }}</div>
+                  <div class="field-value">
+                    {{ vehicle.fifthWheelCapacityKg != null ? `${vehicle.fifthWheelCapacityKg} кг` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.euroClass') }}</div>
-                    <div class="field-value">
-                      <n-tag v-if="vehicle.euroClass" type="success" size="small">{{ euroClassLabel }}</n-tag>
-                      <span v-else class="empty-val">—</span>
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.vehicles.maxGrossWeight') }}</div>
+                  <div class="field-value">
+                    {{ vehicle.maxGrossWeightT != null ? `${vehicle.maxGrossWeightT} т` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.fuelConsumption') }}</div>
-                    <div class="field-value">
-                      {{ vehicle.fuelConsumptionPer100km != null ? `${vehicle.fuelConsumptionPer100km} л/100 км` : '—' }}
-                    </div>
-                  </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.fifthWheelCapacity') }}</div>
-                    <div class="field-value">
-                      {{ vehicle.fifthWheelCapacityKg != null ? `${vehicle.fifthWheelCapacityKg} кг` : '—' }}
-                    </div>
-                  </div>
-                </n-gi>
-                <n-gi span="3 s:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.vehicles.maxGrossWeight') }}</div>
-                    <div class="field-value">
-                      {{ vehicle.maxGrossWeightT != null ? `${vehicle.maxGrossWeightT} т` : '—' }}
-                    </div>
-                  </div>
-                </n-gi>
-              </n-grid>
+                </div>
+              </div>
             </n-card>
           </template>
 
@@ -306,179 +256,129 @@
             <n-form ref="formRef" :model="form" label-placement="top">
               <!-- Section 1 -->
               <n-card :title="t('driver.vehicles.sectionBasic')" embedded class="section-card">
-                <n-grid :cols="2" :x-gap="24" responsive="screen" item-responsive>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.type')">
-                      <n-select v-model:value="form.vehicleType" :options="vehicleTypeOptions" style="width:100%" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.chassisType')">
-                      <n-select v-model:value="form.chassisType" :options="chassisTypeOptions" clearable style="width:100%" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.brand')">
-                      <n-input :value="vehicle.brand || vehicle.customMake || ''" disabled />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.model')">
-                      <n-input :value="vehicle.model || vehicle.customModel || ''" disabled />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.year')">
-                      <n-input-number v-model:value="form.year" :min="1950" :max="currentYear" style="width:130px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.color')">
-                      <n-select v-model:value="form.color" :options="colorOptions" style="width:200px" />
-                    </n-form-item>
-                  </n-gi>
-                </n-grid>
+                <div class="fields-grid fields-grid--2">
+                  <n-form-item :label="t('driver.vehicles.type')">
+                    <n-select v-model:value="form.vehicleType" :options="vehicleTypeOptions" style="width:100%" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.chassisType')">
+                    <n-select v-model:value="form.chassisType" :options="chassisTypeOptions" clearable style="width:100%" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.brand')">
+                    <n-input :value="vehicle.brand || vehicle.customMake || ''" disabled />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.model')">
+                    <n-input :value="vehicle.model || vehicle.customModel || ''" disabled />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.year')">
+                    <n-input-number v-model:value="form.year" :min="1950" :max="currentYear" style="width:130px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.color')">
+                    <n-select v-model:value="form.color" :options="colorOptions" style="width:200px" />
+                  </n-form-item>
+                </div>
               </n-card>
 
               <!-- Section 2 -->
               <n-card :title="t('driver.vehicles.sectionRegistration')" embedded class="section-card">
-                <n-grid :cols="2" :x-gap="24" responsive="screen" item-responsive>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.vin')">
-                      <n-input v-model:value="form.vin" maxlength="17" show-count style="width:100%;max-width:280px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.chassisNumber')">
-                      <n-input v-model:value="form.chassisNumber" style="width:100%;max-width:280px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.plateNumber')" required>
-                      <n-input v-model:value="form.plateNumber" style="width:100%;max-width:220px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.capacityTons')">
-                      <n-input-number v-model:value="form.capacityTons" :min="0.1" :max="200" :precision="2" style="width:130px">
-                        <template #suffix>т</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2">
-                    <n-form-item :label="t('driver.vehicles.hasGps')">
-                      <n-switch v-model:value="form.hasGps" />
-                    </n-form-item>
-                  </n-gi>
-                </n-grid>
+                <div class="fields-grid fields-grid--2">
+                  <n-form-item :label="t('driver.vehicles.vin')">
+                    <n-input v-model:value="form.vin" maxlength="17" show-count style="width:100%;max-width:280px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.chassisNumber')">
+                    <n-input v-model:value="form.chassisNumber" style="width:100%;max-width:280px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.plateNumber')" required>
+                    <n-input v-model:value="form.plateNumber" style="width:100%;max-width:220px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.capacityTons')">
+                    <n-input-number v-model:value="form.capacityTons" :min="0.1" :max="200" :precision="2" style="width:130px">
+                      <template #suffix>т</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.hasGps')" class="fields-grid__full">
+                    <n-switch v-model:value="form.hasGps" />
+                  </n-form-item>
+                </div>
               </n-card>
 
               <!-- Section 3 -->
               <n-card :title="t('driver.vehicles.sectionInsurance')" embedded class="section-card">
-                <n-grid :cols="2" :x-gap="24" responsive="screen" item-responsive>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.insurancePolicyNum')">
-                      <n-input v-model:value="form.insurancePolicyNum" style="width:100%;max-width:280px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.vehicles.insuranceExpiresAt')">
-                      <n-date-picker
-                        v-model:value="insuranceExpiresTs"
-                        type="date"
-                        clearable
-                        style="width:200px"
-                        @update:value="(v: number | null) => { form.insuranceExpiresAt = v ? formatDateOnlyFromMs(v) : null }"
-                      />
-                    </n-form-item>
-                  </n-gi>
-                </n-grid>
+                <div class="fields-grid fields-grid--2">
+                  <n-form-item :label="t('driver.vehicles.insurancePolicyNum')">
+                    <n-input v-model:value="form.insurancePolicyNum" style="width:100%;max-width:280px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.insuranceExpiresAt')">
+                    <n-date-picker
+                      v-model:value="insuranceExpiresTs"
+                      type="date"
+                      clearable
+                      style="width:200px"
+                      @update:value="(v: number | null) => { form.insuranceExpiresAt = v ? formatDateOnlyFromMs(v) : null }"
+                    />
+                  </n-form-item>
+                </div>
               </n-card>
 
               <!-- Section 4 -->
               <n-card :title="t('driver.vehicles.sectionTechnical')" embedded class="section-card">
-                <n-grid :cols="3" :x-gap="24" responsive="screen" item-responsive>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.axleConfig')">
-                      <n-select v-model:value="form.axleConfig" :options="axleConfigOptions" clearable style="width:100%" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.fuelType')">
-                      <n-select v-model:value="form.fuelType" :options="fuelTypeOptions" clearable style="width:100%" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.transmission')">
-                      <n-select v-model:value="form.transmission" :options="transmissionOptions" clearable style="width:100%" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.engineVolumeL')">
-                      <n-input-number v-model:value="form.engineVolumeL" :min="0" :precision="1" style="width:100%">
-                        <template #suffix>л</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.powerHp')">
-                      <n-input-number v-model:value="form.powerHp" :min="0" style="width:100%">
-                        <template #suffix>л.с.</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.euroClass')">
-                      <n-select v-model:value="form.euroClass" :options="euroClassOptions" clearable style="width:100%" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.fuelTank1L')">
-                      <n-input-number v-model:value="form.fuelTank1L" :min="0" style="width:100%">
-                        <template #suffix>л</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.fuelTank2L')">
-                      <n-input-number v-model:value="form.fuelTank2L" :min="0" style="width:100%">
-                        <template #suffix>л</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.fuelConsumption')">
-                      <n-input-number v-model:value="form.fuelConsumptionPer100km" :min="0" :precision="1" style="width:100%">
-                        <template #suffix>л/100</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.fifthWheelCapacity')">
-                      <n-input-number v-model:value="form.fifthWheelCapacityKg" :min="0" style="width:100%">
-                        <template #suffix>кг</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3 s:1">
-                    <n-form-item :label="t('driver.vehicles.maxGrossWeight')">
-                      <n-input-number v-model:value="form.maxGrossWeightT" :min="0" :precision="2" style="width:100%">
-                        <template #suffix>т</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="3">
-                    <n-form-item :label="t('driver.vehicles.ownership')">
-                      <n-radio-group v-model:value="form.ownership">
-                        <n-space>
-                          <n-radio value="own">{{ t('driver.vehicles.ownershipOwn') }}</n-radio>
-                          <n-radio value="company">{{ t('driver.vehicles.ownershipCompany') }}</n-radio>
-                          <n-radio value="leased">{{ t('driver.vehicles.ownershipLeased') }}</n-radio>
-                        </n-space>
-                      </n-radio-group>
-                    </n-form-item>
-                  </n-gi>
-                </n-grid>
+                <div class="fields-grid fields-grid--3">
+                  <n-form-item :label="t('driver.vehicles.axleConfig')">
+                    <n-select v-model:value="form.axleConfig" :options="axleConfigOptions" clearable style="width:100%" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.fuelType')">
+                    <n-select v-model:value="form.fuelType" :options="fuelTypeOptions" clearable style="width:100%" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.transmission')">
+                    <n-select v-model:value="form.transmission" :options="transmissionOptions" clearable style="width:100%" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.engineVolumeL')">
+                    <n-input-number v-model:value="form.engineVolumeL" :min="0" :precision="1" style="width:100%">
+                      <template #suffix>л</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.powerHp')">
+                    <n-input-number v-model:value="form.powerHp" :min="0" style="width:100%">
+                      <template #suffix>л.с.</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.euroClass')">
+                    <n-select v-model:value="form.euroClass" :options="euroClassOptions" clearable style="width:100%" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.fuelTank1L')">
+                    <n-input-number v-model:value="form.fuelTank1L" :min="0" style="width:100%">
+                      <template #suffix>л</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.fuelTank2L')">
+                    <n-input-number v-model:value="form.fuelTank2L" :min="0" style="width:100%">
+                      <template #suffix>л</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.fuelConsumption')">
+                    <n-input-number v-model:value="form.fuelConsumptionPer100km" :min="0" :precision="1" style="width:100%">
+                      <template #suffix>л/100</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.fifthWheelCapacity')">
+                    <n-input-number v-model:value="form.fifthWheelCapacityKg" :min="0" style="width:100%">
+                      <template #suffix>кг</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.maxGrossWeight')">
+                    <n-input-number v-model:value="form.maxGrossWeightT" :min="0" :precision="2" style="width:100%">
+                      <template #suffix>т</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.vehicles.ownership')" class="fields-grid__full">
+                    <n-radio-group v-model:value="form.ownership">
+                      <n-space>
+                        <n-radio value="own">{{ t('driver.vehicles.ownershipOwn') }}</n-radio>
+                        <n-radio value="company">{{ t('driver.vehicles.ownershipCompany') }}</n-radio>
+                        <n-radio value="leased">{{ t('driver.vehicles.ownershipLeased') }}</n-radio>
+                      </n-space>
+                    </n-radio-group>
+                  </n-form-item>
+                </div>
               </n-card>
 
               <n-space style="margin-top: 4px">
@@ -867,5 +767,35 @@ watch(() => route.params.id, loadVehicle, { immediate: true })
 
 .empty-val {
   color: var(--n-text-color-3);
+}
+
+.fields-grid {
+  display: grid;
+  gap: 8px 24px;
+}
+.fields-grid--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.fields-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.fields-grid > * {
+  min-width: 0;
+}
+.fields-grid__full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .vehicle-detail {
+    max-width: 100%;
+  }
+  .fields-grid--2,
+  .fields-grid--3 {
+    grid-template-columns: 1fr;
+  }
+  .hero-right {
+    align-items: flex-start;
+  }
 }
 </style>

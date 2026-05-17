@@ -328,5 +328,6 @@ async function handleUserSelect(key: string) {
   .cabinet-content { padding: 76px 12px 12px; }
 
   .user-name-text { display: none; }
+  .header-title { display: none; }
 }
 </style>

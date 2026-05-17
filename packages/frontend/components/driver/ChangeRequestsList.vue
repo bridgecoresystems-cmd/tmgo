@@ -44,7 +44,7 @@
       </n-space>
     </n-spin>
 
-    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.changeRequests.addModal')" style="max-width: 450px">
+    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.changeRequests.addModal')" style="max-width: 450px; width: calc(100vw - 32px)">
       <n-alert type="info" style="margin-bottom: 16px">
         {{ t('driver.changeRequests.alertInfo') }}
       </n-alert>

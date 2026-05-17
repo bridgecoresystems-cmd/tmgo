@@ -1,8 +1,8 @@
 <template>
   <div class="profile-page">
-    <n-grid :cols="3" :x-gap="24" responsive="screen">
+    <div class="profile-grid">
       <!-- Left column: Avatar and basic info -->
-      <n-gi :span="1">
+      <div class="profile-grid__left">
         <n-card class="shadow-sm text-center">
           <n-space vertical align="center" size="large">
             <div class="avatar-wrap">
@@ -46,10 +46,10 @@
             </div>
           </n-space>
         </n-card>
-      </n-gi>
+      </div>
 
       <!-- Right column: Forms -->
-      <n-gi :span="2">
+      <div class="profile-grid__right">
         <n-tabs type="line" animated>
           <n-tab-pane name="security" :tab="t('driver.profile.security')">
             <n-form class="mt-20" style="max-width: 400px">
@@ -83,8 +83,8 @@
             </n-form>
           </n-tab-pane>
         </n-tabs>
-      </n-gi>
-    </n-grid>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -204,6 +204,18 @@ onMounted(() => {
 <style scoped>
 .profile-page {
   max-width: 1000px;
+}
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+}
+.profile-grid__left { min-width: 0; }
+.profile-grid__right { min-width: 0; }
+@media (max-width: 700px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .text-center {
   text-align: center;

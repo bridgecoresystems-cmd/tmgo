@@ -18,20 +18,12 @@
 
     <n-card :title="t('driver.dashboard.title')" class="shadow-sm onboarding-card">
       <div class="stats-grid">
-        <n-grid :cols="4" :x-gap="12">
-          <n-gi>
-            <n-statistic :label="t('driver.dashboard.activeOrders')" :value="0" />
-          </n-gi>
-          <n-gi>
-            <n-statistic :label="t('driver.dashboard.completed')" :value="0" />
-          </n-gi>
-          <n-gi>
-            <n-statistic :label="t('driver.dashboard.rating')" value="0.00" />
-          </n-gi>
-          <n-gi>
-            <n-statistic :label="t('driver.dashboard.balance')" value="0 TMT" />
-          </n-gi>
-        </n-grid>
+        <div class="stats-inner">
+          <n-statistic :label="t('driver.dashboard.activeOrders')" :value="0" />
+          <n-statistic :label="t('driver.dashboard.completed')" :value="0" />
+          <n-statistic :label="t('driver.dashboard.rating')" value="0.00" />
+          <n-statistic :label="t('driver.dashboard.balance')" value="0 TMT" />
+        </div>
       </div>
     </n-card>
   </div>
@@ -70,5 +62,15 @@ const showOnboardingAlert = computed(() => {
 }
 .stats-grid {
   margin-top: 20px;
+}
+.stats-inner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .stats-inner {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 </style>

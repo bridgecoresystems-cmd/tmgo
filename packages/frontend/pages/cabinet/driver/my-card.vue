@@ -36,10 +36,17 @@ function doPrint() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 16px;
   padding-bottom: 14px;
   border-bottom: 1px solid #f0f0f0;
+}
+
+@media (max-width: 640px) {
+  .my-card-page {
+    max-width: 100%;
+  }
 }
 
 .header-left {

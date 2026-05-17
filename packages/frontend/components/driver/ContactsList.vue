@@ -30,7 +30,7 @@
       </n-space>
     </n-spin>
 
-    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.contacts.addModal')" style="max-width: 400px">
+    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.contacts.addModal')" style="max-width: 400px; width: calc(100vw - 32px)">
       <n-form :model="addForm" label-placement="top">
         <n-form-item :label="t('driver.contacts.type')" required>
           <n-select v-model:value="addForm.contact_type" :options="contactTypeOptions" />

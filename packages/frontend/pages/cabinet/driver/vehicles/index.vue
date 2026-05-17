@@ -19,6 +19,7 @@
           :loading="vehiclesLoading"
           :pagination="vehicleList.length > 10 ? { pageSize: 10 } : false"
           striped
+          :scroll-x="900"
           :row-props="(row) => ({ style: 'cursor:pointer', onClick: () => navigateTo(`/cabinet/driver/vehicles/${row.id}`) })"
         />
         <n-empty v-if="!vehiclesLoading && vehicleList.length === 0" :description="t('driver.vehicles.noVehicles')" style="margin-top:32px">
@@ -44,6 +45,7 @@
           :loading="trailersLoading"
           :pagination="trailerList.length > 10 ? { pageSize: 10 } : false"
           striped
+          :scroll-x="860"
           :row-props="(row) => ({ style: 'cursor:pointer', onClick: () => navigateTo(`/cabinet/driver/vehicles/trailers/${row.id}`) })"
         />
         <n-empty v-if="!trailersLoading && trailerList.length === 0" :description="t('driver.trailers.noTrailers')" style="margin-top:32px">
@@ -78,7 +80,7 @@
     </n-tabs>
 
     <!-- ── МОДАЛЬНОЕ ОКНО СОЗДАНИЯ СЦЕПКИ ─────────────────── -->
-    <n-modal v-model:show="showCouplingModal" :title="t('driver.couplings.createModal')" preset="card" style="max-width:480px">
+    <n-modal v-model:show="showCouplingModal" :title="t('driver.couplings.createModal')" preset="card" style="max-width: 480px; width: calc(100vw - 32px)">
       <n-form ref="couplingFormRef" :model="couplingForm" label-placement="top">
         <n-form-item :label="t('driver.couplings.tractor')" path="tractorId" required>
           <n-select

@@ -6,11 +6,11 @@
         <n-button size="small" @click="loadOrders">{{ t('common.retry') }}</n-button>
       </template>
     </n-alert>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="page-header">
       <n-h3 style="margin: 0;">{{ t('driver.orders.title') }}</n-h3>
       <n-button type="primary" @click="navigateTo('/cabinet/driver/orders/available')">{{ t('driver.orders.takeOrder') }}</n-button>
     </div>
-    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+    <div class="filters-row" style="margin-bottom: 16px;">
       <n-input v-model:value="search" :placeholder="t('driver.orders.searchPlaceholder')" clearable style="width: 280px" />
       <n-select v-model:value="statusFilter" :options="statusOptions" :placeholder="t('common.status')" clearable style="width: 160px" />
     </div>
@@ -20,6 +20,7 @@
       :loading="loading"
       :pagination="{ pageSize: 10 }"
       striped
+      :scroll-x="900"
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => navigateTo(`/cabinet/driver/orders/${row.id}`) })"
     />
   </div>
@@ -103,4 +104,24 @@ onMounted(loadOrders)
 
 <style scoped>
 :deep(.n-data-table-tr:hover) { background-color: rgba(255, 107, 74, 0.06); }
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .filters-row > * { width: 100% !important; }
+}
 </style>

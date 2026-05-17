@@ -4,7 +4,7 @@
     :options="localeOptions"
     size="small"
     :consistent-menu-width="false"
-    style="width: 130px"
+    class="lang-select"
     @update:value="(v) => setLocale(v)"
   />
 </template>
@@ -18,3 +18,11 @@ const localeOptions = [
   { label: 'Türkmençe', value: 'tk' },
 ]
 </script>
+
+<style scoped>
+.lang-select { width: 130px; }
+
+@media (max-width: 900px) {
+  .lang-select { width: 90px; }
+}
+</style>

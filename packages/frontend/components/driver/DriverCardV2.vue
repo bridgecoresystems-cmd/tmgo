@@ -26,8 +26,8 @@
           v-if="!error"
           ref="formRef"
           :model="form"
-          label-placement="left"
-          label-width="240"
+          :label-placement="isMobile ? 'top' : 'left'"
+          :label-width="isMobile ? undefined : 240"
           label-align="left"
           class="v2-form"
           :disabled="isLocked"
@@ -543,6 +543,11 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['saved', 'submitted'])
+
+const isMobile = ref(false)
+function checkMobile() { isMobile.value = window.innerWidth <= 640 }
+onMounted(() => { checkMobile(); window.addEventListener('resize', checkMobile) })
+onUnmounted(() => { window.removeEventListener('resize', checkMobile) })
 
 const { apiBase } = useApiBase()
 const { data: verificationData, fetchStatus: fetchVerification } = useDriverVerificationStatus()
@@ -1371,5 +1376,11 @@ onMounted(() => {
 
 :deep(.n-form-item-label) {
   font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .driver-card-v2 {
+    max-width: 100%;
+  }
 }
 </style>

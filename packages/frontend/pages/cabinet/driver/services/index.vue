@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="page-header">
       <n-h3 style="margin: 0;">{{ t('driver.services.title') }}</n-h3>
       <n-button type="primary" @click="navigateTo('/cabinet/driver/services/create')">{{ t('common.add') }}</n-button>
     </div>
@@ -10,6 +10,7 @@
       :loading="loading"
       :pagination="{ pageSize: 10 }"
       striped
+      :scroll-x="700"
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => navigateTo(`/cabinet/driver/services/${row.id}`) })"
     />
   </div>
@@ -52,4 +53,16 @@ onMounted(loadServices)
 
 <style scoped>
 :deep(.n-data-table-tr:hover) { background-color: rgba(255, 107, 74, 0.06); }
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .page-header { flex-direction: column; align-items: flex-start; }
+}
 </style>

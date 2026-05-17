@@ -115,117 +115,89 @@
           <template v-if="!editMode">
             <!-- Section 1: Основная информация -->
             <n-card :title="t('driver.trailers.sectionBasic')" embedded class="section-card">
-              <n-grid :cols="2" :x-gap="24" :y-gap="8" responsive="screen" item-responsive>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.bodyType') }}</div>
-                    <div class="field-value">
-                      <n-tag v-if="trailer.bodyType" type="warning" size="small" round>{{ bodyTypeLabel }}</n-tag>
-                      <span v-else class="empty-val">—</span>
-                    </div>
+              <div class="fields-grid fields-grid--2">
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.bodyType') }}</div>
+                  <div class="field-value">
+                    <n-tag v-if="trailer.bodyType" type="warning" size="small" round>{{ bodyTypeLabel }}</n-tag>
+                    <span v-else class="empty-val">—</span>
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.trailerType') }}</div>
-                    <div class="field-value">
-                      <n-tag type="default" size="small">{{ trailerTypeLabel }}</n-tag>
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.trailerType') }}</div>
+                  <div class="field-value">
+                    <n-tag type="default" size="small">{{ trailerTypeLabel }}</n-tag>
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.brand') }}</div>
-                    <div class="field-value field-value--strong">{{ trailer.brand || trailer.customMake || '—' }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.model') }}</div>
-                    <div class="field-value field-value--strong">{{ trailer.model || trailer.customModel || '—' }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.year') }}</div>
-                    <div class="field-value">{{ trailer.year || '—' }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.color') }}</div>
-                    <div class="field-value">{{ trailer.color || '—' }}</div>
-                  </div>
-                </n-gi>
-              </n-grid>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.brand') }}</div>
+                  <div class="field-value field-value--strong">{{ trailer.brand || trailer.customMake || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.model') }}</div>
+                  <div class="field-value field-value--strong">{{ trailer.model || trailer.customModel || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.year') }}</div>
+                  <div class="field-value">{{ trailer.year || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.color') }}</div>
+                  <div class="field-value">{{ trailer.color || '—' }}</div>
+                </div>
+              </div>
             </n-card>
 
             <!-- Section 2: Регистрация -->
             <n-card :title="t('driver.trailers.sectionRegistration')" embedded class="section-card">
-              <n-grid :cols="2" :x-gap="24" :y-gap="8" responsive="screen" item-responsive>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.vin') }}</div>
-                    <div class="field-value" style="font-family:monospace;letter-spacing:1px">
-                      {{ trailer.vin || '—' }}
-                    </div>
+              <div class="fields-grid fields-grid--2">
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.vin') }}</div>
+                  <div class="field-value" style="font-family:monospace;letter-spacing:1px">
+                    {{ trailer.vin || '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.chassisNumber') }}</div>
-                    <div class="field-value">{{ trailer.chassisNumber || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.chassisNumber') }}</div>
+                  <div class="field-value">{{ trailer.chassisNumber || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.plateNumber') }}</div>
+                  <div class="field-value">
+                    <n-tag type="default" size="small" style="font-family:monospace;font-weight:700;letter-spacing:1px">
+                      {{ trailer.plateNumber }}
+                    </n-tag>
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.plateNumber') }}</div>
-                    <div class="field-value">
-                      <n-tag type="default" size="small" style="font-family:monospace;font-weight:700;letter-spacing:1px">
-                        {{ trailer.plateNumber }}
-                      </n-tag>
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.capacityTons') }}</div>
+                  <div class="field-value field-value--strong">
+                    {{ trailer.capacityTons != null ? `${trailer.capacityTons} т` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.capacityTons') }}</div>
-                    <div class="field-value field-value--strong">
-                      {{ trailer.capacityTons != null ? `${trailer.capacityTons} т` : '—' }}
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.volumeM3') }}</div>
+                  <div class="field-value">
+                    {{ trailer.volumeM3 != null ? `${trailer.volumeM3} м³` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.volumeM3') }}</div>
-                    <div class="field-value">
-                      {{ trailer.volumeM3 != null ? `${trailer.volumeM3} м³` : '—' }}
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.axleCount') }}</div>
+                  <div class="field-value">{{ trailer.axleCount != null ? trailer.axleCount : '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.palletPlaces') }}</div>
+                  <div class="field-value">{{ trailer.palletPlaces != null ? trailer.palletPlaces : '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.hasGps') }}</div>
+                  <div class="field-value">
+                    <n-tag :type="trailer.hasGps ? 'success' : 'default'" size="small" round>
+                      {{ trailer.hasGps ? '✓ ' + t('common.yes') : t('common.no') }}
+                    </n-tag>
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.axleCount') }}</div>
-                    <div class="field-value">{{ trailer.axleCount != null ? trailer.axleCount : '—' }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.palletPlaces') }}</div>
-                    <div class="field-value">{{ trailer.palletPlaces != null ? trailer.palletPlaces : '—' }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.hasGps') }}</div>
-                    <div class="field-value">
-                      <n-tag :type="trailer.hasGps ? 'success' : 'default'" size="small" round>
-                        {{ trailer.hasGps ? '✓ ' + t('common.yes') : t('common.no') }}
-                      </n-tag>
-                    </div>
-                  </div>
-                </n-gi>
-              </n-grid>
+                </div>
+              </div>
             </n-card>
 
             <!-- Section 3: ADR -->
@@ -245,81 +217,65 @@
 
             <!-- Section 4: Температурный режим (conditional) -->
             <n-card v-if="isReefer" :title="t('driver.trailers.sectionTempRange')" embedded class="section-card">
-              <n-grid :cols="2" :x-gap="24" :y-gap="8" responsive="screen" item-responsive>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.tempMinC') }}</div>
-                    <div class="field-value field-value--strong">
-                      {{ trailer.tempMinC != null ? `${trailer.tempMinC} °C` : '—' }}
-                    </div>
+              <div class="fields-grid fields-grid--2">
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.tempMinC') }}</div>
+                  <div class="field-value field-value--strong">
+                    {{ trailer.tempMinC != null ? `${trailer.tempMinC} °C` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.tempMaxC') }}</div>
-                    <div class="field-value field-value--strong">
-                      {{ trailer.tempMaxC != null ? `${trailer.tempMaxC} °C` : '—' }}
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.tempMaxC') }}</div>
+                  <div class="field-value field-value--strong">
+                    {{ trailer.tempMaxC != null ? `${trailer.tempMaxC} °C` : '—' }}
                   </div>
-                </n-gi>
-              </n-grid>
+                </div>
+              </div>
             </n-card>
 
             <!-- Section 5: Страхование -->
             <n-card :title="t('driver.trailers.sectionInsurance')" embedded class="section-card">
-              <n-grid :cols="2" :x-gap="24" :y-gap="8" responsive="screen" item-responsive>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.insurancePolicyNum') }}</div>
-                    <div class="field-value">{{ trailer.insurancePolicyNum || '—' }}</div>
+              <div class="fields-grid fields-grid--2">
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.insurancePolicyNum') }}</div>
+                  <div class="field-value">{{ trailer.insurancePolicyNum || '—' }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.insuranceExpiresAt') }}</div>
+                  <div class="field-value">
+                    <n-tag v-if="trailer.insuranceExpiresAt" :type="insuranceTagType" size="small">
+                      {{ insuranceExpiresLabel }}
+                    </n-tag>
+                    <span v-else class="empty-val">—</span>
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.insuranceExpiresAt') }}</div>
-                    <div class="field-value">
-                      <n-tag v-if="trailer.insuranceExpiresAt" :type="insuranceTagType" size="small">
-                        {{ insuranceExpiresLabel }}
-                      </n-tag>
-                      <span v-else class="empty-val">—</span>
-                    </div>
-                  </div>
-                </n-gi>
-              </n-grid>
+                </div>
+              </div>
             </n-card>
 
             <!-- Section 6: Холодильный агрегат (conditional) -->
             <n-card v-if="hasRefUnit" :title="t('driver.trailers.sectionRefUnit')" embedded class="section-card">
-              <n-grid :cols="2" :x-gap="24" :y-gap="8" responsive="screen" item-responsive>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.refFuelType') }}</div>
-                    <div class="field-value">{{ refFuelTypeLabel }}</div>
+              <div class="fields-grid fields-grid--2">
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.refFuelType') }}</div>
+                  <div class="field-value">{{ refFuelTypeLabel }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.refFuelTankL') }}</div>
+                  <div class="field-value">
+                    {{ trailer.refFuelTankL != null ? `${trailer.refFuelTankL} л` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.refFuelTankL') }}</div>
-                    <div class="field-value">
-                      {{ trailer.refFuelTankL != null ? `${trailer.refFuelTankL} л` : '—' }}
-                    </div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.refTransmission') }}</div>
+                  <div class="field-value">{{ refTransmissionLabel }}</div>
+                </div>
+                <div class="field-block">
+                  <div class="field-label">{{ t('driver.trailers.refFuelConsumptionPh') }}</div>
+                  <div class="field-value">
+                    {{ trailer.refFuelConsumptionPh != null ? `${trailer.refFuelConsumptionPh} л/ч` : '—' }}
                   </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.refTransmission') }}</div>
-                    <div class="field-value">{{ refTransmissionLabel }}</div>
-                  </div>
-                </n-gi>
-                <n-gi span="2 m:1">
-                  <div class="field-block">
-                    <div class="field-label">{{ t('driver.trailers.refFuelConsumptionPh') }}</div>
-                    <div class="field-value">
-                      {{ trailer.refFuelConsumptionPh != null ? `${trailer.refFuelConsumptionPh} л/ч` : '—' }}
-                    </div>
-                  </div>
-                </n-gi>
-              </n-grid>
+                </div>
+              </div>
             </n-card>
 
             <!-- Section 7: Владение -->
@@ -335,153 +291,115 @@
             <n-form ref="formRef" :model="form" label-placement="top">
               <!-- Section 1: Основная -->
               <n-card :title="t('driver.trailers.sectionBasic')" embedded class="section-card">
-                <n-grid :cols="2" :x-gap="24" responsive="screen" item-responsive>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.bodyType')" required>
-                      <n-select
-                        v-model:value="form.bodyType"
-                        :options="bodyTypeOptions"
-                        filterable
-                        style="width:100%"
-                      />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.trailerType')" required>
-                      <n-radio-group v-model:value="form.trailerType">
-                        <n-space>
-                          <n-radio value="semi">{{ t('driver.trailers.trailerTypeSemi') }}</n-radio>
-                          <n-radio value="drawbar">{{ t('driver.trailers.trailerTypeDrawbar') }}</n-radio>
-                        </n-space>
-                      </n-radio-group>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.brand')">
-                      <n-input :value="trailer.brand || trailer.customMake || ''" disabled />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.model')">
-                      <n-input :value="trailer.model || trailer.customModel || ''" disabled />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.year')">
-                      <n-input-number v-model:value="form.year" :min="1950" :max="currentYear" style="width:130px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.color')">
-                      <n-input v-model:value="form.color" style="width:200px" />
-                    </n-form-item>
-                  </n-gi>
-                </n-grid>
+                <div class="fields-grid fields-grid--2">
+                  <n-form-item :label="t('driver.trailers.bodyType')" required>
+                    <n-select
+                      v-model:value="form.bodyType"
+                      :options="bodyTypeOptions"
+                      filterable
+                      style="width:100%"
+                    />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.trailerType')" required>
+                    <n-radio-group v-model:value="form.trailerType">
+                      <n-space>
+                        <n-radio value="semi">{{ t('driver.trailers.trailerTypeSemi') }}</n-radio>
+                        <n-radio value="drawbar">{{ t('driver.trailers.trailerTypeDrawbar') }}</n-radio>
+                      </n-space>
+                    </n-radio-group>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.brand')">
+                    <n-input :value="trailer.brand || trailer.customMake || ''" disabled />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.model')">
+                    <n-input :value="trailer.model || trailer.customModel || ''" disabled />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.year')">
+                    <n-input-number v-model:value="form.year" :min="1950" :max="currentYear" style="width:130px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.color')">
+                    <n-input v-model:value="form.color" style="width:200px" />
+                  </n-form-item>
+                </div>
               </n-card>
 
               <!-- Section 2: Регистрация -->
               <n-card :title="t('driver.trailers.sectionRegistration')" embedded class="section-card">
-                <n-grid :cols="2" :x-gap="24" responsive="screen" item-responsive>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.vin')">
-                      <n-input v-model:value="form.vin" maxlength="17" show-count style="width:100%;max-width:280px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.chassisNumber')">
-                      <n-input v-model:value="form.chassisNumber" style="width:100%;max-width:280px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.plateNumber')" required>
-                      <n-input v-model:value="form.plateNumber" style="width:100%;max-width:220px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.capacityTons')">
-                      <n-input-number v-model:value="form.capacityTons" :min="0.1" :max="200" :precision="2" style="width:130px">
-                        <template #suffix>т</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.volumeM3')">
-                      <n-input-number v-model:value="form.volumeM3" :min="0" :precision="1" style="width:130px">
-                        <template #suffix>м³</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.axleCount')">
-                      <n-input-number v-model:value="form.axleCount" :min="1" :max="10" style="width:100px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.palletPlaces')">
-                      <n-input-number v-model:value="form.palletPlaces" :min="0" :max="60" style="width:100px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2">
-                    <n-form-item :label="t('driver.trailers.hasGps')">
-                      <n-switch v-model:value="form.hasGps" />
-                    </n-form-item>
-                  </n-gi>
-                </n-grid>
+                <div class="fields-grid fields-grid--2">
+                  <n-form-item :label="t('driver.trailers.vin')">
+                    <n-input v-model:value="form.vin" maxlength="17" show-count style="width:100%;max-width:280px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.chassisNumber')">
+                    <n-input v-model:value="form.chassisNumber" style="width:100%;max-width:280px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.plateNumber')" required>
+                    <n-input v-model:value="form.plateNumber" style="width:100%;max-width:220px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.capacityTons')">
+                    <n-input-number v-model:value="form.capacityTons" :min="0.1" :max="200" :precision="2" style="width:130px">
+                      <template #suffix>т</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.volumeM3')">
+                    <n-input-number v-model:value="form.volumeM3" :min="0" :precision="1" style="width:130px">
+                      <template #suffix>м³</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.axleCount')">
+                    <n-input-number v-model:value="form.axleCount" :min="1" :max="10" style="width:100px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.palletPlaces')">
+                    <n-input-number v-model:value="form.palletPlaces" :min="0" :max="60" style="width:100px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.hasGps')" class="fields-grid__full">
+                    <n-switch v-model:value="form.hasGps" />
+                  </n-form-item>
+                </div>
               </n-card>
 
               <!-- Section 3: ADR -->
               <n-card :title="t('driver.trailers.sectionAdr')" embedded class="section-card">
                 <n-checkbox-group v-model:value="form.adrClasses">
-                  <n-grid :cols="2" :x-gap="12" :y-gap="8" responsive="screen" item-responsive>
-                    <n-gi v-for="cls in ADR_CLASSES" :key="cls.id" span="2 m:1">
-                      <n-checkbox :value="cls.id">
-                        {{ locale === 'en' ? cls.labelEn : cls.label }}
-                      </n-checkbox>
-                    </n-gi>
-                  </n-grid>
+                  <div class="fields-grid fields-grid--2">
+                    <n-checkbox v-for="cls in ADR_CLASSES" :key="cls.id" :value="cls.id">
+                      {{ locale === 'en' ? cls.labelEn : cls.label }}
+                    </n-checkbox>
+                  </div>
                 </n-checkbox-group>
               </n-card>
 
               <!-- Section 4: Температурный режим (conditional) -->
               <n-card v-if="formIsReefer" :title="t('driver.trailers.sectionTempRange')" embedded class="section-card">
-                <n-grid :cols="2" :x-gap="24" responsive="screen" item-responsive>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.tempMinC')">
-                      <n-input-number v-model:value="form.tempMinC" :min="-40" :max="30" :precision="1" style="width:130px">
-                        <template #suffix>°C</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.tempMaxC')">
-                      <n-input-number v-model:value="form.tempMaxC" :min="-40" :max="30" :precision="1" style="width:130px">
-                        <template #suffix>°C</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                </n-grid>
+                <div class="fields-grid fields-grid--2">
+                  <n-form-item :label="t('driver.trailers.tempMinC')">
+                    <n-input-number v-model:value="form.tempMinC" :min="-40" :max="30" :precision="1" style="width:130px">
+                      <template #suffix>°C</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.tempMaxC')">
+                    <n-input-number v-model:value="form.tempMaxC" :min="-40" :max="30" :precision="1" style="width:130px">
+                      <template #suffix>°C</template>
+                    </n-input-number>
+                  </n-form-item>
+                </div>
               </n-card>
 
               <!-- Section 5: Страхование -->
               <n-card :title="t('driver.trailers.sectionInsurance')" embedded class="section-card">
-                <n-grid :cols="2" :x-gap="24" responsive="screen" item-responsive>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.insurancePolicyNum')">
-                      <n-input v-model:value="form.insurancePolicyNum" style="width:100%;max-width:280px" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.insuranceExpiresAt')">
-                      <n-date-picker
-                        v-model:value="insuranceExpiresTs"
-                        type="date"
-                        clearable
-                        style="width:200px"
-                        @update:value="(v: number | null) => { form.insuranceExpiresAt = v ? formatDateOnlyFromMs(v) : null }"
-                      />
-                    </n-form-item>
-                  </n-gi>
-                </n-grid>
+                <div class="fields-grid fields-grid--2">
+                  <n-form-item :label="t('driver.trailers.insurancePolicyNum')">
+                    <n-input v-model:value="form.insurancePolicyNum" style="width:100%;max-width:280px" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.insuranceExpiresAt')">
+                    <n-date-picker
+                      v-model:value="insuranceExpiresTs"
+                      type="date"
+                      clearable
+                      style="width:200px"
+                      @update:value="(v: number | null) => { form.insuranceExpiresAt = v ? formatDateOnlyFromMs(v) : null }"
+                    />
+                  </n-form-item>
+                </div>
               </n-card>
 
               <!-- Section 6: Холодильный агрегат (conditional) -->
@@ -489,32 +407,24 @@
                 <n-alert type="info" size="small" style="margin-bottom: 14px">
                   {{ t('driver.trailers.refSectionHint') }}
                 </n-alert>
-                <n-grid :cols="2" :x-gap="24" responsive="screen" item-responsive>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.refFuelType')">
-                      <n-select v-model:value="form.refFuelType" :options="refFuelTypeOptions" clearable style="width:100%" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.refFuelTankL')">
-                      <n-input-number v-model:value="form.refFuelTankL" :min="0" style="width:130px">
-                        <template #suffix>л</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.refTransmission')">
-                      <n-select v-model:value="form.refTransmission" :options="refTransmissionOptions" clearable style="width:100%" />
-                    </n-form-item>
-                  </n-gi>
-                  <n-gi span="2 m:1">
-                    <n-form-item :label="t('driver.trailers.refFuelConsumptionPh')">
-                      <n-input-number v-model:value="form.refFuelConsumptionPh" :min="0" :precision="1" style="width:130px">
-                        <template #suffix>л/ч</template>
-                      </n-input-number>
-                    </n-form-item>
-                  </n-gi>
-                </n-grid>
+                <div class="fields-grid fields-grid--2">
+                  <n-form-item :label="t('driver.trailers.refFuelType')">
+                    <n-select v-model:value="form.refFuelType" :options="refFuelTypeOptions" clearable style="width:100%" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.refFuelTankL')">
+                    <n-input-number v-model:value="form.refFuelTankL" :min="0" style="width:130px">
+                      <template #suffix>л</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.refTransmission')">
+                    <n-select v-model:value="form.refTransmission" :options="refTransmissionOptions" clearable style="width:100%" />
+                  </n-form-item>
+                  <n-form-item :label="t('driver.trailers.refFuelConsumptionPh')">
+                    <n-input-number v-model:value="form.refFuelConsumptionPh" :min="0" :precision="1" style="width:130px">
+                      <template #suffix>л/ч</template>
+                    </n-input-number>
+                  </n-form-item>
+                </div>
               </n-card>
 
               <!-- Section 7: Владение -->
@@ -906,5 +816,31 @@ watch(() => route.params.id, loadTrailer, { immediate: true })
 
 .empty-val {
   color: var(--n-text-color-3);
+}
+
+.fields-grid {
+  display: grid;
+  gap: 8px 24px;
+}
+.fields-grid--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.fields-grid > * {
+  min-width: 0;
+}
+.fields-grid__full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .trailer-detail {
+    max-width: 100%;
+  }
+  .fields-grid--2 {
+    grid-template-columns: 1fr;
+  }
+  .hero-right {
+    align-items: flex-start;
+  }
 }
 </style>

@@ -926,4 +926,18 @@ onMounted(() => {
 .scan-modal-fade-leave-to {
   opacity: 0;
 }
+
+@media (max-width: 640px) {
+  .driver-card-view {
+    max-width: 100%;
+  }
+  .view-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .view-label {
+    min-width: unset;
+    flex-shrink: 1;
+  }
+}
 </style>

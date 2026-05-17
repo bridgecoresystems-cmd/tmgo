@@ -14,8 +14,8 @@
     <!-- Filters -->
     <n-card style="margin-bottom: 16px" :bordered="false" size="small">
       <div style="font-weight: 600; margin-bottom: 12px; color: #555;">{{ t('driver.orders.filterTitle') || 'Фильтры поиска' }}</div>
-      <n-grid :cols="2" :x-gap="16" :y-gap="12" responsive="screen">
-        <n-gi>
+      <div class="filter-cols">
+        <div>
           <div class="filter-label">{{ t('driver.orders.filterFrom') }}</div>
           <n-space vertical :size="8">
             <n-select
@@ -47,8 +47,8 @@
               @update:value="onFromCityInput"
             />
           </n-space>
-        </n-gi>
-        <n-gi>
+        </div>
+        <div>
           <div class="filter-label">{{ t('driver.orders.filterTo') }}</div>
           <n-space vertical :size="8">
             <n-select
@@ -80,14 +80,14 @@
               @update:value="onToCityInput"
             />
           </n-space>
-        </n-gi>
-      </n-grid>
-      <div style="display: flex; gap: 12px; margin-top: 16px; align-items: center;">
+        </div>
+      </div>
+      <div class="filter-actions">
         <n-input
           v-model:value="search"
           :placeholder="t('driver.orders.searchPlaceholder')"
           clearable
-          style="flex: 1;"
+          style="flex: 1; min-width: 0;"
         />
         <n-button type="primary" @click="loadOrders">{{ t('driver.orders.filterApply') }}</n-button>
         <n-button v-if="fromCountry || toCountry || search" @click="resetFilters">{{ t('driver.orders.filterReset') }}</n-button>
@@ -354,6 +354,28 @@ onMounted(() => Promise.all([loadOrders(), loadVehicles()]))
   font-size: 12px;
   color: #999;
   margin-bottom: 4px;
+}
+
+.filter-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .filter-cols {
+    grid-template-columns: 1fr;
+  }
+  .filter-actions > * { width: 100%; }
 }
 
 .cards-grid {

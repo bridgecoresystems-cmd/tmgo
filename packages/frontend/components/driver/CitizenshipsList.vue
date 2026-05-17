@@ -35,7 +35,7 @@
       </n-space>
     </n-spin>
 
-    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.citizenships.addModal')" style="max-width: 400px">
+    <n-modal v-model:show="showAddModal" preset="card" :title="t('driver.citizenships.addModal')" style="max-width: 400px; width: calc(100vw - 32px)">
       <n-form :model="addForm" label-placement="top">
         <n-form-item :label="t('driver.citizenships.country')" required>
           <n-select
