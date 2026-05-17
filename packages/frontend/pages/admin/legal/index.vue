@@ -9,6 +9,7 @@
       :data="tableData"
       :loading="loading"
       :bordered="false"
+      :scroll-x="790"
       size="small"
       style="margin-top: 16px;"
     />

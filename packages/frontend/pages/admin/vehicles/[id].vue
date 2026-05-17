@@ -51,7 +51,8 @@
             </n-space>
           </n-card>
 
-          <n-descriptions v-if="!editMode" :column="1" bordered :label-placement="isMobile ? 'top' : 'left'" :label-width="isMobile ? undefined : 200">
+          <div v-if="!editMode" class="descriptions-wrap">
+          <n-descriptions :column="1" bordered :label-placement="isMobile ? 'top' : 'left'" :label-width="isMobile ? undefined : 200">
             <n-descriptions-item :label="t('admin.vehicles.status')">
               <n-tag :type="vehicle.isActive ? 'success' : 'default'">
                 {{ vehicle.isActive ? t('admin.vehicles.active') : t('admin.vehicles.inactive') }}
@@ -81,6 +82,7 @@
             <n-descriptions-item :label="t('driver.vehicles.fifthWheelCapacity')">{{ vehicle.fifthWheelCapacityKg ?? '—' }}</n-descriptions-item>
             <n-descriptions-item :label="t('driver.vehicles.maxGrossWeight')">{{ vehicle.maxGrossWeightT ?? '—' }}</n-descriptions-item>
           </n-descriptions>
+          </div>
 
           <n-form v-else ref="formRef" :model="form" label-placement="top" label-width="180" style="max-width: 500px;">
             <n-form-item :label="t('driver.vehicles.type')">
@@ -534,6 +536,11 @@ watch(() => route.params.id, loadVehicle, { immediate: true })
 <style scoped>
 :deep(.n-card__header-extra .n-space) {
   flex-wrap: wrap;
+}
+
+.descriptions-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 640px) {

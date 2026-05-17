@@ -6,9 +6,9 @@
         <n-button size="small" type="primary" ghost @click="loadUsers">{{ $t('common.retry') }}</n-button>
       </template>
     </n-alert>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+    <div class="page-header">
       <n-h3 style="margin: 0;">{{ $t('admin.usersIndex.title') }}</n-h3>
-      <n-space>
+      <div class="filters-row">
         <UiAddBtn :label="$t('admin.usersIndex.addUser')" @click="showAddModal = true" />
         <n-button quaternary size="small" @click="navigateTo('/admin/settings/deactivated-users')">{{ $t('admin.usersIndex.deactivated') }}</n-button>
         <n-select
@@ -16,17 +16,17 @@
           :options="verificationFilterOptions"
           :placeholder="$t('admin.usersIndex.verificationPlaceholder')"
           clearable
-          style="width: 180px"
+          class="filter-verification"
         />
         <n-select
           v-model:value="onlineFilter"
           :options="onlineFilterOptions"
           :placeholder="$t('admin.usersIndex.onlinePlaceholder')"
           clearable
-          style="width: 140px"
+          class="filter-online"
         />
-        <n-input v-model:value="search" :placeholder="$t('admin.usersIndex.searchPlaceholder')" style="width: 280px;" clearable />
-      </n-space>
+        <n-input v-model:value="search" :placeholder="$t('admin.usersIndex.searchPlaceholder')" clearable class="filter-search" />
+      </div>
     </div>
 
     <n-data-table
@@ -34,6 +34,7 @@
       :data="filteredUsers"
       :loading="loading"
       :pagination="pagination"
+      :scroll-x="780"
       :row-props="(row) => ({ style: 'cursor: pointer', onClick: () => navigateTo(`/admin/users/${row.id}`) })"
       striped
       @update:page="pagination.page = $event"
@@ -365,3 +366,31 @@ function handleImpersonate(row: { id: string; name?: string; email?: string; rol
 
 onMounted(loadUsers)
 </script>
+
+<style scoped>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filters-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-verification { width: 180px; }
+.filter-online { width: 140px; }
+.filter-search { width: 220px; }
+
+@media (max-width: 640px) {
+  .page-header { flex-direction: column; align-items: stretch; }
+  .filters-row { flex-direction: column; align-items: stretch; }
+  .filter-verification, .filter-online, .filter-search { width: 100%; }
+}
+</style>

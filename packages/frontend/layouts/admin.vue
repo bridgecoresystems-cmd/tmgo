@@ -436,9 +436,16 @@ async function handleUserSelect(key: string) {
     display: none !important;
   }
 
-  .admin-header { padding: 0 12px; }
+  .admin-header {
+    padding: 0 12px;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 150;
+  }
   .user-info { display: none; }
-  .admin-content-bg { padding: 12px; }
+  .admin-content-bg { padding: 76px 12px 12px; }
   .desktop-breadcrumb { display: none; }
   .mobile-page-title { display: block; }
 }
