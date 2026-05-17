@@ -1,6 +1,6 @@
 <template>
   <div class="admin-dashboard">
-    <n-grid :cols="4" :x-gap="24" :y-gap="24" responsive="screen" item-responsive>
+    <n-grid :cols="{ xs: 1, sm: 2, lg: 4 }" :x-gap="24" :y-gap="24" responsive="screen">
       <n-gi v-for="stat in stats" :key="stat.title">
         <n-card class="stat-card shadow-sm">
           <n-statistic :label="stat.title" :value="stat.value">
@@ -17,12 +17,13 @@
       </n-gi>
     </n-grid>
 
-    <n-grid :cols="2" :x-gap="24" :y-gap="24" class="mt-24" responsive="screen">
+    <n-grid :cols="{ xs: 1, md: 2 }" :x-gap="24" :y-gap="24" class="mt-24" responsive="screen">
       <n-gi>
         <n-card :title="$t('admin.adminIndex.recentOrders')" class="shadow-sm">
           <template #header-extra>
             <n-button text type="primary" @click="navigateTo('/admin/orders')">{{ $t('admin.adminIndex.allOrders') }}</n-button>
           </template>
+          <div class="table-scroll">
           <n-table :bordered="false" :single-line="false">
             <thead>
               <tr>
@@ -45,6 +46,7 @@
               </tr>
             </tbody>
           </n-table>
+          </div>
         </n-card>
       </n-gi>
       <n-gi>
@@ -172,5 +174,13 @@ const getStatusType = (status: string) => {
 
 .shadow-sm {
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+  .stat-icon { font-size: 20px; }
 }
 </style>

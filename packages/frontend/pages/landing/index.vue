@@ -118,15 +118,20 @@
     <!-- Advantages Section -->
     <section class="section advantages-section" id="advantages">
       <div class="container">
-        <n-h2 class="section-title">{{ $t('advantages.title') }}</n-h2>
+        <n-h2 class="section-title reveal">{{ $t('advantages.title') }}</n-h2>
         <n-grid :cols="{ xs: 1, sm: 2, lg: 3 }" :x-gap="24" :y-gap="24" responsive="screen">
-          <n-gi v-for="adv in advantages" :key="adv.key">
-            <n-card class="advantage-card" hoverable>
-              <template #header>
-                <n-text strong class="adv-title">{{ $t(`advantages.items.${adv.key}.title`) }}</n-text>
-              </template>
-              <n-p class="adv-desc">{{ $t(`advantages.items.${adv.key}.description`) }}</n-p>
-            </n-card>
+          <n-gi v-for="(adv, idx) in advantages" :key="adv.key">
+            <div class="reveal card-reveal" :style="{ transitionDelay: idx * 0.08 + 's' }">
+              <n-card class="advantage-card" hoverable>
+                <template #header>
+                  <div class="adv-header">
+                    <span class="adv-icon">{{ adv.icon }}</span>
+                    <n-text strong class="adv-title">{{ $t(`advantages.items.${adv.key}.title`) }}</n-text>
+                  </div>
+                </template>
+                <n-p class="adv-desc">{{ $t(`advantages.items.${adv.key}.description`) }}</n-p>
+              </n-card>
+            </div>
           </n-gi>
         </n-grid>
       </div>
@@ -137,14 +142,14 @@
       <div class="container">
         <n-grid :cols="{ xs: 1, md: 2 }" :x-gap="48" :y-gap="32" responsive="screen">
           <n-gi class="flex-center">
-            <div class="text-content">
+            <div class="text-content reveal">
               <n-h2>{{ $t('cabinet.title') }}</n-h2>
               <n-p>{{ $t('cabinet.description') }}</n-p>
               <n-button type="primary" size="large" @click="navigateTo('/auth')">{{ $t('cabinet.button') }}</n-button>
             </div>
           </n-gi>
           <n-gi class="flex-center">
-            <div class="cabinet-preview">
+            <div class="cabinet-preview reveal" style="transition-delay: 0.18s">
               <img src="/images/tmgo_hero.webp" alt="Cabinet Preview" class="preview-img" />
             </div>
           </n-gi>
@@ -155,11 +160,14 @@
     <!-- How We Work Section -->
     <section class="section how-it-works-section" id="how-it-works">
       <div class="container">
-        <n-h2 class="section-title">{{ $t('steps.title') }}</n-h2>
+        <n-h2 class="section-title reveal">{{ $t('steps.title') }}</n-h2>
         <n-grid :cols="{ xs: 1, md: 3 }" :x-gap="24" :y-gap="24" responsive="screen">
           <n-gi v-for="(step, index) in steps" :key="step.key">
-            <div class="step-card">
-              <div class="step-number">{{ index + 1 }}</div>
+            <div class="step-card reveal" :style="{ transitionDelay: index * 0.12 + 's' }">
+              <div class="step-icon-wrap">
+                <div class="step-emoji">{{ step.icon }}</div>
+                <div class="step-number">{{ index + 1 }}</div>
+              </div>
               <n-h3 class="step-title">{{ $t(`steps.items.${step.key}.title`) }}</n-h3>
               <n-p class="step-desc">{{ $t(`steps.items.${step.key}.description`) }}</n-p>
             </div>
@@ -171,13 +179,16 @@
     <!-- Services Section -->
     <section class="section services-section" id="services">
       <div class="container">
-        <n-h2 class="section-title">{{ $t('services.title') }}</n-h2>
+        <n-h2 class="section-title reveal">{{ $t('services.title') }}</n-h2>
         <n-grid :cols="{ xs: 1, sm: 2, lg: 4 }" :x-gap="20" :y-gap="20" responsive="screen">
-          <n-gi v-for="service in services" :key="service.key">
-            <n-card class="service-card" hoverable>
-              <n-h3 class="service-title">{{ $t(`services.items.${service.key}.title`) }}</n-h3>
-              <n-p class="service-desc">{{ $t(`services.items.${service.key}.description`) }}</n-p>
-            </n-card>
+          <n-gi v-for="(service, idx) in services" :key="service.key">
+            <div class="reveal card-reveal" :style="{ transitionDelay: idx * 0.1 + 's' }">
+              <n-card class="service-card" hoverable>
+                <div class="service-icon">{{ service.icon }}</div>
+                <n-h3 class="service-title">{{ $t(`services.items.${service.key}.title`) }}</n-h3>
+                <n-p class="service-desc">{{ $t(`services.items.${service.key}.description`) }}</n-p>
+              </n-card>
+            </div>
           </n-gi>
         </n-grid>
       </div>
@@ -228,9 +239,25 @@ function onToCountrySearch(query: string) {
 
 
 
-const advantages = [{ key: 'vat' }, { key: 'limits' }, { key: 'cabinet' }, { key: 'fast' }, { key: 'loaders' }, { key: 'insurance' }]
-const steps = [{ key: 'register' }, { key: 'order' }, { key: 'documents' }]
-const services = [{ key: 'office' }, { key: 'warehouse' }, { key: 'intercity' }, { key: 'customers' }]
+const advantages = [
+  { key: 'vat', icon: '📋' },
+  { key: 'limits', icon: '⚙️' },
+  { key: 'cabinet', icon: '💼' },
+  { key: 'fast', icon: '⚡' },
+  { key: 'loaders', icon: '👷' },
+  { key: 'insurance', icon: '🛡️' },
+]
+const steps = [
+  { key: 'register', icon: '📝' },
+  { key: 'order', icon: '📦' },
+  { key: 'documents', icon: '📄' },
+]
+const services = [
+  { key: 'office', icon: '🏢' },
+  { key: 'warehouse', icon: '🏭' },
+  { key: 'intercity', icon: '🚚' },
+  { key: 'customers', icon: '🤝' },
+]
 
 const searchMode = ref<'cargo' | 'truck'>('cargo')
 const heroForm = reactive({
@@ -314,6 +341,14 @@ watch(() => heroForm.toCountry,   () => { heroForm.toRegion   = ''; heroForm.toC
 watch(() => heroForm.fromRegion,  () => { heroForm.fromCity = ''; fromCitySuggestions.value = [] })
 watch(() => heroForm.toRegion,    () => { heroForm.toCity   = ''; toCitySuggestions.value   = [] })
 
+onMounted(() => {
+  const io = new IntersectionObserver(
+    (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target) } }),
+    { threshold: 0.07, rootMargin: '0px 0px -20px 0px' }
+  )
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el))
+})
+
 useHead({
   title: () => t('meta.title'),
   meta: [{ name: 'description', content: () => t('meta.description') }]
@@ -352,10 +387,22 @@ useHead({
 
 .section-title {
   text-align: center;
-  font-size: 32px;
+  font-size: clamp(20px, 3.1vw, 32px);
   font-weight: 700;
   margin-bottom: 48px;
 }
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+.card-reveal { height: 100%; }
 
 /* Hero Section */
 .hero-section {
@@ -414,7 +461,7 @@ useHead({
 
 
 .hero-title {
-  font-size: 42px;
+  font-size: clamp(22px, 3.4vw, 42px);
   line-height: 1.1;
   font-weight: 800;
   margin-bottom: 20px;
@@ -559,20 +606,10 @@ useHead({
     border-bottom-right-radius: 24px;
   }
 
-  .hero-title {
-    font-size: 26px;
-    margin-bottom: 10px;
-  }
+  .hero-title { margin-bottom: 10px; }
+  .hero-subtitle { font-size: 14px; margin-bottom: 20px; }
 
-  .hero-subtitle {
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-
-  .search-widget {
-    padding: 16px;
-    gap: 12px;
-  }
+  .search-widget { padding: 16px; gap: 12px; }
 
   .hero-route {
     flex-direction: column;
@@ -590,8 +627,19 @@ useHead({
   }
 
   .section { padding: 48px 0; }
-  .section-title { font-size: 24px; margin-bottom: 32px; }
+  .section-title { margin-bottom: 32px; }
   .control-center-section { padding: 48px 0; }
+  .step-card { padding: 16px 12px; }
+}
+
+@media (max-width: 480px) {
+  .hero-card { padding: 20px 14px; }
+  .search-widget { padding: 14px; gap: 10px; }
+  .section { padding: 36px 0; }
+  .section-title { margin-bottom: 24px; }
+  .adv-icon { font-size: 20px; }
+  .service-icon { font-size: 30px; }
+  .step-emoji { font-size: 30px; }
 }
 
 /* Advantages */
@@ -602,14 +650,27 @@ useHead({
   transition: transform 0.3s ease;
 }
 
+.adv-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adv-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .adv-title {
-  font-size: 18px;
+  font-size: 16px;
   color: #000;
 }
 
 .adv-desc {
   color: #666;
   line-height: 1.6;
+  font-size: 14px;
 }
 
 /* Control Center */
@@ -639,20 +700,33 @@ useHead({
 /* How it works */
 .step-card {
   text-align: center;
-  padding: 20px;
+  padding: 24px 20px;
+}
+
+.step-icon-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.step-emoji {
+  font-size: 36px;
+  line-height: 1;
 }
 
 .step-number {
-  width: 40px;
-  height: 40px;
-  background: #000;
+  width: 28px;
+  height: 28px;
+  background: #ff6b4a;
   color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
-  font-weight: bold;
+  font-weight: 800;
+  font-size: 13px;
 }
 
 /* Services */
@@ -662,17 +736,21 @@ useHead({
   text-align: center;
 }
 
-.service-title {
-  font-size: 18px;
+.service-icon {
+  font-size: 36px;
+  line-height: 1;
   margin-bottom: 12px;
 }
 
+.service-title {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
 .service-desc {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
 }
 
-@media (max-width: 992px) {
-  .hero-title { font-size: 34px; }
-}
+/* hero-title uses clamp(22px, 3.4vw, 42px) — no explicit breakpoints needed */
 </style>

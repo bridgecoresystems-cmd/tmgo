@@ -1,8 +1,7 @@
 <template>
   <div class="admin-profile">
-    <n-grid :cols="3" :x-gap="24" responsive="screen">
+    <div class="profile-layout">
       <!-- Левая колонка: Аватар и основная инфа -->
-      <n-gi :span="1">
         <n-card class="shadow-sm text-center">
           <n-space vertical align="center" size="large">
             <div class="avatar-wrap">
@@ -55,13 +54,10 @@
             </div>
           </n-space>
         </n-card>
-      </n-gi>
-
       <!-- Правая колонка: Формы редактирования -->
-      <n-gi :span="2">
         <n-tabs type="line" animated>
           <n-tab-pane name="basic" :tab="$t('admin.profile.basicData')">
-            <n-form class="mt-20" style="max-width: 400px">
+            <n-form class="mt-20 profile-form">
               <n-form-item :label="$t('admin.profile.fullName')">
                 <n-input v-model:value="profileForm.name" :placeholder="$t('admin.profile.enterName')" />
               </n-form-item>
@@ -78,7 +74,7 @@
           </n-tab-pane>
 
           <n-tab-pane name="security" :tab="$t('admin.profile.security')">
-            <n-form class="mt-20" style="max-width: 400px">
+            <n-form class="mt-20 profile-form">
               <n-form-item :label="$t('admin.profile.currentPassword')">
                 <n-input
                   v-model:value="passwordForm.currentPassword"
@@ -109,8 +105,7 @@
             </n-form>
           </n-tab-pane>
         </n-tabs>
-      </n-gi>
-    </n-grid>
+    </div>
   </div>
 </template>
 
@@ -281,5 +276,22 @@ async function handleChangePassword() {
   height: 120px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.profile-form {
+  max-width: 400px;
+}
+
+@media (max-width: 768px) {
+  .profile-layout { grid-template-columns: 1fr; }
+  .profile-form { max-width: 100%; }
+  .detail-item { flex-direction: column; gap: 2px; }
 }
 </style>

@@ -1065,7 +1065,7 @@ onMounted(() => {
 .card-date { font-size: 13px; color: #888; }
 .card-footer-right { display: flex; align-items: center; gap: 10px; }
 
-.pagination-wrap { display: flex; justify-content: center; margin-top: 32px; }
+.pagination-wrap { display: flex; justify-content: center; margin-top: 32px; overflow-x: auto; padding-bottom: 2px; }
 
 /* Mobile */
 .mobile-filters-backdrop { display: none; }
@@ -1159,10 +1159,37 @@ onMounted(() => {
     display: none;
   }
 
-  .results-main { padding: 12px 16px; }
+  .results-main { padding: 8px 10px; }
   .view-toggle  { display: none; }
   .map-container { height: 400px; }
-  .route-city { max-width: 100px; font-size: 14px; }
+
+  /* route card fixes on mobile */
+  .orders-list { gap: 8px; }
+  .order-card { padding: 12px 12px; gap: 8px; }
+  .card-route { gap: 6px; }
+  .route-point { flex: 1; min-width: 0; }
+  .route-city { max-width: none; font-size: 13px; }
+  .route-country { max-width: none; }
+  .route-dot { width: 8px; height: 8px; }
+  .route-arrow-line { flex: none; min-width: 20px; }
+  .route-line-inner { display: none; }
+  .card-tags { gap: 6px; }
+  .card-footer { gap: 8px; }
+  .card-date { font-size: 12px; }
+
+  /* map toolbar on mobile — stack into two rows */
+  .map-toolbar { flex-direction: column; gap: 8px; padding: 10px 12px; }
+  .toolbar-left { width: 100%; }
+  .toolbar-right { width: 100%; justify-content: space-between; }
+  .btn-pick { flex: 1; font-size: 12px; padding: 6px 8px; }
+  .map-legend { font-size: 11px; gap: 8px; }
+}
+
+@media (max-width: 480px) {
+  .section { padding: 36px 0; }
+  .results-main { padding: 10px 12px; }
+  .order-card { padding: 12px 14px; }
+  .pagination-wrap { overflow-x: auto; padding-bottom: 4px; }
 }
 
 /* Backdrop fade transition */

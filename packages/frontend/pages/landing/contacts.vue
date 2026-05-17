@@ -3,42 +3,50 @@
     <section class="section">
       <div class="container">
         <n-h1 class="section-title">{{ t('layout.contacts') }}</n-h1>
-        <n-grid :cols="{ xs: 1, md: 2 }" :x-gap="48" :y-gap="24" responsive="screen">
-          <n-gi>
-            <n-card :title="t('contactsPage.ourContacts')" bordered>
-              <n-space vertical size="large">
-                <div class="contact-item">
-                  <n-text strong>{{ t('contactsPage.address') }}</n-text>
-                  <n-p>{{ t('contactsPage.addressValue') }}</n-p>
+        <div class="contacts-layout">
+          <!-- Form — left -->
+          <n-card :title="t('contactsPage.writeToUs')" bordered>
+            <n-form>
+              <n-form-item :label="t('contactsPage.nameLabel')">
+                <n-input v-model:value="form.name" :placeholder="t('contactsPage.namePlaceholder')" />
+              </n-form-item>
+              <n-form-item :label="t('contactsPage.emailLabel')">
+                <n-input v-model:value="form.email" :placeholder="t('contactsPage.emailPlaceholder')" />
+              </n-form-item>
+              <n-form-item :label="t('contactsPage.messageLabel')">
+                <n-input v-model:value="form.message" type="textarea" :placeholder="t('contactsPage.messagePlaceholder')" :rows="5" />
+              </n-form-item>
+              <n-button type="primary" block :loading="loading" @click="handleSubmit">{{ t('contactsPage.submit') }}</n-button>
+            </n-form>
+          </n-card>
+
+          <!-- Contacts — right -->
+          <n-card :title="t('contactsPage.ourContacts')" bordered>
+            <div class="contact-list">
+              <div class="contact-item">
+                <span class="contact-icon">📍</span>
+                <div>
+                  <n-text strong class="contact-label">{{ t('contactsPage.address') }}</n-text>
+                  <n-p class="contact-value">{{ t('contactsPage.addressValue') }}</n-p>
                 </div>
-                <div class="contact-item">
-                  <n-text strong>{{ t('contactsPage.phone') }}</n-text>
-                  <n-p>{{ t('contactsPage.phoneValue') }}</n-p>
+              </div>
+              <div class="contact-item">
+                <span class="contact-icon">📞</span>
+                <div>
+                  <n-text strong class="contact-label">{{ t('contactsPage.phone') }}</n-text>
+                  <n-p class="contact-value">{{ t('contactsPage.phoneValue') }}</n-p>
                 </div>
-                <div class="contact-item">
-                  <n-text strong>{{ t('contactsPage.email') }}</n-text>
-                  <n-p>{{ t('contactsPage.emailValue') }}</n-p>
+              </div>
+              <div class="contact-item">
+                <span class="contact-icon">✉️</span>
+                <div>
+                  <n-text strong class="contact-label">{{ t('contactsPage.email') }}</n-text>
+                  <n-p class="contact-value">{{ t('contactsPage.emailValue') }}</n-p>
                 </div>
-              </n-space>
-            </n-card>
-          </n-gi>
-          <n-gi>
-            <n-card :title="t('contactsPage.writeToUs')" bordered>
-              <n-form>
-                <n-form-item :label="t('contactsPage.nameLabel')">
-                  <n-input v-model:value="form.name" :placeholder="t('contactsPage.namePlaceholder')" />
-                </n-form-item>
-                <n-form-item :label="t('contactsPage.emailLabel')">
-                  <n-input v-model:value="form.email" :placeholder="t('contactsPage.emailPlaceholder')" />
-                </n-form-item>
-                <n-form-item :label="t('contactsPage.messageLabel')">
-                  <n-input v-model:value="form.message" type="textarea" :placeholder="t('contactsPage.messagePlaceholder')" />
-                </n-form-item>
-                <n-button type="primary" block :loading="loading" @click="handleSubmit">{{ t('contactsPage.submit') }}</n-button>
-              </n-form>
-            </n-card>
-          </n-gi>
-        </n-grid>
+              </div>
+            </div>
+          </n-card>
+        </div>
       </div>
     </section>
     <footer class="page-footer">{{ $t('layout.footer') }}</footer>
@@ -102,9 +110,16 @@ async function handleSubmit() {
   border-top: 1px solid #e8e8e8;
 }
 .container {
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 0 20px;
+}
+
+.contacts-layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 32px;
+  align-items: start;
 }
 .section {
   padding: 80px 0;
@@ -114,9 +129,51 @@ async function handleSubmit() {
   margin-bottom: 48px;
 }
 
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.contact-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.contact-label {
+  font-size: 13px;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.contact-value {
+  font-size: 15px;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.5;
+}
+
 @media (max-width: 768px) {
   .section { padding: 40px 0; }
   .container { padding: 0 16px; }
   .section-title { font-size: 22px; margin-bottom: 28px; }
+  .contacts-layout { grid-template-columns: 1fr; gap: 20px; }
+}
+
+@media (max-width: 480px) {
+  .section { padding: 28px 0; }
+  .contact-icon { font-size: 20px; }
 }
 </style>

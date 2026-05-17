@@ -1,5 +1,10 @@
 <template>
   <n-layout has-sider style="min-height: 100vh;">
+    <!-- Mobile backdrop -->
+    <Transition name="backdrop-fade">
+      <div v-if="mobileSidebarOpen" class="mobile-sider-backdrop" @click="mobileSidebarOpen = false" />
+    </Transition>
+
     <!-- Sider (Sidebar) -->
     <n-layout-sider
       bordered
@@ -9,12 +14,14 @@
       :collapsed="collapsed"
       show-trigger="arrow-circle"
       class="admin-sider"
+      :class="{ 'mobile-open': mobileSidebarOpen }"
       @collapse="collapsed = true"
       @expand="collapsed = false"
     >
       <div class="logo-section" @click="navigateTo('/admin')">
         <img src="/images/logo.png" alt="Logo" class="admin-logo-img" :class="{ 'collapsed': collapsed }" />
         <span v-if="!collapsed" class="logo-text">ADMIN</span>
+        <button class="mobile-sider-close" @click.stop="mobileSidebarOpen = false">✕</button>
       </div>
       
       <n-menu
@@ -32,10 +39,16 @@
     <n-layout content-style="display: flex; flex-direction: column; min-height: 100vh;">
       <n-layout-header bordered class="admin-header">
         <div class="header-left">
-          <n-breadcrumb>
+          <button class="mobile-burger" @click="openMobileSidebar">
+            <span class="burger-line" />
+            <span class="burger-line" />
+            <span class="burger-line" />
+          </button>
+          <n-breadcrumb class="desktop-breadcrumb">
             <n-breadcrumb-item @click="navigateTo('/admin')">{{ t('layout.admin.panel') }}</n-breadcrumb-item>
             <n-breadcrumb-item>{{ pageTitle }}</n-breadcrumb-item>
           </n-breadcrumb>
+          <span class="mobile-page-title">{{ pageTitle }}</span>
         </div>
         
         <div class="header-right">
@@ -122,6 +135,14 @@ const avatarSrc = computed(() => useAvatarUrl(session.value?.user?.image))
 const router = useRouter()
 const route = useRoute()
 const collapsed = ref(false)
+const mobileSidebarOpen = ref(false)
+
+function openMobileSidebar() {
+  collapsed.value = false
+  mobileSidebarOpen.value = true
+}
+
+watch(() => route.path, () => { mobileSidebarOpen.value = false })
 
 const activeKey = computed(() => route.path)
 
@@ -317,5 +338,115 @@ async function handleUserSelect(key: string) {
   height: 34px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* ── Burger button ──────────────────────────── */
+.mobile-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.mobile-burger:hover { background: #f5f5f5; }
+.burger-line {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #1a1a1a;
+  border-radius: 2px;
+}
+
+/* ── Close button inside sider (mobile) ─────── */
+.mobile-sider-close {
+  display: none;
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #bbb;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.mobile-sider-close:hover { color: #444; }
+
+/* ── Mobile backdrop ───────────��────────────── */
+.mobile-sider-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 199;
+}
+
+.backdrop-fade-enter-active,
+.backdrop-fade-leave-active { transition: opacity 0.25s ease; }
+.backdrop-fade-enter-from,
+.backdrop-fade-leave-to { opacity: 0; }
+
+/* ── Mobile breakpoint ──────────────────────── */
+@media (max-width: 900px) {
+  .mobile-burger { display: flex; }
+  .mobile-sider-close { display: block; }
+
+  /* Sider becomes a fixed drawer */
+  .admin-sider {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    z-index: 200;
+    width: 260px !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: none;
+  }
+
+  .admin-sider.mobile-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+  }
+
+  /* Hide NaiveUI's built-in collapse arrow trigger */
+  .admin-sider :deep(.n-layout-sider__trigger) {
+    display: none !important;
+  }
+
+  .admin-header { padding: 0 12px; }
+  .user-info { display: none; }
+  .admin-content-bg { padding: 12px; }
+  .desktop-breadcrumb { display: none; }
+  .mobile-page-title { display: block; }
+}
+
+.mobile-page-title {
+  display: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
