@@ -16,6 +16,8 @@ services:
       - packages/backend/.env
     ports:
       - "8020:8000"
+    volumes:
+      - ./storage:/app/storage
     depends_on:
       - redis
     networks:
