@@ -1,0 +1,1 @@
+export { cabinetProfileRoutes } from './routes';

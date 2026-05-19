@@ -1,0 +1,1 @@
+export { publicContactsRoutes } from './routes';

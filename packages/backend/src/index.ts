@@ -23,7 +23,7 @@ import { cabinetDriverOrdersRoutes } from './routes/cabinet/driver/driver-orders
 import { cabinetDriverServicesRoutes } from './routes/cabinet/driver/driver-services';
 import { cabinetDriverProfileRoutes } from './routes/cabinet/driver/driver-profile';
 import { cabinetDriverCitizenshipsRoutes } from './routes/cabinet/driver/driver-citizenships';
-import { cabinetDriverContactsRoutes } from './routes/cabinet/driver/driver-contacts';
+import { cabinetDriverContactsRoutes } from './modules/driver-contacts';
 import { cabinetDriverDocumentsRoutes } from './routes/cabinet/driver/driver-documents';
 import { cabinetDriverChangeRequestsRoutes } from './routes/cabinet/driver/driver-change-requests';
 import { adminChangeRequestsRoutes } from './routes/admin/change-requests';
@@ -35,10 +35,10 @@ import { adminOrdersRoutes } from './routes/admin/orders';
 import { cabinetClientServicesRoutes } from './routes/cabinet/client/client-services';
 import { cabinetClientProfileRoutes } from './routes/cabinet/client/client-profile';
 import { cabinetChatRoutes } from './routes/cabinet/chat';
-import { cabinetProfileRoutes } from './routes/cabinet/profile';
-import { publicOrdersRoutes } from './routes/public/orders';
-import { publicContactsRoutes } from './routes/public/contacts';
-import { adminContactsRoutes } from './routes/admin/contacts';
+import { cabinetProfileRoutes } from './modules/cabinet-profile';
+import { publicOrdersRoutes } from './modules/public-orders';
+import { publicContactsRoutes } from './modules/public-contacts';
+import { adminContactsRoutes } from './modules/admin-contacts';
 import { startWorker } from './lib/queues';
 
 const app = new Elysia()
