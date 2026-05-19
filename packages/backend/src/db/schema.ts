@@ -689,6 +689,32 @@ export const orderStatusLog = pgTable('order_status_log', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// --- Отзывы по завершённому заказу (двусторонние) ---
+
+export const reviews = pgTable('reviews', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderId: uuid('order_id')
+    .notNull()
+    .references(() => orders.id, { onDelete: 'cascade' }),
+  fromUserId: uuid('from_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  toUserId: uuid('to_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  direction: varchar('direction', { length: 20 }).notNull(),
+  // 'client_to_carrier' | 'carrier_to_client'
+
+  rating: integer('rating').notNull(), // 1..5
+  comment: text('comment'),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  // Один отзыв на заказ от одного автора
+  uniqueAuthorReview: uniqueIndex('reviews_unique_author').on(table.orderId, table.fromUserId),
+}));
+
 // --- Отклики перевозчиков на заказ ---
 
 export const orderResponses = pgTable('order_responses', {

@@ -158,7 +158,9 @@
     "scrollToTop": "Наверх",
     "backToHome": "На главную",
     "next": "Далее",
-    "backToDashboard": "← Назад в кабинет"
+    "backToDashboard": "← Назад в кабинет",
+    "user": "Пользователь",
+    "driver": "Водитель"
   },
   "verificationBadge": {
     "verified": "Верифицирован",
@@ -576,5 +578,16 @@
     "submit": "Отправить на проверку",
     "submitSuccess": "Профиль отправлен! Ожидайте проверки.",
     "profileExists": "Профиль уже существует"
+  },
+  "reviews": {
+    "title": "Отзыв по заказу",
+    "yourRating": "Ваша оценка",
+    "commentPlaceholder": "Комментарий (необязательно)",
+    "submit": "Оставить отзыв",
+    "yourReview": "Ваш отзыв",
+    "theirReview": "Отзыв от {name}",
+    "none": "Отзывов пока нет",
+    "thanks": "Спасибо за отзыв!",
+    "alreadyReviewed": "Вы уже оставили отзыв по этому заказу"
   }
 }

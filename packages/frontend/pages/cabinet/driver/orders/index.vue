@@ -87,8 +87,8 @@ async function loadOrders() {
   loadError.value = null
   loading.value = true
   try {
-    const data = await $fetch<any[]>(`${API || ''}/cabinet/driver/orders`, { credentials: 'include' })
-    orderList.value = Array.isArray(data) ? data : []
+    const data = await $fetch<any>(`${API || ''}/cabinet/driver/orders`, { credentials: 'include' })
+    orderList.value = data?.orders ?? (Array.isArray(data) ? data : [])
   } catch (e: any) {
     const err = e?.data?.error || e?.data?.message || e?.message || t('common.loadError')
     loadError.value = err

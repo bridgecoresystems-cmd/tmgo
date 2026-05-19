@@ -93,6 +93,7 @@
           >
             <div class="bid-inner">
               <div>
+                <div class="bid-carrier">👤 {{ bid.carrierName || t('common.driver') }}</div>
                 <div class="bid-amount">{{ bid.amount }} {{ bid.currency }}</div>
                 <div v-if="bid.comment" class="bid-comment">{{ bid.comment }}</div>
                 <div class="bid-date">{{ new Date(bid.createdAt).toLocaleString('ru-RU') }}</div>
@@ -144,6 +145,8 @@
           />
         </n-timeline>
       </n-card>
+
+      <OrderReviewSection :order-id="order.id" :status="order.status" />
     </template>
 
     <n-empty v-else :description="t('client.orders.orderNotFound')" />
@@ -295,6 +298,12 @@ onMounted(loadOrder)
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+}
+.bid-carrier {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
 }
 .bid-amount {
   font-size: 18px;

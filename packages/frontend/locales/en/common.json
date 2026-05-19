@@ -158,7 +158,9 @@
     "scrollToTop": "Scroll to top",
     "backToHome": "Home",
     "next": "Next",
-    "backToDashboard": "← Back to dashboard"
+    "backToDashboard": "← Back to dashboard",
+    "user": "User",
+    "driver": "Driver"
   },
   "verificationBadge": {
     "verified": "Verified",
@@ -576,5 +578,16 @@
     "submit": "Submit for review",
     "submitSuccess": "Profile submitted! Awaiting review.",
     "profileExists": "Profile already exists"
+  },
+  "reviews": {
+    "title": "Order review",
+    "yourRating": "Your rating",
+    "commentPlaceholder": "Comment (optional)",
+    "submit": "Submit review",
+    "yourReview": "Your review",
+    "theirReview": "Review from {name}",
+    "none": "No reviews yet",
+    "thanks": "Thanks for your review!",
+    "alreadyReviewed": "You have already reviewed this order"
   }
 }

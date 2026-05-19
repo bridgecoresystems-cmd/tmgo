@@ -158,7 +158,9 @@
     "scrollToTop": "Ýokary",
     "backToHome": "Baş sahypa",
     "next": "Indiki",
-    "backToDashboard": "← Kabinete"
+    "backToDashboard": "← Kabinete",
+    "user": "Ulanyjy",
+    "driver": "Sürüji"
   },
   "verificationBadge": {
     "verified": "Tassyklandy",
@@ -576,5 +578,16 @@
     "submit": "Barlamak üçin iberiň",
     "submitSuccess": "Profil iberildi! Barlagy garaşyň.",
     "profileExists": "Profil eýýäm bar"
+  },
+  "reviews": {
+    "title": "Sargyt boýunça syn",
+    "yourRating": "Siziň bahaňyz",
+    "commentPlaceholder": "Teswir (hökman däl)",
+    "submit": "Syn galdyryň",
+    "yourReview": "Siziň synyňyz",
+    "theirReview": "{name} tarapyndan syn",
+    "none": "Heniz syn ýok",
+    "thanks": "Synyňyz üçin sag boluň!",
+    "alreadyReviewed": "Siz bu sargyt boýunça eýýäm syn galdyrdyňyz"
   }
 }

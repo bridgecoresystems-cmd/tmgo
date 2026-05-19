@@ -144,6 +144,8 @@
           💬 {{ t('driver.orders.chatWithClient') }}
         </n-button>
 
+        <OrderReviewSection :order-id="order.id" :status="order.status" />
+
       </div>
     </template>
   </div>

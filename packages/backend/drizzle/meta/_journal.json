@@ -225,6 +225,13 @@
       "when": 1773268600000,
       "tag": "0031_chat_read_cursors",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1773268700000,
+      "tag": "0032_reviews",
+      "breakpoints": true
     }
   ]
 }
