@@ -89,6 +89,7 @@
     @close="closeChat"
     @back="handleChatBack"
   />
+  <ScrollToTopButton />
 </template>
 
 <script setup lang="ts">

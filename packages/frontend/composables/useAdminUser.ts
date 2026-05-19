@@ -1,4 +1,5 @@
-import { useMessage, useDialog } from 'naive-ui'
+import { h } from 'vue'
+import { useMessage, useDialog, NButton } from 'naive-ui'
 
 /**
  * Composable для загрузки и действий с пользователем в админке
@@ -106,19 +107,24 @@ export function useAdminUser() {
   function handleImpersonate() {
     if (!user.value?.id) return
     const name = user.value?.name || user.value?.email || '—'
-    dialog.warning({
+    const d = dialog.warning({
       title: t('admin.usersIndex.impersonateTitle'),
       content: t('admin.usersIndex.impersonateContent', { name, role: user.value?.role || '' }),
-      positiveText: t('admin.usersIndex.impersonateConfirm'),
-      negativeText: t('admin.usersIndex.cancel'),
-      onPositiveClick: async () => {
-        try {
-          await impersonate(user.value!.id)
-          message.success(t('admin.usersIndex.impersonateSuccess', { name }))
-        } catch (e: any) {
-          message.error(e?.message || e?.data?.error || t('admin.usersIndex.impersonateError'))
-        }
-      },
+      action: () => h('div', { style: 'display:flex; gap:12px;' }, [
+        h(NButton, {
+          type: 'primary',
+          onClick: async () => {
+            d.destroy()
+            try {
+              await impersonate(user.value!.id)
+              message.success(t('admin.usersIndex.impersonateSuccess', { name }))
+            } catch (e: any) {
+              message.error(e?.message || e?.data?.error || t('admin.usersIndex.impersonateError'))
+            }
+          },
+        }, { default: () => t('admin.usersIndex.impersonateConfirm') }),
+        h(NButton, { onClick: () => d.destroy() }, { default: () => t('admin.usersIndex.cancel') }),
+      ]),
     })
   }
 

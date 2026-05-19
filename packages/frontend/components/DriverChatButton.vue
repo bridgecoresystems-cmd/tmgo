@@ -157,8 +157,8 @@ defineExpose({ openPicker })
 <style scoped>
 .dcb-fab {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
+  bottom: 80px;
+  right: 20px;
   z-index: 1050;
   width: 52px;
   height: 52px;
@@ -199,8 +199,8 @@ defineExpose({ openPicker })
 
 .dcb-picker {
   position: fixed;
-  bottom: 84px;
-  left: 20px;
+  bottom: 144px; /* above FAB at bottom:80 */
+  right: 20px;
   width: 300px;
   background: #fff;
   border-radius: 14px;
@@ -307,7 +307,7 @@ defineExpose({ openPicker })
 }
 
 @media (max-width: 480px) {
-  .dcb-fab { left: 16px; right: auto; }
-  .dcb-picker { width: calc(100vw - 32px); left: 16px; right: auto; }
+  .dcb-fab { right: 16px; left: auto; bottom: 72px; }
+  .dcb-picker { width: calc(100vw - 32px); right: 16px; left: auto; bottom: 136px; }
 }
 </style>

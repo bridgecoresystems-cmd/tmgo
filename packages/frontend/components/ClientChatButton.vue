@@ -224,7 +224,7 @@ defineExpose({ openPicker })
 .ccb-fab {
   position: fixed;
   bottom: 80px;
-  left: 20px;
+  right: 20px;
   z-index: 1050;
   width: 52px;
   height: 52px;
@@ -266,7 +266,7 @@ defineExpose({ openPicker })
 .ccb-picker {
   position: fixed;
   bottom: 144px; /* above FAB at bottom:80 */
-  left: 20px;
+  right: 20px;
   width: 300px;
   background: #fff;
   border-radius: 14px;
@@ -402,7 +402,7 @@ defineExpose({ openPicker })
 }
 
 @media (max-width: 480px) {
-  .ccb-fab { left: 16px; right: auto; bottom: 72px; }
-  .ccb-picker { left: 16px; right: auto; width: calc(100vw - 32px); bottom: 136px; }
+  .ccb-fab { right: 16px; left: auto; bottom: 72px; }
+  .ccb-picker { right: 16px; left: auto; width: calc(100vw - 32px); bottom: 136px; }
 }
 </style>

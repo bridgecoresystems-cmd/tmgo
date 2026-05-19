@@ -348,19 +348,24 @@ async function handleDeactivate(row: { id: string; name?: string; email?: string
 
 function handleImpersonate(row: { id: string; name?: string; email?: string; role?: string; driverName?: string }) {
   const name = row.driverName || row.name || row.email || '—'
-  dialog.warning({
+  const d = dialog.warning({
     title: t('admin.usersIndex.impersonateTitle'),
     content: t('admin.usersIndex.impersonateContent', { name, role: row.role || '' }),
-    positiveText: t('admin.usersIndex.impersonateConfirm'),
-    negativeText: t('admin.usersIndex.cancel'),
-    onPositiveClick: async () => {
-      try {
-        await impersonate(row.id)
-        message.success(t('admin.usersIndex.impersonateSuccess', { name }))
-      } catch (e: any) {
-        message.error(e?.message || e?.data?.error || t('admin.usersIndex.impersonateError'))
-      }
-    },
+    action: () => h('div', { style: 'display:flex; gap:12px;' }, [
+      h(NButton, {
+        type: 'primary',
+        onClick: async () => {
+          d.destroy()
+          try {
+            await impersonate(row.id)
+            message.success(t('admin.usersIndex.impersonateSuccess', { name }))
+          } catch (e: any) {
+            message.error(e?.message || e?.data?.error || t('admin.usersIndex.impersonateError'))
+          }
+        },
+      }, { default: () => t('admin.usersIndex.impersonateConfirm') }),
+      h(NButton, { onClick: () => d.destroy() }, { default: () => t('admin.usersIndex.cancel') }),
+    ]),
   })
 }
 
