@@ -1,0 +1,1 @@
+export { cabinetMailingRoutes } from './routes';

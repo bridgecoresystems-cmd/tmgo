@@ -1,0 +1,1 @@
+export { cabinetDriverCitizenshipsRoutes } from './routes';
