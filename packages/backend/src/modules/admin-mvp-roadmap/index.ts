@@ -1,0 +1,1 @@
+export { adminMvpRoadmapRoutes } from './routes';
