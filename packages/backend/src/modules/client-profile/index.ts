@@ -1,0 +1,1 @@
+export { cabinetClientProfileRoutes } from './routes';

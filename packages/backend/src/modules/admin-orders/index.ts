@@ -1,0 +1,1 @@
+export { adminOrdersRoutes } from './routes';

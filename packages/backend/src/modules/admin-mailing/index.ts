@@ -1,0 +1,1 @@
+export { adminMailingRoutes } from './routes';
