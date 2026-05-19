@@ -589,5 +589,25 @@
     "none": "No reviews yet",
     "thanks": "Thanks for your review!",
     "alreadyReviewed": "You have already reviewed this order"
+  },
+  "orderFlow": {
+    "title": "Delivery progress",
+    "action_pickup": "Arrived for pickup",
+    "action_in_transit": "Departed, on the way",
+    "action_delivering": "Arrived for unloading",
+    "action_delivered": "Cargo delivered",
+    "waitingClient": "Waiting for client confirmation",
+    "done": "Order completed",
+    "updated": "Status updated",
+    "confirmStep": "Confirm this step?"
+  },
+  "myReviews": {
+    "title": "My reviews",
+    "subtitle": "Ratings and comments on your orders",
+    "empty": "No reviews yet",
+    "ratingOf": "of 5",
+    "reviewsCount": "reviews",
+    "orderLabel": "Order",
+    "fromLabel": "From"
   }
 }

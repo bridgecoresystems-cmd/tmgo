@@ -139,6 +139,28 @@
           </n-button>
         </n-card>
 
+        <!-- Delivery progress (accepted carrier only) -->
+        <n-card v-if="showStatusFlow" :title="t('orderFlow.title')" size="small">
+          <n-steps :current="flowCurrent" size="small" style="margin-bottom: 16px;">
+            <n-step v-for="s in FLOW_STEPS" :key="s" :title="statusLabel(s)" />
+          </n-steps>
+          <n-button
+            v-if="nextStatus"
+            type="primary"
+            block
+            :loading="statusLoading"
+            @click="advanceStatus"
+          >
+            {{ t('orderFlow.action_' + nextStatus) }}
+          </n-button>
+          <n-alert v-else-if="order.status === 'delivered'" type="info" :bordered="false">
+            {{ t('orderFlow.waitingClient') }}
+          </n-alert>
+          <n-alert v-else-if="order.status === 'completed'" type="success" :bordered="false">
+            {{ t('orderFlow.done') }}
+          </n-alert>
+        </n-card>
+
         <!-- Chat -->
         <n-button v-if="myBid?.status === 'accepted'" type="info" block @click="handleOpenChat">
           💬 {{ t('driver.orders.chatWithClient') }}
@@ -188,16 +210,51 @@ const BID_TAG_TYPE: Record<string, string> = {
 }
 
 function statusLabel(status: string) {
-  const map: Record<string, string> = {
-    draft: t('client.orders.statusDraft'),
-    published: t('client.orders.statusPublished'),
-    negotiating: t('client.orders.statusNegotiating'),
-    confirmed: t('client.orders.statusConfirmed'),
-    in_transit: t('client.orders.statusInTransit'),
-    completed: t('client.orders.statusCompleted'),
-    cancelled: t('client.orders.statusCancelled'),
+  const key = `client.orders.status_${status}`
+  const label = t(key)
+  return label !== key ? label : status
+}
+
+const CARRIER_TRANSITIONS: Record<string, string> = {
+  confirmed: 'pickup',
+  pickup: 'in_transit',
+  in_transit: 'delivering',
+  delivering: 'delivered',
+}
+const FLOW_STEPS = ['confirmed', 'pickup', 'in_transit', 'delivering', 'delivered']
+
+const showStatusFlow = computed(() =>
+  order.value &&
+  myBid.value?.status === 'accepted' &&
+  ['confirmed', 'pickup', 'in_transit', 'delivering', 'delivered', 'completed'].includes(order.value.status)
+)
+const flowCurrent = computed(() => {
+  if (!order.value) return 0
+  if (order.value.status === 'completed') return FLOW_STEPS.length
+  const i = FLOW_STEPS.indexOf(order.value.status)
+  return i < 0 ? 0 : i + 1
+})
+const nextStatus = computed(() =>
+  order.value ? (CARRIER_TRANSITIONS[order.value.status] ?? null) : null
+)
+const statusLoading = ref(false)
+
+async function advanceStatus() {
+  if (!nextStatus.value) return
+  statusLoading.value = true
+  try {
+    await $fetch(`${API}/cabinet/orders/${route.params.id}/status`, {
+      method: 'PATCH',
+      credentials: 'include',
+      body: { status: nextStatus.value },
+    })
+    message.success(t('orderFlow.updated'))
+    await loadOrder()
+  } catch (e: any) {
+    message.error(e?.data?.error ?? e?.message ?? t('common.error'))
+  } finally {
+    statusLoading.value = false
   }
-  return map[status] ?? status
 }
 
 function bidStatusLabel(status: string) {

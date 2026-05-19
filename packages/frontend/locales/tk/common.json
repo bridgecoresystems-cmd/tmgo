@@ -589,5 +589,25 @@
     "none": "Heniz syn ýok",
     "thanks": "Synyňyz üçin sag boluň!",
     "alreadyReviewed": "Siz bu sargyt boýunça eýýäm syn galdyrdyňyz"
+  },
+  "orderFlow": {
+    "title": "Ýerine ýetiriş ýagdaýy",
+    "action_pickup": "Ýüklemä geldim",
+    "action_in_transit": "Ýola çykdym",
+    "action_delivering": "Düşürmä geldim",
+    "action_delivered": "Ýük gowşuryldy",
+    "waitingClient": "Müşderiniň tassyklamasyna garaşylýar",
+    "done": "Sargyt tamamlandy",
+    "updated": "Ýagdaý täzelendi",
+    "confirmStep": "Bu ädimi tassyklaýarsyňyzmy?"
+  },
+  "myReviews": {
+    "title": "Meniň synlarym",
+    "subtitle": "Sargytlaryňyz boýunça bahalar we teswirler",
+    "empty": "Heniz syn ýok",
+    "ratingOf": "5-den",
+    "reviewsCount": "syn",
+    "orderLabel": "Sargyt",
+    "fromLabel": "Kimden"
   }
 }

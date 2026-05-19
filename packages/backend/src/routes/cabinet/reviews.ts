@@ -3,7 +3,7 @@ import { db } from '../../db';
 import {
   orders, orderBids, reviews, carrierProfiles, clientProfiles, users,
 } from '../../db/schema';
-import { eq, and, avg, count } from 'drizzle-orm';
+import { eq, and, avg, count, desc } from 'drizzle-orm';
 import { getUserFromRequest } from '../../lib/auth';
 
 // Резолвит пользователей-участников заказа: заказчик и принятый перевозчик.
@@ -154,6 +154,36 @@ export const cabinetReviewsRoutes = new Elysia({ prefix: '/cabinet' })
       avgRating: avg(reviews.rating),
       total: count(reviews.id),
     }).from(reviews).where(eq(reviews.toUserId, params.userId));
+
+    return {
+      reviews: rows,
+      average: agg?.avgRating ? Number(Number(agg.avgRating).toFixed(2)) : 0,
+      total: Number(agg?.total ?? 0),
+    };
+  })
+
+  // GET /cabinet/reviews/me — отзывы, полученные текущим юзером (+ инфо о заказе)
+  .get('/reviews/me', async ({ user }) => {
+    const rows = await db.select({
+      id: reviews.id,
+      orderId: reviews.orderId,
+      orderSeqNo: orders.seqNo,
+      orderTitle: orders.title,
+      direction: reviews.direction,
+      rating: reviews.rating,
+      comment: reviews.comment,
+      createdAt: reviews.createdAt,
+      fromName: users.name,
+    }).from(reviews)
+      .leftJoin(users, eq(users.id, reviews.fromUserId))
+      .leftJoin(orders, eq(orders.id, reviews.orderId))
+      .where(eq(reviews.toUserId, user.id))
+      .orderBy(desc(reviews.createdAt));
+
+    const [agg] = await db.select({
+      avgRating: avg(reviews.rating),
+      total: count(reviews.id),
+    }).from(reviews).where(eq(reviews.toUserId, user.id));
 
     return {
       reviews: rows,

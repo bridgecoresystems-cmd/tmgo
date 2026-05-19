@@ -589,5 +589,25 @@
     "none": "Отзывов пока нет",
     "thanks": "Спасибо за отзыв!",
     "alreadyReviewed": "Вы уже оставили отзыв по этому заказу"
+  },
+  "orderFlow": {
+    "title": "Статус выполнения",
+    "action_pickup": "Прибыл на погрузку",
+    "action_in_transit": "Выехал, в пути",
+    "action_delivering": "Прибыл на разгрузку",
+    "action_delivered": "Груз доставлен",
+    "waitingClient": "Ожидает подтверждения заказчиком",
+    "done": "Заказ завершён",
+    "updated": "Статус обновлён",
+    "confirmStep": "Подтвердить этот шаг?"
+  },
+  "myReviews": {
+    "title": "Мои отзывы",
+    "subtitle": "Оценки и комментарии по вашим заказам",
+    "empty": "Отзывов пока нет",
+    "ratingOf": "из 5",
+    "reviewsCount": "отзывов",
+    "orderLabel": "Заказ",
+    "fromLabel": "От"
   }
 }

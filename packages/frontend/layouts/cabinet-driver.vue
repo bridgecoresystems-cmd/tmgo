@@ -45,6 +45,7 @@
           <n-space align="center" style="gap: 12px">
             <LanguageSwitcher />
             <DriverOnlineStatusToggle v-if="session?.user?.role === 'driver'" />
+            <DriverRatingBadge v-if="session?.user?.role === 'driver'" />
             <VerificationBadge v-if="verificationStatus" :status="verificationStatus" />
             <n-dropdown :options="userMenuOptions" @select="handleUserSelect">
               <n-space align="center" style="cursor: pointer">
