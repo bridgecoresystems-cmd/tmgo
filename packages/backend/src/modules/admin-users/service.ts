@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 import { db } from '../../db';
 import {
   users, accounts, carrierProfiles, sessions, profileEditRequests, profileChangeRequests,
-  vehicles, orderResponses, driverServices, orders, orderMessages,
+  vehicles, orderResponses, driverServices, orders, orderMessages, orderStatusLog,
   driverCitizenships, driverContacts, driverDocuments, clientProfiles,
 } from '../../db/schema';
 import { eq, and, desc, inArray, isNull } from 'drizzle-orm';
@@ -199,6 +199,9 @@ export async function deleteUser(id: string) {
     await db.delete(clientProfiles).where(eq(clientProfiles.userId, id));
 
     await db.delete(orderMessages).where(eq(orderMessages.senderId, id));
+    // orderStatusLog.changedBy → users.id без cascade; nullable (null = система/BullMQ).
+    // Обнуляем, чтобы не терять аудит-лог смены статусов и не ловить FK violation на delete users.
+    await db.update(orderStatusLog).set({ changedBy: null }).where(eq(orderStatusLog.changedBy, id));
     await db.delete(sessions).where(eq(sessions.userId, id));
     await db.delete(accounts).where(eq(accounts.userId, id));
     if (profile) {
