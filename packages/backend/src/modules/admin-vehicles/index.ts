@@ -1,0 +1,1 @@
+export { adminVehiclesRoutes } from './routes';
