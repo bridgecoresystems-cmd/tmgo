@@ -239,6 +239,13 @@
       "when": 1773268800000,
       "tag": "0033_postgis_extension",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1773268900000,
+      "tag": "0034_carrier_current_location",
+      "breakpoints": true
     }
   ]
 }

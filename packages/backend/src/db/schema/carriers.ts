@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp, uuid, varchar, decimal, boolean, jsonb } from 'drizzle-orm/pg-core';
 import { users } from './auth';
 import { verificationStatusEnum } from './enums';
+import { geographyPoint } from './postgis';
 
 export const carrierProfiles = pgTable('carrier_profiles', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -96,6 +97,12 @@ export const carrierProfiles = pgTable('carrier_profiles', {
   unlockedFields: jsonb('unlocked_fields').$type<string[]>().default([]),
 
   hiddenFields: jsonb('hidden_fields').$type<string[]>().default([]),
+
+  // ─── LIVE LOCATION (PostGIS) ───
+  // Обновляется с мобилки через POST /cabinet/driver/location.
+  // GIST индекс carrier_profiles_location_idx — для ST_DWithin/ST_Distance.
+  currentLocation: geographyPoint('current_location'),
+  lastLocationAt: timestamp('last_location_at'),
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
