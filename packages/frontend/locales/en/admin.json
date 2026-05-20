@@ -381,5 +381,11 @@
     "userDeleted": "User permanently deleted",
     "loadError": "Load error",
     "retry": "Retry"
+  },
+  "map": {
+    "staleMinutes": "Freshness, min:",
+    "empty": "No online drivers with coordinates in the selected window.",
+    "legendVerified": "Verified",
+    "legendPending": "Not verified"
   }
 }

@@ -119,6 +119,7 @@ import {
   PeopleOutline,
   MailOutline,
   CarOutline,
+  MapOutline,
   SettingsOutline,
   ListOutline,
   PersonRemoveOutline,
@@ -173,6 +174,7 @@ const menuOptions = computed<MenuOption[]>(() => [
   { label: t('layout.admin.users'), key: '/admin/users', icon: renderIcon(PeopleOutline) },
   { label: t('layout.admin.mailing'), key: '/admin/mailing', icon: renderIcon(MailOutline) },
   { label: t('layout.admin.vehicles'), key: '/admin/vehicles', icon: renderIcon(CarOutline) },
+  { label: t('layout.admin.map'), key: '/admin/map', icon: renderIcon(MapOutline) },
   { label: t('admin.adminIndex.contactMessages'), key: '/admin/contacts', icon: renderIcon(ChatbubbleOutline) },
   { label: t('layout.admin.legalDocs'), key: '/admin/legal', icon: renderIcon(DocumentTextOutline) },
   {

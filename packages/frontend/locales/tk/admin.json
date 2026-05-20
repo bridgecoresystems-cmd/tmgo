@@ -381,5 +381,11 @@
     "userDeleted": "Ulanyjy hemişelik pozuldy",
     "loadError": "Ýüklemek ýalňyşlygy",
     "retry": "Gaýtala"
+  },
+  "map": {
+    "staleMinutes": "Täzelik, min:",
+    "empty": "Saýlanan möhletde koordinatlary bolan sürüjiler ýok.",
+    "legendVerified": "Tassyklanan",
+    "legendPending": "Tassyklanmadyk"
   }
 }
