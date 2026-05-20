@@ -132,6 +132,8 @@ async function handleChatBack() {
 
 const { status: verificationStatus } = useDriverVerificationStatus()
 const { count: alertsCount, fetchAlerts } = useDriverAlerts()
+// Фоновый трекинг геопозиции водителя — активен пока isOnline=true.
+useDriverLocation()
 const route = useRoute()
 const collapsed = ref(false)
 
