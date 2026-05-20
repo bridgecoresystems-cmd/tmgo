@@ -3,6 +3,7 @@
 // реэкспортированы отсюда. Drizzle-kit (см. drizzle.config.ts) тоже подхватывает
 // весь набор через этот файл.
 
+export * from './schema/postgis';
 export * from './schema/enums';
 export * from './schema/auth';
 export * from './schema/clients';

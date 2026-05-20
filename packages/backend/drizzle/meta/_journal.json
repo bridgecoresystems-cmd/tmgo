@@ -232,6 +232,13 @@
       "when": 1773268700000,
       "tag": "0032_reviews",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1773268800000,
+      "tag": "0033_postgis_extension",
+      "breakpoints": true
     }
   ]
 }
