@@ -1,1 +1,1 @@
-export { cabinetDriverLocationRoutes } from './routes';
+export { cabinetDriverLocationRoutes, adminDriverLocationsRoutes } from './routes';

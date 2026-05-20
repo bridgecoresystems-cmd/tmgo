@@ -22,7 +22,7 @@ import { cabinetDriverTrailersRoutes, cabinetDriverCouplingsRoutes } from './mod
 import { cabinetDriverOrdersRoutes } from './routes/cabinet/driver/driver-orders';
 import { cabinetDriverServicesRoutes } from './modules/driver-services';
 import { cabinetDriverProfileRoutes } from './modules/driver-profile';
-import { cabinetDriverLocationRoutes } from './modules/driver-location';
+import { cabinetDriverLocationRoutes, adminDriverLocationsRoutes } from './modules/driver-location';
 import { cabinetDriverCitizenshipsRoutes } from './modules/driver-citizenships';
 import { cabinetDriverContactsRoutes } from './modules/driver-contacts';
 import { cabinetDriverDocumentsRoutes } from './modules/driver-documents';
@@ -130,6 +130,7 @@ const app = new Elysia()
   .use(cabinetDriverCouplingsRoutes)
   .use(cabinetDriverProfileRoutes)
   .use(cabinetDriverLocationRoutes)
+  .use(adminDriverLocationsRoutes)
   .use(cabinetDriverCitizenshipsRoutes)
   .use(cabinetDriverContactsRoutes)
   .use(cabinetDriverDocumentsRoutes)
