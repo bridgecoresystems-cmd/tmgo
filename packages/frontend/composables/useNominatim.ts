@@ -63,5 +63,30 @@ export function useNominatim() {
     }
   }
 
-  return { fetchCountrySuggestions, fetchRegionSuggestions, fetchCitySuggestions }
+  // Геокодинг адреса в координаты через OSM Nominatim (бесплатно, без ключа).
+  // Возвращает null если адрес не найден или запрос упал. Используется при
+  // создании заказа: фронт строит "city, region, country" и шлёт {lat,lng} в
+  // POST /cabinet/client/orders для записи в orders.from_geom/to_geom.
+  //
+  // Rate-limit OSM ~1 req/sec — один заказ делает 2 параллельных запроса (from/to),
+  // это в пределах нормы. Если станет проблемой — переключим на Yandex Geocoder.
+  async function geocodeAddress(query: string): Promise<{ lat: number; lng: number } | null> {
+    const q = query.trim()
+    if (!q) return null
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`
+      const res = await fetch(url, { headers: { 'Accept-Language': 'ru,en' } })
+      const data: any[] = await res.json()
+      const first = data?.[0]
+      if (!first?.lat || !first?.lon) return null
+      const lat = parseFloat(first.lat)
+      const lng = parseFloat(first.lon)
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+      return { lat, lng }
+    } catch {
+      return null
+    }
+  }
+
+  return { fetchCountrySuggestions, fetchRegionSuggestions, fetchCitySuggestions, geocodeAddress }
 }

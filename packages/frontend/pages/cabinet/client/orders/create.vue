@@ -274,7 +274,12 @@ const countryOptions = computed(() =>
 )
 
 // ── City autocomplete via Nominatim ───────────────────────────────────────────
-const { fetchCountrySuggestions, fetchRegionSuggestions, fetchCitySuggestions } = useNominatim()
+const { fetchCountrySuggestions, fetchRegionSuggestions, fetchCitySuggestions, geocodeAddress } = useNominatim()
+
+function buildAddressQuery(country: string | null, region: string, city: string): string {
+  const countryName = country ? COUNTRY_LIST.find(c => c.code === country)?.name : null
+  return [city, region, countryName].filter(Boolean).join(', ')
+}
 
 const fromCountryOptions = ref([...countryOptions.value])
 const toCountryOptions = ref([...countryOptions.value])
@@ -396,6 +401,13 @@ async function handleCreate() {
   }
   creating.value = true
   try {
+    // Геокодим обе точки параллельно (OSM Nominatim).
+    // Если не нашлось — заказ создаётся без координат, водитель найдёт его по тексту города.
+    const [fromGeo, toGeo] = await Promise.all([
+      geocodeAddress(buildAddressQuery(form.fromCountry, form.fromRegion, form.fromCity)),
+      geocodeAddress(buildAddressQuery(form.toCountry, form.toRegion, form.toCity)),
+    ])
+
     const data = await $fetch<any>(`${API}/cabinet/orders`, {
       method: 'POST',
       credentials: 'include',
@@ -407,6 +419,10 @@ async function handleCreate() {
         toCountry: form.toCountry,
         toRegion: form.toRegion || undefined,
         toCity: form.toCity,
+        fromLat: fromGeo?.lat,
+        fromLng: fromGeo?.lng,
+        toLat: toGeo?.lat,
+        toLng: toGeo?.lng,
         readyDate: msToDateString(readyDateMs.value)!,
         deadlineDate: msToDateString(deadlineDateMs.value),
         price: form.price ?? undefined,
