@@ -1,6 +1,7 @@
 import { db } from '../../db';
-import { orders, clientProfiles, carrierProfiles, orderBids, orderCargo } from '../../db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { orders, clientProfiles, carrierProfiles, orderBids, orderCargo, users } from '../../db/schema';
+import { and, desc, eq, gt, inArray, isNotNull, sql } from 'drizzle-orm';
+import { NotFound } from '../../lib/errors';
 
 export async function listOrders(query: { search?: string; status?: string }) {
   const { search, status } = query;
@@ -61,4 +62,62 @@ export async function listOrders(query: { search?: string; status?: string }) {
 export async function deleteOrder(id: string) {
   await db.delete(orders).where(eq(orders.id, id));
   return { success: true };
+}
+
+// Водители рядом с пунктом погрузки конкретного заказа.
+// Используется в админ-карте/панели заказа: «кому показать груз», «кто рядом».
+// По умолчанию radius=200 км, окно свежести last_location 30 минут.
+//
+// Возвращает пустой массив если у заказа нет from_geom (старые заказы или
+// клиент не передал координаты).
+export async function listNearbyDrivers(
+  orderId: string,
+  radiusKm: number,
+  staleMinutes: number,
+  limit: number,
+) {
+  const [order] = await db.select({ fromGeom: orders.fromGeom })
+    .from(orders).where(eq(orders.id, orderId)).limit(1);
+  if (!order) throw new NotFound('not_found');
+  if (!order.fromGeom) return [];
+
+  const radiusMeters = Math.max(1, Math.min(radiusKm, 5000)) * 1000;
+  const cutoff = new Date(Date.now() - staleMinutes * 60_000);
+  const fromGeom = order.fromGeom as unknown as object;
+
+  const rows = await db
+    .select({
+      id: carrierProfiles.id,
+      userId: carrierProfiles.userId,
+      name: users.name,
+      surname: carrierProfiles.surname,
+      givenName: carrierProfiles.givenName,
+      verificationStatus: carrierProfiles.verificationStatus,
+      isOnline: carrierProfiles.isOnline,
+      lastLocationAt: carrierProfiles.lastLocationAt,
+      lat: sql<number>`ST_Y(${carrierProfiles.currentLocation}::geometry)::float`,
+      lng: sql<number>`ST_X(${carrierProfiles.currentLocation}::geometry)::float`,
+      distanceM: sql<number>`ST_Distance(${carrierProfiles.currentLocation}, ${fromGeom})::float`,
+    })
+    .from(carrierProfiles)
+    .innerJoin(users, eq(users.id, carrierProfiles.userId))
+    .where(and(
+      isNotNull(carrierProfiles.currentLocation),
+      gt(carrierProfiles.lastLocationAt, cutoff),
+      sql`ST_DWithin(${carrierProfiles.currentLocation}, ${fromGeom}, ${radiusMeters})`,
+    ))
+    .orderBy(sql`ST_Distance(${carrierProfiles.currentLocation}, ${fromGeom}) ASC`)
+    .limit(limit);
+
+  return rows.map((r) => ({
+    id: r.id,
+    user_id: r.userId,
+    name: [r.surname, r.givenName].filter(Boolean).join(' ').trim() || r.name,
+    lat: r.lat,
+    lng: r.lng,
+    last_location_at: r.lastLocationAt?.toISOString() ?? null,
+    is_online: r.isOnline ?? false,
+    verification_status: r.verificationStatus ?? 'not_submitted',
+    distance_km: Math.round((r.distanceM ?? 0) / 100) / 10,
+  }));
 }
