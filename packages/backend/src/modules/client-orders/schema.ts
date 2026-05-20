@@ -8,6 +8,12 @@ export const createOrderBody = t.Object({
   toCountry: t.String({ minLength: 2, maxLength: 2 }),
   toRegion: t.Optional(t.String()),
   toCity: t.String(),
+  // Опциональные координаты от Yandex API во фронте. Если переданы —
+  // сохраняются в orders.from_geom/to_geom для матчинга «рядом».
+  fromLat: t.Optional(t.Number({ minimum: -90, maximum: 90 })),
+  fromLng: t.Optional(t.Number({ minimum: -180, maximum: 180 })),
+  toLat: t.Optional(t.Number({ minimum: -90, maximum: 90 })),
+  toLng: t.Optional(t.Number({ minimum: -180, maximum: 180 })),
   readyDate: t.String(),
   deadlineDate: t.Optional(t.String()),
   price: t.Optional(t.Number()),

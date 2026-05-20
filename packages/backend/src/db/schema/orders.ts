@@ -3,6 +3,7 @@ import { users } from './auth';
 import { clientProfiles } from './clients';
 import { carrierProfiles } from './carriers';
 import { vehicles } from './vehicles';
+import { geographyPoint } from './postgis';
 
 export const orders = pgTable('orders', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -31,6 +32,11 @@ export const orders = pgTable('orders', {
 
   readyDate: date('ready_date').notNull(),
   deadlineDate: date('deadline_date'),
+
+  // Координаты пункта погрузки/выгрузки. Клиент шлёт от Yandex API при создании.
+  // Используются для ST_DWithin (грузы рядом / водители рядом).
+  fromGeom: geographyPoint('from_geom'),
+  toGeom: geographyPoint('to_geom'),
 
   // Заполняется когда заказчик выбирает ставку — без FK constraint (circular ref).
   acceptedBidId: uuid('accepted_bid_id'),

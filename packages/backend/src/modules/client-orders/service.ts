@@ -4,6 +4,7 @@ import {
 } from '../../db/schema';
 import { eq, and, inArray, ne, sql, desc } from 'drizzle-orm';
 import { BadRequest, NotFound, Forbidden } from '../../lib/errors';
+import { geoPoint } from '../../db/schema/postgis';
 
 // Разрешённые переходы статусов для перевозчика.
 const CARRIER_TRANSITIONS: Record<string, string> = {
@@ -117,6 +118,11 @@ export async function createOrder(userId: string, body: Record<string, any>) {
   const profile = await clientProfileOf(userId);
   if (!profile) throw new BadRequest('profile_required');
 
+  // Координаты — опциональные. Yandex API на фронте отдаёт {lat,lng} адреса;
+  // если клиент в форме оставил только текст города — сохраняем без геометрии.
+  const hasFromGeom = typeof body.fromLat === 'number' && typeof body.fromLng === 'number';
+  const hasToGeom = typeof body.toLat === 'number' && typeof body.toLng === 'number';
+
   const [order] = await db.insert(orders).values({
     clientProfileId: profile.id,
     title: body.title,
@@ -131,6 +137,8 @@ export async function createOrder(userId: string, body: Record<string, any>) {
     price: body.price?.toString() ?? null,
     currency: body.currency ?? 'USD',
     status: 'draft',
+    fromGeom: hasFromGeom ? sql`${geoPoint(body.fromLat, body.fromLng)}` as any : null,
+    toGeom: hasToGeom ? sql`${geoPoint(body.toLat, body.toLng)}` as any : null,
   }).returning();
 
   const [cargo] = await db.insert(orderCargo).values({
