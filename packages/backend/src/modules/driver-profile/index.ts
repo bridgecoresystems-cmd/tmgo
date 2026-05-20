@@ -1,0 +1,1 @@
+export { cabinetDriverProfileRoutes } from './routes';

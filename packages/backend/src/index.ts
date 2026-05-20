@@ -21,7 +21,7 @@ import { cabinetDriverVehiclesRoutes } from './modules/driver-vehicles';
 import { cabinetDriverTrailersRoutes, cabinetDriverCouplingsRoutes } from './modules/driver-trailers';
 import { cabinetDriverOrdersRoutes } from './routes/cabinet/driver/driver-orders';
 import { cabinetDriverServicesRoutes } from './modules/driver-services';
-import { cabinetDriverProfileRoutes } from './routes/cabinet/driver/driver-profile';
+import { cabinetDriverProfileRoutes } from './modules/driver-profile';
 import { cabinetDriverCitizenshipsRoutes } from './modules/driver-citizenships';
 import { cabinetDriverContactsRoutes } from './modules/driver-contacts';
 import { cabinetDriverDocumentsRoutes } from './modules/driver-documents';
