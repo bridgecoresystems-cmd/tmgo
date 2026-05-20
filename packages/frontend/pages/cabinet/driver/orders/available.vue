@@ -11,8 +11,42 @@
       </template>
     </n-alert>
 
+    <!-- Mode switch (all / near me) -->
+    <n-card style="margin-bottom: 12px" :bordered="false" size="small">
+      <div class="mode-row">
+        <n-radio-group v-model:value="mode" @update:value="loadOrders">
+          <n-radio-button value="all">{{ t('driver.orders.modeAll') }}</n-radio-button>
+          <n-radio-button value="near">📍 {{ t('driver.orders.modeNear') }}</n-radio-button>
+        </n-radio-group>
+        <div v-if="mode === 'near'" class="radius-block">
+          <span class="radius-label">{{ t('driver.orders.radiusLabel') }}</span>
+          <n-slider
+            v-model:value="radius"
+            :min="5"
+            :max="1000"
+            :step="5"
+            :marks="radiusMarks"
+            style="flex: 1; min-width: 180px;"
+            @update:value="onRadiusChange"
+          />
+          <n-input-number
+            v-model:value="radius"
+            :min="1"
+            :max="2000"
+            size="small"
+            style="width: 100px;"
+            @update:value="onRadiusChange"
+          />
+          <span style="color: #888;">{{ t('driver.orders.km') }}</span>
+        </div>
+      </div>
+      <n-alert v-if="mode === 'near' && !loading && orders.length === 0" type="info" :show-icon="true" style="margin-top: 12px;">
+        {{ t('driver.orders.nearEmptyHint') }}
+      </n-alert>
+    </n-card>
+
     <!-- Filters -->
-    <n-card style="margin-bottom: 16px" :bordered="false" size="small">
+    <n-card v-if="mode === 'all'" style="margin-bottom: 16px" :bordered="false" size="small">
       <div style="font-weight: 600; margin-bottom: 12px; color: #555;">{{ t('driver.orders.filterTitle') || 'Фильтры поиска' }}</div>
       <div class="filter-cols">
         <div>
@@ -142,6 +176,9 @@
 
         <!-- Tags -->
         <div class="tags-row">
+          <n-tag v-if="order.distanceKm != null" size="small" :bordered="false" type="warning">
+            📍 {{ order.distanceKm }} {{ t('driver.orders.km') }}
+          </n-tag>
           <n-tag v-if="order.cargoType" size="small" :bordered="false" type="success">
             {{ order.cargoType }}
           </n-tag>
@@ -182,6 +219,10 @@ const loading   = ref(true)
 const orders    = ref<any[]>([])
 const vehicles  = ref<any[]>([])
 const search    = ref('')
+const mode      = ref<'all' | 'near'>('all')
+const radius    = ref(100)
+let radiusTimer: ReturnType<typeof setTimeout> | null = null
+const radiusMarks = { 50: '50', 200: '200', 500: '500', 1000: '1000' }
 const fromCountry = ref<string | null>(null)
 const fromRegion  = ref('')
 const fromCity    = ref('')
@@ -321,9 +362,47 @@ function resetFilters() {
   loadOrders()
 }
 
+// /near отдаёт snake_case + distance_km, /available — camelCase без расстояния.
+// Приводим к одной форме чтобы шаблон один.
+function normalizeNear(o: any) {
+  return {
+    id: o.id,
+    title: o.title,
+    status: o.status,
+    fromCountry: o.from_country,
+    fromCity: o.from_city,
+    toCountry: o.to_country,
+    toCity: o.to_city,
+    readyDate: o.ready_date,
+    cargoType: o.cargo_type,
+    weightKg: o.weight_kg,
+    volumeM3: o.volume_m3,
+    price: o.price,
+    currency: o.currency,
+    distanceKm: o.distance_km,
+    seqNo: null,
+    bidsCount: 0,
+    tempControlled: false,
+  }
+}
+
+function onRadiusChange() {
+  if (mode.value !== 'near') return
+  if (radiusTimer) clearTimeout(radiusTimer)
+  radiusTimer = setTimeout(loadOrders, 350)
+}
+
 async function loadOrders() {
   loading.value = true
   try {
+    if (mode.value === 'near') {
+      const data = await $fetch<any[]>(`${API}/cabinet/driver/orders/near`, {
+        credentials: 'include',
+        query: { radius: radius.value, limit: 200 },
+      })
+      orders.value = (Array.isArray(data) ? data : []).map(normalizeNear)
+      return
+    }
     const q = new URLSearchParams()
     if (fromCountry.value) q.set('fromCountry', fromCountry.value)
     if (fromRegion.value)  q.set('fromRegion',  fromRegion.value)
@@ -350,6 +429,28 @@ onMounted(() => Promise.all([loadOrders(), loadVehicles()]))
 </script>
 
 <style scoped>
+.mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.radius-block {
+  display: flex;
+  flex: 1;
+  min-width: 280px;
+  align-items: center;
+  gap: 10px;
+}
+.radius-label {
+  font-size: 13px;
+  color: #555;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .radius-block { width: 100%; }
+}
+
 .filter-label {
   font-size: 12px;
   color: #999;

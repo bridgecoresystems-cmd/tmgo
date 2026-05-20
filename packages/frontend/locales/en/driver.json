@@ -503,7 +503,12 @@
     "cargoType": "Cargo type",
     "packaging": "Packaging",
     "myBidAmountLabel": "Bid",
-    "respondHint": "Respond →"
+    "respondHint": "Respond →",
+    "modeAll": "All orders",
+    "modeNear": "Near me",
+    "radiusLabel": "Radius:",
+    "km": "km",
+    "nearEmptyHint": "No open orders within the selected radius. Make sure you are Online — your device must send the location."
   },
   "services": {
     "title": "My services",

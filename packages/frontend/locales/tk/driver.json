@@ -503,7 +503,12 @@
     "cargoType": "Ýük görnüşi",
     "packaging": "Gaplaýyş",
     "myBidAmountLabel": "Teklip",
-    "respondHint": "Jogap bermek →"
+    "respondHint": "Jogap bermek →",
+    "modeAll": "Ähli sargytlar",
+    "modeNear": "Ýakynymda",
+    "radiusLabel": "Aralyk:",
+    "km": "km",
+    "nearEmptyHint": "Saýlanan aralykda açyk sargytlar ýok. Onlaýn boluň — enjamyňyz pozisiýaňyzy iberýär."
   },
   "services": {
     "title": "Meniň hyzmatlarym",
