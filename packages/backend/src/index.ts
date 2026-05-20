@@ -9,7 +9,7 @@ import { getUserFromRequest } from './lib/auth';
 import { db } from './db';
 import { carrierProfiles } from './db/schema';
 import { eq } from 'drizzle-orm';
-import { adminUsersRoutes } from './routes/admin/users';
+import { adminUsersRoutes } from './modules/admin-users';
 import { adminVehiclesRoutes } from './modules/admin-vehicles';
 import { adminImpersonateRoutes } from './modules/admin-impersonate';
 import { adminMailingRoutes } from './modules/admin-mailing';
