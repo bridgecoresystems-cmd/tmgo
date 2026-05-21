@@ -1,23 +1,20 @@
 /**
- * URL аватара для отображения. В БД хранится `/api/auth/avatars/...`.
+ * URL аватара для отображения.
  *
- * Продакшен (один домен за nginx): относительный путь — тот же origin, что и страница
- * (важно для www vs apex и Cloudflare; иначе img с apiBase на apex при открытии с www).
+ * В БД хранится `/api/auth/avatars/<file>`, но реальный бэк-роут — `/auth/avatars/<file>`
+ * (без /api). Чтобы не зависеть от этого рассинхрона И грузить аватар с того же origin,
+ * что и страница (важно для www vs apex и Cloudflare), ходим через Nuxt server-прокси
+ * `/api/avatar/<file>` — он сам тянет файл с бэка по корректному пути `/auth/avatars/<file>`.
  *
- * Dev (Nuxt :3000, API :8000): полный apiBase, иначе браузер стучится в :3000.
+ * Работает одинаково в dev (Nuxt :3000) и проде (Bun-сервер за nginx) — путь относительный.
  */
 export function useAvatarUrl(image: string | null | undefined) {
-  const { apiBase } = useApiBase()
   if (!image) return ''
   if (image.startsWith('http')) return image
 
-  const path = image.startsWith('/') ? image : `/${image}`
+  // имя файла — последний сегмент пути (подходит и для /api/auth/avatars/.., и для голого имени)
+  const filename = image.split('/').filter(Boolean).pop()
+  if (!filename) return ''
 
-  if (import.meta.client) {
-    const nuxtDev = import.meta.dev && window.location.port === '3000'
-    if (nuxtDev) return `${apiBase}${path}`
-    return path
-  }
-
-  return `${apiBase}${path}`
+  return `/api/avatar/${encodeURIComponent(filename)}`
 }

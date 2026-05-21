@@ -100,6 +100,47 @@ export const useAuth = () => {
     state.user = null
   }
 
+  async function verifyEmailCode(code: string) {
+    try {
+      await $fetch(`${API}/auth/verify-email-code`, {
+        method: 'POST', body: { code }, credentials: 'include',
+      })
+      if (state.user) state.user = { ...state.user, emailVerified: true }
+    } catch (e: any) {
+      const msg = e?.data?.error?.message ?? e?.data?.message
+      if (msg) throw new Error(msg)
+      throw e
+    }
+  }
+
+  async function resendVerification() {
+    await $fetch(`${API}/auth/send-verification`, { method: 'POST', credentials: 'include' })
+  }
+
+  async function forgotPassword(email: string) {
+    try {
+      await $fetch(`${API}/auth/forgot-password`, {
+        method: 'POST', body: { email }, credentials: 'include',
+      })
+    } catch (e: any) {
+      const msg = e?.data?.error?.message ?? e?.data?.message
+      if (msg) throw new Error(msg)
+      throw e
+    }
+  }
+
+  async function resetPassword(email: string, code: string, password: string) {
+    try {
+      await $fetch(`${API}/auth/reset-password`, {
+        method: 'POST', body: { email, code, password }, credentials: 'include',
+      })
+    } catch (e: any) {
+      const msg = e?.data?.error?.message ?? e?.data?.message
+      if (msg) throw new Error(msg)
+      throw e
+    }
+  }
+
   return {
     session,
     loading: computed(() => state.loading),
@@ -108,5 +149,9 @@ export const useAuth = () => {
     signUp,
     signOut,
     fetchSession,
+    verifyEmailCode,
+    resendVerification,
+    forgotPassword,
+    resetPassword,
   }
 }

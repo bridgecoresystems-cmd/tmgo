@@ -3,11 +3,13 @@ import { Elysia } from 'elysia';
 import { rateLimit } from 'elysia-rate-limit';
 import {
   signInBody, signUpBody, changePasswordBody, uploadAvatarBody, updateProfileBody,
+  verifyEmailCodeBody, forgotPasswordBody, resetPasswordBody,
 } from './schema';
 import {
   AuthError, COOKIE_OPTS, COOKIE_CLEAR,
   getSession, signInEmail, signUpEmail, signOut, changePassword,
   uploadAvatar, updateProfile, sendVerification, verifyEmail, readAvatar,
+  verifyEmailCode, forgotPassword, resetPassword,
 } from './service';
 
 const signInRateLimit = rateLimit({
@@ -21,7 +23,9 @@ const signInRateLimit = rateLimit({
   skip: (req) => {
     try {
       const url = new URL(req.url);
-      return !(req.method === 'POST' && url.pathname.endsWith('/sign-in/email'));
+      const p = url.pathname;
+    if (req.method !== 'POST') return true;
+    return !(p.endsWith('/sign-in/email') || p.endsWith('/forgot-password'));
     } catch {
       return true;
     }
@@ -83,6 +87,18 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
     set.status = 302;
     set.headers['Location'] = redirectUrl;
     return null;
+  })
+
+  .post('/verify-email-code', ({ body, request }) => verifyEmailCode(request, body.code), {
+    body: verifyEmailCodeBody,
+  })
+
+  .post('/forgot-password', ({ body }) => forgotPassword(body.email), {
+    body: forgotPasswordBody,
+  })
+
+  .post('/reset-password', ({ body }) => resetPassword(body.email, body.code, body.password), {
+    body: resetPasswordBody,
   })
 
   .get('/avatars/:filename', async ({ params, set }) => {

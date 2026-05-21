@@ -3,9 +3,9 @@ import { randomUUID } from 'crypto';
 import { storage } from '../../lib/storage';
 import { db } from '../../db';
 import { users, sessions, accounts, verificationTokens } from '../../db/schema';
-import { eq, and, gt } from 'drizzle-orm';
+import { eq, and, gt, isNull } from 'drizzle-orm';
 import { getImpersonateToken, getUserFromRequest } from '../../lib/auth';
-import { sendVerificationEmail } from '../../lib/email';
+import { sendOtpEmail, sendPasswordResetEmail } from '../../lib/email';
 
 // auth исторически отдаёт РАЗНЫЕ формы тел ошибок ({error:{message}} и {error:'code'}).
 // AuthError несёт точное тело и статус — сохраняем contract 1:1.
@@ -126,16 +126,21 @@ export async function signUpEmail(
   const token = await createSession(userId, request);
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
 
-  // Письмо верификации — best-effort, не блокирует ответ.
+  // OTP верификации — best-effort, не блокирует ответ.
   try {
-    const verToken = await db.insert(verificationTokens).values({
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    await db.delete(verificationTokens).where(
+      and(eq(verificationTokens.userId, userId), eq(verificationTokens.type, 'email'))
+    );
+    await db.insert(verificationTokens).values({
       userId,
       type: 'email',
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    }).returning();
-    await sendVerificationEmail(user.email, verToken[0].token);
+      code,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+    });
+    await sendOtpEmail(user.email, code);
   } catch (err) {
-    console.warn('[email] Failed to send verification email:', err);
+    console.warn('[email] Failed to send OTP email:', err);
   }
 
   return { user, token };
@@ -213,18 +218,81 @@ export async function sendVerification(request: Request) {
   if (!user) throw new AuthError(401, { error: 'Unauthorized' });
   if (user.emailVerified) return { message: 'already_verified' };
 
-  const existing = await db.select().from(verificationTokens)
-    .where(and(eq(verificationTokens.userId, user.id), eq(verificationTokens.type, 'email')))
-    .limit(1);
-  if (existing.length > 0 && !existing[0].usedAt) {
-    await db.delete(verificationTokens).where(eq(verificationTokens.id, existing[0].id));
-  }
-  const [verToken] = await db.insert(verificationTokens).values({
+  await db.delete(verificationTokens).where(
+    and(eq(verificationTokens.userId, user.id), eq(verificationTokens.type, 'email'))
+  );
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  await db.insert(verificationTokens).values({
     userId: user.id,
     type: 'email',
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-  }).returning();
-  await sendVerificationEmail(user.email, verToken.token);
+    code,
+    expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+  });
+  await sendOtpEmail(user.email, code);
+  return { success: true };
+}
+
+export async function verifyEmailCode(request: Request, code: string) {
+  const userId = await getUserIdFromToken(request);
+  if (!userId) throw new AuthError(401, { error: { message: 'Необходима авторизация' } });
+
+  const [verToken] = await db.select().from(verificationTokens)
+    .where(and(
+      eq(verificationTokens.userId, userId),
+      eq(verificationTokens.type, 'email'),
+      eq(verificationTokens.code, code),
+      gt(verificationTokens.expiresAt, new Date()),
+      isNull(verificationTokens.usedAt),
+    )).limit(1);
+  if (!verToken) throw new AuthError(400, { error: { message: 'Неверный или просроченный код' } });
+
+  await db.update(verificationTokens).set({ usedAt: new Date() }).where(eq(verificationTokens.id, verToken.id));
+  await db.update(users).set({ emailVerified: true, updatedAt: new Date() }).where(eq(users.id, userId));
+  return { success: true };
+}
+
+export async function forgotPassword(email: string) {
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (!user) throw new AuthError(404, { error: { message: 'Пользователь с таким email не найден' } });
+
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  await db.delete(verificationTokens).where(
+    and(eq(verificationTokens.userId, user.id), eq(verificationTokens.type, 'password_reset'))
+  );
+  await db.insert(verificationTokens).values({
+    userId: user.id,
+    type: 'password_reset',
+    code,
+    expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+  });
+  await sendPasswordResetEmail(email, code);
+  return { success: true };
+}
+
+export async function resetPassword(email: string, code: string, password: string) {
+  if (password.length < 6) {
+    throw new AuthError(400, { error: { message: 'Пароль должен быть не менее 6 символов' } });
+  }
+
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (!user) throw new AuthError(400, { error: { message: 'Неверный или просроченный код' } });
+
+  const [resetToken] = await db.select().from(verificationTokens)
+    .where(and(
+      eq(verificationTokens.userId, user.id),
+      eq(verificationTokens.type, 'password_reset'),
+      eq(verificationTokens.code, code),
+      gt(verificationTokens.expiresAt, new Date()),
+      isNull(verificationTokens.usedAt),
+    )).limit(1);
+  if (!resetToken) throw new AuthError(400, { error: { message: 'Неверный или просроченный код' } });
+
+  const hashedPassword = await Bun.password.hash(password, { algorithm: 'bcrypt', cost: 10 });
+  await db.update(accounts)
+    .set({ password: hashedPassword })
+    .where(and(eq(accounts.userId, user.id), eq(accounts.providerId, 'credential')));
+  await db.update(verificationTokens).set({ usedAt: new Date() }).where(eq(verificationTokens.id, resetToken.id));
+  await db.delete(sessions).where(eq(sessions.userId, user.id));
   return { success: true };
 }
 

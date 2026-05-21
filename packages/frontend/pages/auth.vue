@@ -23,7 +23,15 @@
             </div>
 
             <Transition name="brand-msg" mode="out-in">
-              <div v-if="!isSignupMode" key="lmsg" class="brand-msg">
+              <div v-if="otpMode" key="otp" class="brand-msg">
+                <h2>{{ $t('auth.brand.otpTitle') }}</h2>
+                <p>{{ $t('auth.brand.otpSubtitle') }}</p>
+              </div>
+              <div v-else-if="forgotMode" key="forgot" class="brand-msg">
+                <h2>{{ $t('auth.brand.forgotTitle') }}</h2>
+                <p>{{ $t('auth.brand.forgotSubtitle') }}</p>
+              </div>
+              <div v-else-if="!isSignupMode" key="lmsg" class="brand-msg">
                 <h2>{{ $t('auth.brand.loginTitle') }}</h2>
                 <p>{{ $t('auth.brand.loginSubtitle') }}</p>
               </div>
@@ -33,7 +41,7 @@
               </div>
             </Transition>
 
-            <div class="brand-toggle">
+            <div v-if="!otpMode && !forgotMode" class="brand-toggle">
               <p>{{ isSignupMode ? $t('auth.signup.alreadyHave') : $t('auth.login.noAccount') }}</p>
               <button class="brand-btn" type="button" @click="isSignupMode = !isSignupMode">
                 {{ isSignupMode ? $t('auth.signup.loginLink') : $t('auth.login.signupLink') }}
@@ -46,8 +54,176 @@
         <div class="form-panel">
           <Transition name="form-slide" mode="out-in">
 
+            <!-- Email OTP (after registration) -->
+            <form v-if="otpMode" key="otp" @submit.prevent="handleOtp" class="auth-form" novalidate>
+              <h3 class="form-heading">{{ $t('auth.otp.title') }}</h3>
+              <p class="form-subheading">
+                {{ $t('auth.otp.subheadingStart') }}&nbsp;<strong>{{ otpEmail }}</strong>
+              </p>
+
+              <div v-if="otpError" class="form-error">{{ otpError }}</div>
+
+              <div class="field">
+                <label>{{ $t('auth.otp.codeLabel') }}</label>
+                <div class="input-wrap">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                  </svg>
+                  <input
+                    type="text"
+                    v-model="otpCode"
+                    :placeholder="$t('auth.otp.codePlaceholder')"
+                    maxlength="6"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    @input="otpError = ''"
+                    required
+                    style="letter-spacing:6px;font-size:20px;font-weight:700;text-align:center;padding-left:14px;"
+                  />
+                </div>
+              </div>
+
+              <button type="submit" class="btn-submit" :disabled="loading || otpCode.length < 6">
+                <svg v-if="loading" class="btn-spin" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+                  <path d="M12 3a9 9 0 019 9" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                {{ loading ? $t('auth.otp.submitLoading') : $t('auth.otp.submit') }}
+              </button>
+
+              <p class="form-alt">
+                {{ $t('auth.otp.noCodeQ') }}
+                <span
+                  class="form-alt-link"
+                  :style="resendLoading ? 'opacity:0.5;pointer-events:none' : ''"
+                  @click="handleResendOtp"
+                >{{ resendLoading ? $t('auth.otp.resendLoading') : $t('auth.otp.resend') }}</span>
+              </p>
+              <p class="form-alt">
+                <span class="form-alt-link" @click="skipOtp">{{ $t('auth.otp.skipForNow') }}</span>
+              </p>
+            </form>
+
+            <!-- Forgot / Reset password -->
+            <form v-else-if="forgotMode" key="forgot" @submit.prevent="handleForgotSubmit" class="auth-form" novalidate>
+
+              <!-- Step 1: enter email -->
+              <template v-if="forgotStep === 1">
+                <h3 class="form-heading">{{ $t('auth.forgot.title') }}</h3>
+                <p class="form-subheading">{{ $t('auth.forgot.subheading') }}</p>
+
+                <div v-if="forgotError" class="form-error">{{ forgotError }}</div>
+
+                <div class="field">
+                  <label>{{ $t('auth.forgot.emailLabel') }}</label>
+                  <div class="input-wrap">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none">
+                      <path d="M4 8l8 5 8-5M4 6h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <input type="email" v-model="forgotForm.email" :placeholder="$t('auth.forgot.emailPlaceholder')" @input="forgotError = ''" required />
+                  </div>
+                </div>
+
+                <button type="submit" class="btn-submit" :disabled="loading">
+                  <svg v-if="loading" class="btn-spin" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+                    <path d="M12 3a9 9 0 019 9" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                  </svg>
+                  {{ loading ? $t('auth.forgot.submitLoading') : $t('auth.forgot.submit') }}
+                </button>
+
+                <p class="form-alt">
+                  <span class="form-alt-link" @click="closeForgot">{{ $t('auth.forgot.backToLogin') }}</span>
+                </p>
+              </template>
+
+              <!-- Step 2: enter code + new password -->
+              <template v-else>
+                <h3 class="form-heading">{{ $t('auth.forgot.resetTitle') }}</h3>
+                <p class="form-subheading">{{ $t('auth.forgot.resetSubheading') }}</p>
+
+                <div v-if="forgotError" class="form-error">{{ forgotError }}</div>
+                <div v-if="forgotSuccess" class="form-success">{{ $t('auth.forgot.successMsg') }}</div>
+
+                <div class="field">
+                  <label>{{ $t('auth.forgot.codeLabel') }}</label>
+                  <div class="input-wrap">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none">
+                      <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                      <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                    <input
+                      type="text"
+                      v-model="forgotForm.code"
+                      maxlength="6"
+                      inputmode="numeric"
+                      :placeholder="$t('auth.forgot.codePlaceholder')"
+                      @input="forgotError = ''"
+                      required
+                      style="letter-spacing:6px;font-size:20px;font-weight:700;text-align:center;padding-left:14px;"
+                    />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>{{ $t('auth.forgot.newPasswordLabel') }}</label>
+                  <div class="input-wrap">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none">
+                      <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                      <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                    <input :type="showForgotPw ? 'text' : 'password'" v-model="forgotForm.password" :placeholder="$t('auth.forgot.newPasswordPlaceholder')" required />
+                    <button type="button" class="toggle-pw" @click="showForgotPw = !showForgotPw">
+                      <svg v-if="showForgotPw" viewBox="0 0 24 24" fill="none" width="16" height="16">
+                        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      </svg>
+                      <svg v-else viewBox="0 0 24 24" fill="none" width="16" height="16">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.6"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>{{ $t('auth.forgot.confirmPasswordLabel') }}</label>
+                  <div class="input-wrap">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none">
+                      <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                      <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                    <input :type="showForgotPwConfirm ? 'text' : 'password'" v-model="forgotForm.passwordConfirm" :placeholder="$t('auth.forgot.confirmPasswordPlaceholder')" required />
+                    <button type="button" class="toggle-pw" @click="showForgotPwConfirm = !showForgotPwConfirm">
+                      <svg v-if="showForgotPwConfirm" viewBox="0 0 24 24" fill="none" width="16" height="16">
+                        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      </svg>
+                      <svg v-else viewBox="0 0 24 24" fill="none" width="16" height="16">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.6"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn-submit" :disabled="loading || !!forgotSuccess">
+                  <svg v-if="loading" class="btn-spin" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+                    <path d="M12 3a9 9 0 019 9" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                  </svg>
+                  {{ loading ? $t('auth.forgot.resetSubmitLoading') : $t('auth.forgot.resetSubmit') }}
+                </button>
+
+                <p class="form-alt">
+                  <span class="form-alt-link" @click="closeForgot">{{ $t('auth.forgot.backToLogin') }}</span>
+                </p>
+              </template>
+            </form>
+
             <!-- Login -->
-            <form v-if="!isSignupMode" key="login" @submit.prevent="handleLogin" class="auth-form" novalidate>
+            <form v-else-if="!isSignupMode" key="login" @submit.prevent="handleLogin" class="auth-form" novalidate>
               <h3 class="form-heading">{{ $t('auth.login.title') }}</h3>
               <p class="form-subheading">{{ $t('auth.login.subheading') }}</p>
 
@@ -103,6 +279,10 @@
                 </svg>
                 {{ loading ? $t('auth.login.submitLoading') : $t('auth.login.submit') }}
               </button>
+
+              <p class="form-alt" style="margin-top:8px;">
+                <span class="form-alt-link" @click="openForgot">{{ $t('auth.forgot.link') }}</span>
+              </p>
 
               <p class="form-alt">
                 {{ $t('auth.login.noAccount') }}
@@ -229,7 +409,7 @@ import { useMessage } from 'naive-ui'
 
 definePageMeta({ layout: 'default' })
 
-const { signIn, signUp } = useAuth()
+const { signIn, signUp, verifyEmailCode, resendVerification, forgotPassword, resetPassword } = useAuth()
 const route = useRoute()
 const message = useMessage()
 const { t } = useI18n()
@@ -241,6 +421,22 @@ const registerError = ref('')
 const showLoginPw = ref(false)
 const showRegPw = ref(false)
 const showRegPwConfirm = ref(false)
+
+// OTP state
+const otpMode = ref(false)
+const otpCode = ref('')
+const otpError = ref('')
+const otpEmail = ref('')
+const resendLoading = ref(false)
+
+// Forgot password state
+const forgotMode = ref(false)
+const forgotStep = ref<1 | 2>(1)
+const forgotError = ref('')
+const forgotSuccess = ref(false)
+const showForgotPw = ref(false)
+const showForgotPwConfirm = ref(false)
+const forgotForm = reactive({ email: '', code: '', password: '', passwordConfirm: '' })
 
 watch(() => route.query.mode, (mode) => {
   isSignupMode.value = mode === 'signup'
@@ -287,9 +483,8 @@ const handleRegister = async () => {
       registerForm.email.split('@')[0],
       registerForm.role
     )
-    if (user?.role === 'admin') await navigateTo('/admin')
-    else if (user?.role === 'driver') await navigateTo('/cabinet/driver')
-    else await navigateTo('/cabinet/client')
+    otpEmail.value = registerForm.email
+    otpMode.value = true
   } catch (e: any) {
     const msg = e?.message || ''
     if (msg.toLowerCase().includes('failed to fetch') || msg.includes('network')) {
@@ -300,6 +495,101 @@ const handleRegister = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleOtp = async () => {
+  otpError.value = ''
+  loading.value = true
+  try {
+    await verifyEmailCode(otpCode.value)
+    message.success(t('auth.otp.successMsg'))
+    await navigateAfterAuth()
+  } catch (e: any) {
+    otpError.value = e?.message || t('auth.otp.invalidCode')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleResendOtp = async () => {
+  resendLoading.value = true
+  try {
+    await resendVerification()
+    message.success(t('auth.otp.resendOk'))
+    otpCode.value = ''
+  } catch {
+    message.error(t('common.error'))
+  } finally {
+    resendLoading.value = false
+  }
+}
+
+const skipOtp = async () => {
+  otpMode.value = false
+  await navigateAfterAuth()
+}
+
+const openForgot = () => {
+  forgotMode.value = true
+  forgotStep.value = 1
+  forgotError.value = ''
+  forgotSuccess.value = false
+  forgotForm.email = ''
+  forgotForm.code = ''
+  forgotForm.password = ''
+  forgotForm.passwordConfirm = ''
+}
+
+const closeForgot = () => {
+  forgotMode.value = false
+  forgotStep.value = 1
+  forgotError.value = ''
+  forgotSuccess.value = false
+}
+
+const handleForgotSubmit = async () => {
+  if (forgotStep.value === 1) await handleForgotEmail()
+  else await handleReset()
+}
+
+const handleForgotEmail = async () => {
+  forgotError.value = ''
+  loading.value = true
+  try {
+    await forgotPassword(forgotForm.email)
+    forgotStep.value = 2
+  } catch (e: any) {
+    forgotError.value = e?.message || t('common.error')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleReset = async () => {
+  forgotError.value = ''
+  if (forgotForm.password !== forgotForm.passwordConfirm) {
+    forgotError.value = t('auth.errors.passwordsMismatch')
+    return
+  }
+  loading.value = true
+  try {
+    await resetPassword(forgotForm.email, forgotForm.code, forgotForm.password)
+    forgotSuccess.value = true
+    message.success(t('auth.forgot.successMsg'))
+    setTimeout(() => { closeForgot() }, 2000)
+  } catch (e: any) {
+    forgotError.value = e?.message || t('auth.forgot.invalidCode')
+  } finally {
+    loading.value = false
+  }
+}
+
+async function navigateAfterAuth() {
+  const { session } = useAuth()
+  const role = session.value?.user?.role
+  if (role === 'admin') await navigateTo('/admin')
+  else if (role === 'driver') await navigateTo('/cabinet/driver')
+  else await navigateTo('/cabinet/client')
 }
 </script>
 
@@ -505,6 +795,15 @@ const handleRegister = async () => {
   border-left: 3px solid #ff4444;
   border-radius: 8px;
   color: #cc0000;
+  font-size: 13px;
+}
+.form-success {
+  padding: 9px 14px;
+  margin-bottom: 14px;
+  background: #f0fff4;
+  border-left: 3px solid #22c55e;
+  border-radius: 8px;
+  color: #15803d;
   font-size: 13px;
 }
 

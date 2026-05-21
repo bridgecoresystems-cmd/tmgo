@@ -27,3 +27,17 @@ export const updateProfileBody = t.Object({
   name: t.Optional(t.String()),
   phone: t.Optional(t.Nullable(t.String())),
 });
+
+export const verifyEmailCodeBody = t.Object({
+  code: t.String({ minLength: 6, maxLength: 6 }),
+});
+
+export const forgotPasswordBody = t.Object({
+  email: t.String({ format: 'email' }),
+});
+
+export const resetPasswordBody = t.Object({
+  email: t.String({ format: 'email' }),
+  code: t.String({ minLength: 6, maxLength: 6 }),
+  password: t.String({ minLength: 6 }),
+});

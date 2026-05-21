@@ -63,6 +63,7 @@ export const verificationTokens = pgTable('verification_tokens', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   token: uuid('token').notNull().unique().defaultRandom(),
+  code: varchar('code', { length: 6 }),
   type: varchar('type', { length: 20 }).notNull().default('email'),
   expiresAt: timestamp('expires_at').notNull(),
   usedAt: timestamp('used_at'),
