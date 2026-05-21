@@ -21,7 +21,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-1-0",
-                "title": "Создать monorepo структуру: apps/backend, apps/web, packages/shared"
+                "title": "Создать monorepo структуру: packages/backend, packages/frontend, packages/shared"
               },
               {
                 "id": "t-1-1",
@@ -61,11 +61,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-3-1",
-                "title": "Better Auth установка и конфигурация"
+                "title": "Кастомная авторизация: sessions, verification_tokens, bcrypt"
               },
               {
                 "id": "t-3-2",
-                "title": "Роли: customer / carrier / dispatcher — enum в схеме"
+                "title": "Роли: customer / carrier / dispatcher / admin — enum в схеме"
               }
             ]
           },
@@ -75,15 +75,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-4-0",
-                "title": "Регистрация по email + телефону (OTP или пароль)"
+                "title": "Регистрация по email + OTP-верификация (6-значный код на email)"
               },
               {
                 "id": "t-4-1",
-                "title": "Login / logout / refresh token"
+                "title": "Login / logout + forgot password + reset password"
               },
               {
                 "id": "t-4-2",
-                "title": "Middleware авторизации в Elysia"
+                "title": "Middleware авторизации в Elysia (requireAuth, requireRole)"
               }
             ]
           },
@@ -97,11 +97,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-5-1",
-                "title": "Eden Treaty подключение к backend"
+                "title": "$apiFetch composable с credentials:include + @elysiajs/eden"
               },
               {
                 "id": "t-5-2",
-                "title": "Страницы: /login, /register — базовые формы"
+                "title": "Страница /auth — единая форма: login, register, OTP, forgot password"
               }
             ]
           }
@@ -120,11 +120,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-6-1",
-                "title": "Схема: customer_profiles (companyName, requisites)"
+                "title": "Схема: customer_profiles (companyName, inn, address)"
               },
               {
                 "id": "t-6-2",
-                "title": "Миграция drizzle-kit generate + migrate"
+                "title": "Миграции: bun run db:generate + db:migrate"
               }
             ]
           },
@@ -134,15 +134,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-7-0",
-                "title": "API: GET/PUT /profile/carrier — получить и обновить профиль"
+                "title": "API: GET/PUT /cabinet/driver/profile — профиль водителя"
               },
               {
                 "id": "t-7-1",
-                "title": "API: GET/PUT /profile/customer"
+                "title": "API: GET/PUT /cabinet/client/profile — профиль клиента"
               },
               {
                 "id": "t-7-2",
-                "title": "Cloudflare R2 подключение (загрузка фото профиля)"
+                "title": "lib/storage абстракция: local disk / Cloudflare R2 через Bun.S3Client"
               }
             ]
           },
@@ -152,15 +152,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-8-0",
-                "title": "Карточка водителя: схема driver_documents (passport, license)"
+                "title": "Карточка водителя: схема driver_documents (passport, license, selfie, vehicle)"
               },
               {
                 "id": "t-8-1",
-                "title": "Upload документов в R2, сохранение ссылок в БД"
+                "title": "Upload документов в хранилище, сохранение путей в БД"
               },
               {
                 "id": "t-8-2",
-                "title": "Статусы документов: not_submitted / draft / submitted / verified"
+                "title": "Статусы документов: not_submitted / draft / submitted / verified / rejected"
               }
             ]
           },
@@ -170,15 +170,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-9-0",
-                "title": "Nuxt: страница /profile/carrier — форма заполнения профиля"
+                "title": "Nuxt: /cabinet/driver/card — карточка водителя с документами"
               },
               {
                 "id": "t-9-1",
-                "title": "Nuxt: страница /profile/customer"
+                "title": "Nuxt: /cabinet/client/profile — профиль клиента"
               },
               {
                 "id": "t-9-2",
-                "title": "Компонент загрузки документов (drag&drop или input)"
+                "title": "Компонент загрузки документов (drag&drop, превью, статус)"
               }
             ]
           },
@@ -188,15 +188,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-10-0",
-                "title": "Тест полного флоу: регистрация → заполнить профиль → загрузить документ"
+                "title": "Тест полного флоу: регистрация → OTP → заполнить профиль → загрузить документ"
               },
               {
                 "id": "t-10-1",
-                "title": "Фикс багов, валидация полей (Zod или Valibot)"
+                "title": "Валидация полей через Zod (Elysia t.Object) на бэке и фронте"
               },
               {
                 "id": "t-10-2",
-                "title": "Буфер: доделать всё незавершённое из недели 1"
+                "title": "i18n: подключить @nuxtjs/i18n, 3 языка (ru / en / tk)"
               }
             ]
           }
@@ -218,11 +218,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-11-0",
-                "title": "Drizzle схема: orders (id, customerId, fromCity, toCity, fromPoint GEOMETRY, toPoint GEOMETRY, distance)"
+                "title": "Drizzle схема: orders (id, customerId, fromCity, toCity, fromPoint/toPoint GEOMETRY)"
               },
               {
                 "id": "t-11-1",
-                "title": "PostGIS расширение: CREATE EXTENSION postgis в миграции"
+                "title": "PostGIS расширение: CREATE EXTENSION postgis + postgis типы в Drizzle"
               },
               {
                 "id": "t-11-2",
@@ -244,7 +244,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-12-2",
-                "title": "API: POST /orders — создать заявку"
+                "title": "API: POST /cabinet/client/orders — создать заявку"
               }
             ]
           },
@@ -254,7 +254,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-13-0",
-                "title": "API: GET /orders — лента заявок с пагинацией"
+                "title": "API: GET /orders — лента заявок с пагинацией и фильтрами"
               },
               {
                 "id": "t-13-1",
@@ -262,7 +262,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-13-2",
-                "title": "API: GET /orders/:id — детали заявки"
+                "title": "API: GET /orders/:id — детали заявки (публичный)"
               }
             ]
           },
@@ -276,11 +276,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-14-1",
-                "title": "API: DELETE /orders/:id — отменить заявку"
+                "title": "API: PATCH /orders/:id/cancel — отменить заявку"
               },
               {
                 "id": "t-14-2",
-                "title": "Yandex Maps Geocoder: адрес → координаты при создании заявки"
+                "title": "Nominatim геокодер: адрес → координаты при создании заявки (OSM)"
               }
             ]
           },
@@ -290,11 +290,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-15-0",
-                "title": "Nuxt: страница /orders/create — форма заявки с картой"
+                "title": "Nuxt: /cabinet/client/orders/create — форма заявки с картой Leaflet"
               },
               {
                 "id": "t-15-1",
-                "title": "Автодополнение адресов через Yandex Maps Suggest"
+                "title": "useNominatim composable: автодополнение адресов по OpenStreetMap"
               },
               {
                 "id": "t-15-2",
@@ -313,7 +313,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-16-0",
-                "title": "Nuxt: страница /orders — доска заявок, карточки"
+                "title": "Nuxt: /orders — доска заявок, карточки с основными данными"
               },
               {
                 "id": "t-16-1",
@@ -321,7 +321,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-16-2",
-                "title": "Infinite scroll или пагинация"
+                "title": "Пагинация (cursor-based или offset)"
               }
             ]
           },
@@ -331,15 +331,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-17-0",
-                "title": "Nuxt: страница /orders/:id — детали заявки"
+                "title": "Nuxt: /cabinet/driver/orders/:id — детали заявки"
               },
               {
                 "id": "t-17-1",
-                "title": "Yandex Maps: показать маршрут на карте в деталях заявки"
+                "title": "Leaflet: маршрут и маркеры погрузки/разгрузки на карте"
               },
               {
                 "id": "t-17-2",
-                "title": "Страница /my-orders — заявки текущего пользователя"
+                "title": "/cabinet/driver/orders — мои заявки (принятые водителем)"
               }
             ]
           },
@@ -353,7 +353,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-18-1",
-                "title": "API: POST /orders/:id/respond — перевозчик откликается"
+                "title": "API: POST /orders/:id/respond — перевозчик откликается на заявку"
               },
               {
                 "id": "t-18-2",
@@ -375,7 +375,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-19-2",
-                "title": "Nuxt: кнопка \"Откликнуться\" на карточке заявки (для перевозчика)"
+                "title": "Nuxt: кнопка «Откликнуться» на карточке заявки (для перевозчика)"
               }
             ]
           },
@@ -389,7 +389,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-20-1",
-                "title": "Кнопка \"Выбрать перевозчика\" — подтверждение сделки"
+                "title": "Кнопка «Выбрать перевозчика» — подтверждение сделки"
               },
               {
                 "id": "t-20-2",
@@ -412,11 +412,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-21-1",
-                "title": "GIST индекс на current_location"
+                "title": "GIST индекс на current_location для быстрых гео-запросов"
               },
               {
                 "id": "t-21-2",
-                "title": "API: PUT /carrier/location — перевозчик обновляет свою позицию"
+                "title": "API: PUT /cabinet/driver/location — водитель обновляет свою позицию"
               }
             ]
           },
@@ -426,15 +426,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-22-0",
-                "title": "PostGIS запрос: найти перевозчиков в радиусе X км от точки погрузки"
+                "title": "PostGIS запрос ST_DWithin: водители в радиусе X км от точки погрузки"
               },
               {
                 "id": "t-22-1",
-                "title": "API: GET /orders/:id/nearby-carriers?radius=50 — ближайшие свободные"
+                "title": "API: GET /orders/:id/nearby-drivers?radius=50 — ближайшие свободные"
               },
               {
                 "id": "t-22-2",
-                "title": "Фильтр по совместимости: тип кузова заявки = тип кузова перевозчика"
+                "title": "Фильтр по совместимости: тип кузова заявки = тип кузова водителя"
               }
             ]
           },
@@ -444,15 +444,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-23-0",
-                "title": "PostGIS запрос: перевозчики \"на пути следования\" (буфер вдоль маршрута)"
+                "title": "PostGIS запрос: заявки в радиусе от текущей позиции водителя"
               },
               {
                 "id": "t-23-1",
-                "title": "Комбинированный поиск: радиус + маршрут"
+                "title": "Режим «Рядом со мной» с настраиваемым радиусом (10/25/50/100 км)"
               },
               {
                 "id": "t-23-2",
-                "title": "API: GET /carriers/search — поиск по гео-параметрам"
+                "title": "API: GET /cabinet/driver/orders-near — заявки рядом со мной по PostGIS"
               }
             ]
           },
@@ -462,15 +462,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-24-0",
-                "title": "BullMQ + Redis: очередь уведомлений"
+                "title": "BullMQ + Redis: очереди для фоновых задач"
               },
               {
                 "id": "t-24-1",
-                "title": "Job: при публикации заявки — найти подходящих перевозчиков и отправить push"
+                "title": "Job: при публикации заявки — найти подходящих водителей (PostGIS)"
               },
               {
                 "id": "t-24-2",
-                "title": "OneSignal или FCM: базовая настройка push-уведомлений"
+                "title": "Resend email: OTP-верификация при регистрации + сброс пароля"
               }
             ]
           },
@@ -480,7 +480,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-25-0",
-                "title": "Nuxt: карта с перевозчиками в радиусе на странице заявки"
+                "title": "Admin-карта: Leaflet с live-позициями всех водителей (/admin/map)"
               },
               {
                 "id": "t-25-1",
@@ -488,7 +488,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-25-2",
-                "title": "Буфер и фикс всего из недель 3–5"
+                "title": "Admin-панель: верификация водителей, список заявок, управление пользователями"
               }
             ]
           }
@@ -510,7 +510,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-26-0",
-                "title": "Drizzle схема: chats (id, orderId, customerID, carrierId)"
+                "title": "Drizzle схема: chats (id, orderId, customerId, carrierId)"
               },
               {
                 "id": "t-26-1",
@@ -532,11 +532,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-27-1",
-                "title": "Авторизация WebSocket соединения через токен"
+                "title": "Авторизация WebSocket через cookie-сессию"
               },
               {
                 "id": "t-27-2",
-                "title": "Broadcast сообщения всем участникам чата"
+                "title": "Broadcast сообщений через Redis pub/sub (cluster mode)"
               }
             ]
           },
@@ -546,15 +546,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-28-0",
-                "title": "API: GET /chats/:id/messages — история сообщений"
+                "title": "API: GET /chats/:id/messages — история сообщений с пагинацией"
               },
               {
                 "id": "t-28-1",
-                "title": "Загрузка фото в чат: upload в R2, ссылка в сообщении"
+                "title": "Загрузка фото в чат: upload в хранилище, signed URL в сообщении"
               },
               {
                 "id": "t-28-2",
-                "title": "Push-уведомление при новом сообщении (BullMQ job)"
+                "title": "BullMQ job: email-алерт участнику при новом сообщении"
               }
             ]
           },
@@ -564,11 +564,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-29-0",
-                "title": "Nuxt: страница /chat/:id — интерфейс чата"
+                "title": "Nuxt: /cabinet/driver/chat и /cabinet/client/chat — интерфейс чата"
               },
               {
                 "id": "t-29-1",
-                "title": "Реалтайм через useWebSocket composable"
+                "title": "useWebSocket composable: реалтайм через WebSocket"
               },
               {
                 "id": "t-29-2",
@@ -586,7 +586,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-30-1",
-                "title": "Шаблоны быстрых сообщений: \"Еду\", \"На месте\", \"Задерживаюсь\""
+                "title": "Шаблоны быстрых сообщений: «Еду», «На месте», «Задерживаюсь»"
               },
               {
                 "id": "t-30-2",
@@ -609,11 +609,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-31-1",
-                "title": "API: PUT /orders/:id/status — перевозчик меняет статус"
+                "title": "API: PUT /orders/:id/status — водитель меняет статус заказа"
               },
               {
                 "id": "t-31-2",
-                "title": "Лог смены статусов: order_status_logs (orderId, status, changedAt, changedBy)"
+                "title": "Лог смены статусов: order_status_log (orderId, status, changedAt, changedBy)"
               }
             ]
           },
@@ -623,15 +623,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-32-0",
-                "title": "Push при каждой смене статуса (заказчику)"
+                "title": "BullMQ job: email заказчику при каждой смене статуса водителем"
               },
               {
                 "id": "t-32-1",
-                "title": "WebSocket broadcast статуса — заказчик видит изменение без перезагрузки"
+                "title": "WebSocket broadcast нового статуса заказчику через канал заказа"
               },
               {
                 "id": "t-32-2",
-                "title": "API: GET /orders/:id/status-log — история статусов"
+                "title": "API: GET /orders/:id/status-log — история смены статусов"
               }
             ]
           },
@@ -641,15 +641,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-33-0",
-                "title": "Фото-контроль: загрузка фото при погрузке и разгрузке"
+                "title": "Система change_request: изменение карточки водителя через заявку на проверку"
               },
               {
                 "id": "t-33-1",
-                "title": "Схема: order_photos (orderId, stage, fileUrl, uploadedAt)"
+                "title": "Схема: driver_change_requests (driverId, field, oldValue, newValue, status)"
               },
               {
                 "id": "t-33-2",
-                "title": "API: POST /orders/:id/photos — загрузить фото этапа"
+                "title": "Admin API: одобрить / отклонить изменения карточки водителя"
               }
             ]
           },
@@ -659,7 +659,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-34-0",
-                "title": "Nuxt: страница /orders/:id/track — трекинг статусов"
+                "title": "Nuxt: трекинг этапов в деталях заказа ([id].vue) с прогресс-баром статусов"
               },
               {
                 "id": "t-34-1",
@@ -667,7 +667,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-34-2",
-                "title": "Кнопки смены статуса (для перевозчика)"
+                "title": "Кнопки смены статуса в кабинете водителя"
               }
             ]
           },
@@ -677,11 +677,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-35-0",
-                "title": "История заказов: /my-orders с фильтром по статусу"
+                "title": "История заказов: /cabinet/*/orders с фильтром по статусу"
               },
               {
                 "id": "t-35-1",
-                "title": "Просмотр фото по каждому этапу в деталях заказа"
+                "title": "Просмотр лога смены статусов в деталях заказа (order_status_log)"
               },
               {
                 "id": "t-35-2",
@@ -704,11 +704,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-36-1",
-                "title": "Ограничение: отзыв можно оставить только после completed"
+                "title": "Ограничение: отзыв можно оставить только после статуса completed"
               },
               {
                 "id": "t-36-2",
-                "title": "Один отзыв на пользователя в рамках одного заказа"
+                "title": "Один отзыв на пользователя в рамках одного заказа (unique constraint)"
               }
             ]
           },
@@ -718,7 +718,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-37-0",
-                "title": "API: POST /orders/:id/review — оставить отзыв"
+                "title": "API: POST /orders/:id/review — оставить отзыв (заказчик ↔ водитель)"
               },
               {
                 "id": "t-37-1",
@@ -726,7 +726,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-37-2",
-                "title": "Агрегация рейтинга: среднее + количество в профиле"
+                "title": "Агрегация рейтинга: среднее + количество отображаются в профиле"
               }
             ]
           },
@@ -740,11 +740,11 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-38-1",
-                "title": "Блок отзывов в профиле перевозчика (рейтинг + список)"
+                "title": "Блок отзывов в профиле водителя (рейтинг + список отзывов)"
               },
               {
                 "id": "t-38-2",
-                "title": "Push-напоминание оставить отзыв через 2 часа после completed"
+                "title": "BullMQ job: email-напоминание оставить отзыв через 2 часа после completed"
               }
             ]
           },
@@ -754,15 +754,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-39-0",
-                "title": "Сортировка доски заявок по рейтингу откликнувшихся"
+                "title": "Сортировка доски заявок по рейтингу откликнувшихся водителей"
               },
               {
                 "id": "t-39-1",
-                "title": "Статистика в профиле: кол-во рейсов, средний рейтинг, процент завершённых"
+                "title": "Статистика в профиле: кол-во рейсов, средний рейтинг, % завершённых"
               },
               {
                 "id": "t-39-2",
-                "title": "Тест двустороннего отзыва"
+                "title": "Тест двустороннего отзыва (заказчик → водителю и водитель → заказчику)"
               }
             ]
           },
@@ -772,15 +772,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-40-0",
-                "title": "Финальный тест полного цикла: регистрация → заявка → гео-поиск → отклик → чат → трекинг → отзыв"
+                "title": "Финальный тест: регистрация → заявка → поиск → отклик → чат → трекинг → отзыв"
               },
               {
                 "id": "t-40-1",
-                "title": "Фикс критических багов"
+                "title": "Фикс критических багов фазы 3"
               },
               {
                 "id": "t-40-2",
-                "title": "Буфер: всё незавершённое из фазы 3"
+                "title": "Driver-services, driver-trailers, driver-citizenships: API + фронт"
               }
             ]
           }
@@ -802,15 +802,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-41-0",
-                "title": "Capacitor init в Nuxt проекте, настройка capacitor.config.ts"
+                "title": "Capacitor init в Nuxt (capacitor.config.ts)"
               },
               {
                 "id": "t-41-1",
-                "title": "npx cap add android + npx cap add ios"
+                "title": "bun cap add android — добавить Android платформу"
               },
               {
                 "id": "t-41-2",
-                "title": "Первый билд — проверить что открывается на эмуляторе"
+                "title": "Первый APK-билд — проверить что открывается на эмуляторе"
               }
             ]
           },
@@ -820,15 +820,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-42-0",
-                "title": "Capacitor Geolocation plugin — получить текущую позицию"
+                "title": "@capacitor/geolocation: получить текущую позицию водителя"
               },
               {
                 "id": "t-42-1",
-                "title": "Фоновая отправка координат перевозчика (watchPosition)"
+                "title": "Фоновая отправка координат (watchPosition) в PUT /cabinet/driver/location"
               },
               {
                 "id": "t-42-2",
-                "title": "Push notifications через Capacitor PushNotifications plugin"
+                "title": "Mailing система: BullMQ + Resend + шаблоны email-рассылок (admin-mailing)"
               }
             ]
           },
@@ -838,7 +838,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-43-0",
-                "title": "Адаптивный UI: проверить все страницы на мобильном viewport"
+                "title": "Адаптивный UI: проверить все страницы на мобильном viewport (375px)"
               },
               {
                 "id": "t-43-1",
@@ -846,7 +846,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-43-2",
-                "title": "Touch-friendly: кнопки min 44px, формы без zoom на iOS"
+                "title": "Touch-friendly: кнопки min 44px, iOS zoom fix на input, safe area"
               }
             ]
           },
@@ -856,15 +856,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-44-0",
-                "title": "Camera plugin: фото груза прямо с камеры телефона"
+                "title": "@capacitor/camera: фото груза с камеры телефона при смене статуса"
               },
               {
                 "id": "t-44-1",
-                "title": "Тест на реальном Android устройстве"
+                "title": "Тест на реальном Android устройстве (сборка + запуск)"
               },
               {
                 "id": "t-44-2",
-                "title": "Фикс мобильных багов (scroll, keyboard, safe area)"
+                "title": "Фикс мобильных багов (scroll, keyboard overlap, safe area insets)"
               }
             ]
           },
@@ -874,15 +874,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-45-0",
-                "title": "Docker Compose для продакшна: backend + postgres + redis + nginx"
+                "title": "GitHub Actions CI/CD: push в master → SSH на VPS → deploy.sh"
               },
               {
                 "id": "t-45-1",
-                "title": "Деплой на Hostinger VPS — первый живой сервер"
+                "title": "Деплой на Hostinger VPS — systemd сервисы backend + frontend"
               },
               {
                 "id": "t-45-2",
-                "title": "SSL через Let's Encrypt, домен через Cloudflare"
+                "title": "SSL через Let's Encrypt, домен через Cloudflare, nginx reverse proxy"
               }
             ]
           }
@@ -897,15 +897,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-46-0",
-                "title": "Полное E2E тестирование: пройти весь цикл как заказчик"
+                "title": "Полное E2E тестирование: пройти весь цикл как заказчик (web)"
               },
               {
                 "id": "t-46-1",
-                "title": "Полное E2E тестирование: пройти весь цикл как перевозчик"
+                "title": "Полное E2E тестирование: пройти весь цикл как водитель (web + mobile)"
               },
               {
                 "id": "t-46-2",
-                "title": "Список всех найденных багов"
+                "title": "Список всех найденных багов, приоритизация"
               }
             ]
           },
@@ -915,15 +915,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-47-0",
-                "title": "Фикс критических багов из E2E теста"
+                "title": "Фикс критических багов из тестирования"
               },
               {
                 "id": "t-47-1",
-                "title": "Производительность: индексы БД, N+1 запросы"
+                "title": "Производительность: DB индексы, избежать N+1 запросов"
               },
               {
                 "id": "t-47-2",
-                "title": "Rate limiting на API (защита от спама)"
+                "title": "Rate limiting на API через BullMQ + Redis (защита от спама)"
               }
             ]
           },
@@ -933,7 +933,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-48-0",
-                "title": "Android APK сборка для внутреннего тестирования"
+                "title": "Android APK сборка для внутреннего тестирования (cap sync + Gradle)"
               },
               {
                 "id": "t-48-1",
@@ -941,7 +941,7 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
               },
               {
                 "id": "t-48-2",
-                "title": "Собрать первую обратную связь"
+                "title": "Собрать первую обратную связь от beta-пользователей"
               }
             ]
           },
@@ -951,15 +951,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-49-0",
-                "title": "Фикс по фидбеку от тестовых пользователей"
+                "title": "Фикс по фидбеку от beta-пользователей"
               },
               {
                 "id": "t-49-1",
-                "title": "Подготовка к публикации в Google Play (store listing, скриншоты)"
+                "title": "Admin: roadmap-прогресс, impersonate пользователей, admin-dashboard, contacts"
               },
               {
                 "id": "t-49-2",
-                "title": "Privacy Policy страница (обязательна для магазинов)"
+                "title": "Legal pages: Privacy Policy + Terms of Service (/legal/[docType].vue)"
               }
             ]
           },
@@ -969,15 +969,15 @@ export const MVP_ROADMAP_PHASES: MvpRoadmapPhase[] = [
             "tasks": [
               {
                 "id": "t-50-0",
-                "title": "Отправка в Google Play (Internal Testing)"
+                "title": "Отправка в Google Play (Internal Testing track)"
               },
               {
                 "id": "t-50-1",
-                "title": "Финальная проверка безопасности: env переменные, открытые порты"
+                "title": "Финальная проверка безопасности: env, открытые порты, CORS, rate limits"
               },
               {
                 "id": "t-50-2",
-                "title": "🎉 MVP готов — первые реальные пользователи"
+                "title": "🚀 MVP запущен — первые реальные пользователи на продакшне"
               }
             ]
           }

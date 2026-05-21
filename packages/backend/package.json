@@ -13,6 +13,7 @@
     "seed:admin": "bun run scripts/seed-admin.ts",
     "ensure-admin": "bun run scripts/ensure-admin.ts",
     "seed:vehicle-makes": "bun run src/db/seeds/seed-vehicle-makes.ts",
+    "seed:roadmap-progress": "bun run src/db/seeds/seed-roadmap-progress.ts",
     "migrate:profiles": "bun run scripts/migrate-profiles.ts",
     "check:expiry": "bun run scripts/document-expiry-check.ts",
     "worker": "bun run src/workers/start.ts"
