@@ -10,7 +10,7 @@
 // R2 включается только когда STORAGE_DRIVER=r2 — иначе R2-клиент даже не
 // конструируется, и креды R2 не требуются (прод на local не меняется).
 
-import { mkdir, writeFile, readFile, unlink } from 'fs/promises';
+import { mkdir, writeFile, readFile, unlink, access } from 'fs/promises';
 import { join, dirname, extname } from 'path';
 
 const MIME: Record<string, string> = {
@@ -35,6 +35,7 @@ function toBuffer(data: PutData): Buffer {
 export interface StorageDriver {
   put(key: string, data: PutData, contentType?: string): Promise<void>;
   get(key: string): Promise<Buffer | null>;
+  exists(key: string): Promise<boolean>;
   delete(key: string): Promise<void>;
 }
 
@@ -52,6 +53,15 @@ class LocalStorage implements StorageDriver {
       return await readFile(join(this.base, key));
     } catch {
       return null;
+    }
+  }
+
+  async exists(key: string): Promise<boolean> {
+    try {
+      await access(join(this.base, key));
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -95,6 +105,10 @@ class R2Storage implements StorageDriver {
     return Buffer.from(await file.arrayBuffer());
   }
 
+  async exists(key: string): Promise<boolean> {
+    return this.bucket.file(key).exists();
+  }
+
   async delete(key: string): Promise<void> {
     // Bun 1.3.9 + R2: на DELETE R2 отвечает 204 No Content, и промис delete()
     // не резолвится, ХОТЯ объект реально удаляется. Не блокируем вызывающего —
@@ -110,5 +124,10 @@ class R2Storage implements StorageDriver {
   }
 }
 
+// Явные фабрики — нужны скрипту миграции, который пишет в R2 и читает с диска
+// независимо от STORAGE_DRIVER.
+export const makeR2Storage = (): StorageDriver => new R2Storage();
+export const makeLocalStorage = (): StorageDriver => new LocalStorage();
+
 export const storage: StorageDriver =
-  process.env.STORAGE_DRIVER === 'r2' ? new R2Storage() : new LocalStorage();
+  process.env.STORAGE_DRIVER === 'r2' ? makeR2Storage() : makeLocalStorage();
