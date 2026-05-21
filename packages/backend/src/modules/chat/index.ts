@@ -1,0 +1,1 @@
+export { cabinetChatRoutes } from './routes';

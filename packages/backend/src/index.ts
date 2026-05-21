@@ -36,7 +36,7 @@ import { adminDashboardRoutes } from './modules/admin-dashboard';
 import { adminOrdersRoutes } from './modules/admin-orders';
 import { cabinetClientServicesRoutes } from './modules/client-services';
 import { cabinetClientProfileRoutes } from './modules/client-profile';
-import { cabinetChatRoutes } from './routes/cabinet/chat';
+import { cabinetChatRoutes } from './modules/chat';
 import { cabinetProfileRoutes } from './modules/cabinet-profile';
 import { publicOrdersRoutes } from './modules/public-orders';
 import { publicContactsRoutes } from './modules/public-contacts';
