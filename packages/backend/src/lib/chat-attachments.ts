@@ -1,6 +1,7 @@
 import { createHmac } from 'crypto';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { storage } from './storage';
 
 const SIGN_SECRET =
   process.env.CHAT_ATTACHMENT_SECRET ??
@@ -51,14 +52,13 @@ export async function serveAttachment(filename: string): Promise<{ buf: Buffer; 
   const contentType = types[ext || ''] || 'application/octet-stream';
   const safeFilename = filename.replace(/[^a-z0-9_.-]/gi, '');
 
-  for (const dir of ['storage/chat', 'public/uploads/chat']) {
-    try {
-      const filepath = join(process.cwd(), dir, safeFilename);
-      const buf = await readFile(filepath);
-      return { buf, contentType };
-    } catch {
-      continue;
-    }
+  const buf = await storage.get(`chat/${safeFilename}`);
+  if (buf) return { buf, contentType };
+
+  // legacy расположение старых файлов (до перехода на storage/) — только локальный диск
+  try {
+    return { buf: await readFile(join(process.cwd(), 'public/uploads/chat', safeFilename)), contentType };
+  } catch {
+    return null;
   }
-  return null;
 }

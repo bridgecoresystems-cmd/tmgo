@@ -1,6 +1,6 @@
-import { join, basename } from 'path';
-import { mkdir, writeFile, readFile } from 'fs/promises';
+import { basename } from 'path';
 import { randomUUID } from 'crypto';
+import { storage } from '../../lib/storage';
 import { db } from '../../db';
 import { users, sessions, accounts, verificationTokens } from '../../db/schema';
 import { eq, and, gt } from 'drizzle-orm';
@@ -187,10 +187,8 @@ export async function uploadAvatar(request: Request, file: { name?: string; size
   }
 
   const safeUserId = userId.replace(/[^a-z0-9-]/gi, '');
-  const uploadDir = join(process.cwd(), 'storage', 'avatars');
-  await mkdir(uploadDir, { recursive: true });
   const filename = `${safeUserId}_${randomUUID()}.${ext}`;
-  await writeFile(join(uploadDir, filename), Buffer.from(await file.arrayBuffer()));
+  await storage.put(`avatars/${filename}`, await file.arrayBuffer());
   const url = `/api/auth/avatars/${filename}`;
   await db.update(users).set({ image: url, updatedAt: new Date() }).where(eq(users.id, userId));
   return { url };
@@ -253,12 +251,8 @@ const AVATAR_TYPES: Record<string, string> = {
 };
 
 export async function readAvatar(filename: string) {
-  const filepath = join(process.cwd(), 'storage', 'avatars', basename(filename));
-  try {
-    const buf = await readFile(filepath);
-    const ext = filename.split('.').pop()?.toLowerCase();
-    return { buf, contentType: AVATAR_TYPES[ext || ''] || 'application/octet-stream' };
-  } catch {
-    return null;
-  }
+  const buf = await storage.get(`avatars/${basename(filename)}`);
+  if (!buf) return null;
+  const ext = filename.split('.').pop()?.toLowerCase();
+  return { buf, contentType: AVATAR_TYPES[ext || ''] || 'application/octet-stream' };
 }

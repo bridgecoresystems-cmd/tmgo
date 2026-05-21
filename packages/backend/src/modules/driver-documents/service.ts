@@ -1,6 +1,6 @@
 import { join } from 'path';
-import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
+import { storage } from '../../lib/storage';
 import { db } from '../../db';
 import { driverDocuments, profileChangeRequests } from '../../db/schema';
 import { eq, and, or, gte, desc } from 'drizzle-orm';
@@ -49,10 +49,8 @@ async function uploadDocScan(carrierId: string, docType: string, file: File): Pr
   if (file.size > MAX_FILE_SIZE) throw new BadRequest('Файл слишком большой (макс. 10 МБ)');
   const safeType = safeDocType(docType);
   const safeCarrierId = carrierId.replace(/[^a-z0-9-]/gi, '');
-  const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeCarrierId);
-  await mkdir(uploadDir, { recursive: true });
   const filename = `${safeType}_${randomUUID()}.${ext}`;
-  await writeFile(join(uploadDir, filename), Buffer.from(await file.arrayBuffer()));
+  await storage.put(`driver-docs/${safeCarrierId}/${filename}`, await file.arrayBuffer());
   return `/cabinet/driver/document-files/${carrierId}/${filename}`;
 }
 

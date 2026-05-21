@@ -1,6 +1,4 @@
 import { randomUUID } from 'crypto';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
 import { eq, and, desc, inArray, sql } from 'drizzle-orm';
 import { db } from '../../db';
 import {
@@ -13,6 +11,7 @@ import {
   chatReadCursors,
 } from '../../db/schema';
 import { signAttachmentUrls } from '../../lib/chat-attachments';
+import { storage } from '../../lib/storage';
 import { Forbidden, BadRequest } from '../../lib/errors';
 
 export async function getClientProfileId(userId: string): Promise<string | null> {
@@ -409,10 +408,8 @@ export async function saveChatUpload(file: File) {
   }
   if (file.size > 5 * 1024 * 1024) throw new BadRequest('File too large (max 5MB)');
 
-  const uploadDir = join(process.cwd(), 'storage', 'chat');
-  await mkdir(uploadDir, { recursive: true });
   const filename = `${randomUUID()}.${ext}`;
-  await writeFile(join(uploadDir, filename), Buffer.from(await file.arrayBuffer()));
+  await storage.put(`chat/${filename}`, await file.arrayBuffer());
   return { url: `/chat/${filename}` };
 }
 

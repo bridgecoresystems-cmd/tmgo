@@ -1,10 +1,9 @@
-import { join, basename } from 'path';
-import { readFile } from 'fs/promises';
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
 import { authRoutes } from './modules/auth';
 import { verifyAttachmentToken, serveAttachment } from './lib/chat-attachments';
+import { storage } from './lib/storage';
 import { getUserFromRequest } from './lib/auth';
 import { db } from './db';
 import { carrierProfiles } from './db/schema';
@@ -89,20 +88,18 @@ const app = new Elysia()
       set.status = 403;
       return 'Forbidden';
     }
-    const filepath = join(process.cwd(), 'storage', 'driver-docs', safeCarrierId, safeFilename);
-    try {
-      const buf = await readFile(filepath);
-      const ext = safeFilename.split('.').pop()?.toLowerCase();
-      const types: Record<string, string> = {
-        jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp',
-        pdf: 'application/pdf',
-      };
-      set.headers['Content-Type'] = types[ext || ''] || 'application/octet-stream';
-      return buf;
-    } catch {
+    const buf = await storage.get(`driver-docs/${safeCarrierId}/${safeFilename}`);
+    if (!buf) {
       set.status = 404;
       return 'Not found';
     }
+    const ext = safeFilename.split('.').pop()?.toLowerCase();
+    const types: Record<string, string> = {
+      jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp',
+      pdf: 'application/pdf',
+    };
+    set.headers['Content-Type'] = types[ext || ''] || 'application/octet-stream';
+    return buf;
   })
   .use(authRoutes)
   .use(publicContactsRoutes)

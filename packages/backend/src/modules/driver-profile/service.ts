@@ -1,6 +1,6 @@
 import { join } from 'path';
-import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
+import { storage } from '../../lib/storage';
 import { eq, and, desc, inArray, isNull } from 'drizzle-orm';
 import { db } from '../../db';
 import {
@@ -775,12 +775,8 @@ async function saveUpload(carrierId: string, file: File, prefix: string): Promis
     throw new BadRequest('Файл слишком большой (макс. 10 МБ)');
   }
   const safeCarrierId = carrierId.replace(/[^a-z0-9-]/gi, '');
-  const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeCarrierId);
-  await mkdir(uploadDir, { recursive: true });
   const filename = `${prefix}_${randomUUID()}.${ext}`;
-  const filepath = join(uploadDir, filename);
-  const buf = await file.arrayBuffer();
-  await writeFile(filepath, Buffer.from(buf));
+  await storage.put(`driver-docs/${safeCarrierId}/${filename}`, await file.arrayBuffer());
   return `/cabinet/driver/document-files/${safeCarrierId}/${filename}`;
 }
 
@@ -820,11 +816,7 @@ export async function uploadMedical(carrierProfile: CarrierProfile, file: File) 
   const ext = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
   if (!ALLOWED_UPLOAD_EXT.includes(ext)) throw new BadRequest('Только PDF, JPG, PNG (макс. 10 МБ)');
   if (file.size > MAX_UPLOAD_SIZE) throw new BadRequest('Файл слишком большой (макс. 10 МБ)');
-  const uploadDir = join(process.cwd(), 'storage', 'driver-docs', carrierProfile.id);
-  await mkdir(uploadDir, { recursive: true });
   const filename = `medical_${randomUUID()}.${ext}`;
-  const filepath = join(uploadDir, filename);
-  const buf = await file.arrayBuffer();
-  await writeFile(filepath, Buffer.from(buf));
+  await storage.put(`driver-docs/${carrierProfile.id}/${filename}`, await file.arrayBuffer());
   return { url: `/cabinet/driver/document-files/${carrierProfile.id}/${filename}` };
 }

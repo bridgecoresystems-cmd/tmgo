@@ -1,6 +1,6 @@
 import { join } from 'path';
-import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
+import { storage } from '../../lib/storage';
 import { db } from '../../db';
 import {
   users, accounts, carrierProfiles, sessions, profileEditRequests, profileChangeRequests,
@@ -672,11 +672,8 @@ async function uploadDriverScan(profileId: string, file: File | undefined, prefi
   if (!ext) throw new BadRequest('Только PDF, JPG, PNG (макс. 10 МБ)');
   if (file.size > 10 * 1024 * 1024) throw new BadRequest('Файл слишком большой (макс. 10 МБ)');
   const safeId = profileId.replace(/[^a-z0-9-]/gi, '');
-  const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeId);
-  await mkdir(uploadDir, { recursive: true });
   const filename = `${prefix}${extra ? `_${extra}` : ''}_${randomUUID()}.${ext}`;
-  const buf = await file.arrayBuffer();
-  await writeFile(join(uploadDir, filename), Buffer.from(buf));
+  await storage.put(`driver-docs/${safeId}/${filename}`, await file.arrayBuffer());
   return { url: `/cabinet/driver/document-files/${safeId}/${filename}` };
 }
 
@@ -805,11 +802,8 @@ export async function uploadDocumentScan(userId: string, file: File | undefined,
   if (file.size > 10 * 1024 * 1024) throw new BadRequest('Файл слишком большой (макс. 10 МБ)');
   const docType = safeDocType(docTypeRaw);
   const safeId = profile.id.replace(/[^a-z0-9-]/gi, '');
-  const uploadDir = join(process.cwd(), 'storage', 'driver-docs', safeId);
-  await mkdir(uploadDir, { recursive: true });
   const filename = `${docType}_${randomUUID()}.${ext}`;
-  const buf = await file.arrayBuffer();
-  await writeFile(join(uploadDir, filename), Buffer.from(buf));
+  await storage.put(`driver-docs/${safeId}/${filename}`, await file.arrayBuffer());
   return { url: `/cabinet/driver/document-files/${safeId}/${filename}` };
 }
 
