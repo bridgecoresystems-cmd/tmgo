@@ -42,23 +42,23 @@ async function handleSwitchRole() {
 // Menu items change based on role
 const getMenuItems = () => {
   const common = [
-    { id: 'profile', label: 'Личные данные', icon: User, color: '#4834d4', action: () => {} },
-    { id: 'notifications', label: 'Уведомления', icon: Bell, color: '#6ab04c', action: () => {} },
-    { id: 'support', label: 'Служба поддержки', icon: Headset, color: '#7ed6df', action: () => {} },
-    { id: 'settings', label: 'Настройки', icon: Settings, color: '#95afc0', action: () => {} },
+    { id: 'profile', label: 'Личные данные', icon: User, color: '#6366f1', action: () => {} },
+    { id: 'notifications', label: 'Уведомления', icon: Bell, color: '#f59e0b', action: () => {} },
+    { id: 'support', label: 'Служба поддержки', icon: Headset, color: '#06b6d4', action: () => {} },
+    { id: 'settings', label: 'Настройки', icon: Settings, color: '#64748b', action: () => {} },
   ]
 
   if (currentRole.value === 'client') {
     return [
-      { id: 'my-orders', label: 'Мои заказы', icon: Package, color: '#eb4d4b', action: () => router.push('/cabinet/client/orders') },
-      { id: 'verification', label: 'Верификация компании', icon: ShieldCheck, color: '#22a6b3', action: () => {} },
+      { id: 'my-orders', label: 'Мои заказы', icon: Package, color: '#ff6b4a', action: () => router.push('/cabinet/client/orders') },
+      { id: 'verification', label: 'Верификация компании', icon: ShieldCheck, color: '#10b981', action: () => {} },
       ...common
     ]
   } else {
     return [
-      { id: 'my-vehicles', label: 'Мой транспорт', icon: Truck, color: '#f0932b', action: () => {} },
-      { id: 'driver-orders', label: 'Принятые заказы', icon: FileText, color: '#eb4d4b', action: () => {} },
-      { id: 'verification', label: 'Документы водителя', icon: ShieldCheck, color: '#22a6b3', action: () => {} },
+      { id: 'my-vehicles', label: 'Мой транспорт', icon: Truck, color: '#f59e0b', action: () => {} },
+      { id: 'driver-orders', label: 'Принятые заказы', icon: FileText, color: '#ff6b4a', action: () => {} },
+      { id: 'verification', label: 'Документы водителя', icon: ShieldCheck, color: '#10b981', action: () => {} },
       ...common
     ]
   }
@@ -66,7 +66,7 @@ const getMenuItems = () => {
 </script>
 
 <template>
-  <div class="profile-page">
+  <div class="profile-page animate-fade">
     <!-- Header -->
     <header class="profile-header">
       <div class="user-info">
@@ -80,17 +80,17 @@ const getMenuItems = () => {
           </div>
         </div>
       </div>
-      <button class="logout-btn" @click="handleSignOut">
+      <button class="logout-btn" @click="handleSignOut" aria-label="Выйти">
         <LogOut :size="20" />
       </button>
     </header>
 
     <main class="profile-content">
 
-      <!-- Email -->
-      <div class="email-card">
-        <span class="email-label">Email</span>
-        <span class="email-val">{{ user.user?.email ?? '—' }}</span>
+      <!-- Email Card -->
+      <div class="info-card">
+        <span class="info-label">Электронная почта</span>
+        <span class="info-val">{{ user.user?.email ?? '—' }}</span>
       </div>
 
       <!-- Role switcher -->
@@ -105,19 +105,19 @@ const getMenuItems = () => {
             {{ currentRole === 'client' ? 'Стать перевозчиком' : 'Стать грузовладельцем' }}
           </span>
         </div>
-        <ChevronRight :size="18" color="#ccc" />
+        <ChevronRight :size="18" class="chevron-switch" />
       </button>
 
       <!-- Menu List -->
       <div class="menu-list">
         <button v-for="item in getMenuItems()" :key="item.id" class="menu-item" @click="item.action()">
           <div class="item-left">
-            <div class="icon-wrapper" :style="{ backgroundColor: item.color + '20', color: item.color }">
+            <div class="icon-wrapper" :style="{ backgroundColor: item.color + '12', color: item.color }">
               <component :is="item.icon" :size="20" />
             </div>
             <span>{{ item.label }}</span>
           </div>
-          <ChevronRight :size="18" color="var(--text-muted)" />
+          <ChevronRight :size="18" class="chevron-right" />
         </button>
       </div>
 
@@ -142,8 +142,9 @@ const getMenuItems = () => {
   background: white;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .user-info {
@@ -153,11 +154,13 @@ const getMenuItems = () => {
 }
 
 .avatar {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: var(--primary-light);
   overflow: hidden;
+  border: 2px solid var(--primary-light);
+  box-shadow: var(--shadow-sm);
 }
 
 .avatar img {
@@ -167,109 +170,112 @@ const getMenuItems = () => {
 }
 
 .details h1 {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
   margin: 0;
+  letter-spacing: -0.5px;
 }
 
 .role-badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.72rem;
   font-weight: 700;
-  margin-top: 4px;
+  margin-top: 6px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.role-badge.client { background: #e3f2fd; color: #1976d2; }
+.role-badge.client { background: var(--primary-light); color: var(--primary); }
 .role-badge.driver { background: #fff3e0; color: #ef6c00; }
 
 .logout-btn {
   background: #fff5f5;
-  color: #eb4d4b;
+  color: #ef4444;
   border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08);
+}
+
+.logout-btn:active {
+  transform: scale(0.95);
+  background: #ffebeb;
 }
 
 .profile-content {
-  padding: 16px;
+  padding: 20px;
 }
 
-.email-card {
+.info-card {
   background: white;
-  border-radius: 14px;
-  padding: 14px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  border: 1px solid var(--border-color);
-}
-.email-label { font-size: 0.8rem; color: var(--text-secondary); }
-
-.role-switch-card {
-  width: 100%; background: white; border: 1px solid var(--border-color);
-  border-radius: 14px; padding: 14px 16px; display: flex; align-items: center;
-  gap: 12px; margin-bottom: 16px; cursor: pointer; text-align: left;
-}
-.role-switch-card:disabled { opacity: 0.6; cursor: not-allowed; }
-.role-switch-icon {
-  width: 38px; height: 38px; border-radius: 10px; background: #f0f5ff;
-  color: #1a5bc4; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.role-switch-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.role-switch-label { font-size: 0.88rem; font-weight: 600; color: #222; }
-.role-switch-sub { font-size: 0.75rem; color: #999; }
-.email-val   { font-size: 0.88rem; font-weight: 600; color: #222; }
-
-.role-switcher-card {
-  background: white;
-  padding: 16px;
   border-radius: 16px;
+  padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
   border: 1px solid var(--border-color);
-  cursor: pointer;
   box-shadow: var(--shadow-sm);
 }
+.info-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+.info-val { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
 
-.switcher-text h3 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 0;
+.role-switch-card {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.switcher-text p {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin: 2px 0 0;
+.role-switch-card:active {
+  transform: scale(0.99);
 }
 
-.switcher-icon {
-  background: var(--bg-color);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+.role-switch-card:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.role-switch-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--primary-light);
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary);
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(255, 107, 74, 0.12);
 }
 
+.role-switch-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.role-switch-label { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
+.role-switch-sub { font-size: 0.78rem; color: var(--text-secondary); }
+.chevron-switch { color: var(--text-muted); transition: transform 0.2s ease; }
+.role-switch-card:active .chevron-switch { transform: translateX(2px); }
 
 .menu-list {
   background: white;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
   border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
 }
 
 .menu-item {
@@ -277,38 +283,65 @@ const getMenuItems = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: 16px 20px;
   background: white;
   border: none;
   border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .menu-item:last-child { border-bottom: none; }
 
+.menu-item:active {
+  background-color: var(--bg-color);
+}
+
 .item-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .icon-wrapper {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.menu-item:active .icon-wrapper {
+  transform: scale(0.95);
 }
 
 .item-left span {
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+}
+
+.chevron-right {
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.menu-item:active .chevron-right {
+  transform: translateX(2px);
 }
 
 .app-info {
-  margin-top: 32px;
+  margin-top: 36px;
   text-align: center;
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.animate-fade {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 </style>

@@ -27,6 +27,7 @@ const navItems = computed(() => {
 const isActive = (path: string) => {
   if (path === '/profile') return route.path === '/profile'
   if (path === '/cabinet/driver') return route.path === '/cabinet/driver'
+  if (path === '/cabinet/client') return route.path === '/cabinet/client'
   return route.path.startsWith(path)
 }
 </script>
@@ -70,12 +71,15 @@ const isActive = (path: string) => {
 }
 
 .fade-enter-active,
-.fade-leave-active { transition: opacity 0.2s ease; }
-.fade-enter-from,
-.fade-leave-to { opacity: 0; }
-
-.tab-item {
-  background: none;
-  border: none;
+.fade-leave-active { 
+  transition: opacity 0.2s ease, transform 0.2s ease; 
+}
+.fade-enter-from { 
+  opacity: 0; 
+  transform: translateY(4px); 
+}
+.fade-leave-to { 
+  opacity: 0; 
+  transform: translateY(-4px); 
 }
 </style>

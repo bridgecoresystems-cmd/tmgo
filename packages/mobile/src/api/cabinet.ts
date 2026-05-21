@@ -139,7 +139,7 @@ export const BID_STATUS_COLOR: Record<string, string> = {
 
 export const STATUS_COLOR: Record<string, string> = {
   draft:      '#999',
-  published:  '#1a5bc4',
+  published:  '#ff6b4a',
   negotiating:'#f0a020',
   confirmed:  '#18a058',
   pickup:     '#7c3aed',

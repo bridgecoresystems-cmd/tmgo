@@ -202,7 +202,7 @@ async function initMap() {
     const { lat, lng } = e.latlng
     geocoding.value = true
     if (pickMarker) pickMarker.remove()
-    const color = pickMode.value === 'from' ? '#1a5bc4' : '#d0021b'
+    const color = pickMode.value === 'from' ? '#ff6b4a' : '#d0021b'
     pickMarker = L.circleMarker([lat, lng], {
       radius: 8, color, fillColor: color, fillOpacity: 0.9, weight: 2,
     }).addTo(leafletMap)
@@ -241,7 +241,7 @@ async function nearMe() {
       if (userMarker) userMarker.remove()
       userMarker = L.marker([lat, lng], {
         icon: L.divIcon({
-          html: `<div style="width:18px;height:18px;background:#1a5bc4;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(26,91,196,.5)"></div>`,
+          html: `<div style="width:18px;height:18px;background:#ff6b4a;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(255,107,74,.5)"></div>`,
           className: '',
           iconSize: [18, 18],
           iconAnchor: [9, 9],
@@ -599,11 +599,11 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 .tabs { background: white; display: flex; border-bottom: 2px solid #e0e0e0; overflow-x: auto; scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
 .tab-btn { flex-shrink: 0; background: none; border: none; padding: 12px 16px; font-size: 0.72rem; font-weight: 700; color: #999; letter-spacing: 0.5px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
-.tab-btn.active { color: #1a5bc4; border-bottom-color: #1a5bc4; }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
 
 .form-body { background: white; margin: 12px; border-radius: 8px; overflow: visible; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 
-.section-label { padding: 10px 16px 4px; font-size: 0.7rem; font-weight: 700; color: #1a5bc4; text-transform: uppercase; letter-spacing: 0.5px; background: #f7f9ff; }
+.section-label { padding: 10px 16px 4px; font-size: 0.7rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; background: var(--primary-light); }
 
 .field-row { display: flex; align-items: flex-start; padding: 10px 14px; gap: 10px; min-height: 52px; }
 .field-row.two-col { padding: 10px 0; gap: 0; }
@@ -672,14 +672,14 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 .separator { height: 1px; background: #eee; margin: 0 14px; }
 
 .swap-row { display: flex; justify-content: center; padding: 6px 0; }
-.swap-btn { background: #f0f4ff; border: 1px solid #d0daf5; border-radius: 20px; padding: 6px 16px; display: flex; align-items: center; gap: 6px; color: #1a5bc4; cursor: pointer; }
+.swap-btn { background: var(--primary-light); border: 1px solid var(--border-color); border-radius: 20px; padding: 6px 16px; display: flex; align-items: center; gap: 6px; color: var(--primary); cursor: pointer; }
 .swap-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.3px; }
 
 .filters-badge { margin: 8px 14px; background: #fff3e0; border: 1px solid #ffcc80; border-radius: 6px; padding: 8px 12px; font-size: 0.82rem; color: #e65100; font-weight: 600; cursor: pointer; }
 
 .bottom-actions { display: flex; justify-content: space-between; padding: 16px; border-top: 1px solid #eee; margin-top: 4px; }
 .btn-clear { background: none; border: 1px solid #e53935; border-radius: 6px; color: #e53935; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; padding: 8px 16px; cursor: pointer; }
-.btn-apply { background: #1a5bc4; border: none; border-radius: 6px; color: white; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; padding: 8px 20px; cursor: pointer; }
+.btn-apply { background: var(--primary); border: none; border-radius: 6px; color: white; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; padding: 8px 20px; cursor: pointer; }
 
 .empty-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; gap: 12px; }
 .empty-icon { font-size: 2.5rem; }
@@ -688,11 +688,11 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 .search-btn-wrap { position: fixed; bottom: calc(var(--tabbar-height) + var(--safe-area-bottom)); left: 0; right: 0; padding: 10px 16px; padding-bottom: 10px; background: white; border-top: 1px solid #eee; z-index: 100; }
 .route-summary { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #666; margin-bottom: 6px; overflow: hidden; white-space: nowrap; }
 .route-summary span { overflow: hidden; text-overflow: ellipsis; flex: 1; }
-.route-arrow { flex-shrink: 0; color: #1a5bc4; }
-.btn-search { width: 100%; background: #1a5bc4; color: white; border: none; border-radius: 6px; padding: 14px; font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; cursor: pointer; }
-.btn-search:active { background: #154da0; }
+.route-arrow { flex-shrink: 0; color: var(--primary); }
+.btn-search { width: 100%; background: var(--primary); color: white; border: none; border-radius: 6px; padding: 14px; font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; cursor: pointer; }
+.btn-search:active { background: var(--primary-dark); }
 
-.icon-primary { color: #1a5bc4; }
+.icon-primary { color: var(--primary); }
 .icon-accent  { color: #d0021b; }
 
 /* Modal / Bottom Sheet */
@@ -759,7 +759,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 .country-info .flag { font-size: 1.4rem; }
 .country-info .name { font-size: 0.95rem; font-weight: 500; color: #222; }
 
-.check-icon { color: #1a5bc4; }
+.check-icon { color: var(--primary); }
 
 /* Animations */
 .slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }

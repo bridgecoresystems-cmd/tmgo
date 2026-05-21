@@ -141,7 +141,7 @@ onMounted(() => {
 }
 .icon-btn { background: none; border: none; color: #555; padding: 6px; cursor: pointer; display: flex; align-items: center; }
 .title { flex: 1; font-size: 1rem; font-weight: 700; color: #1a1a1a; margin: 0; }
-.create-btn { color: #1a5bc4; }
+.create-btn { color: var(--primary); }
 
 .tabs {
   background: white; display: flex; border-bottom: 2px solid #eee;
@@ -152,16 +152,16 @@ onMounted(() => {
   font-size: 0.78rem; font-weight: 700; color: #999;
   cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px;
 }
-.tab.active { color: #1a5bc4; border-bottom-color: #1a5bc4; }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
 .state-center {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 12px; padding: 60px 24px; text-align: center;
 }
-.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: #1a5bc4; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error-text { color: #e53935; margin: 0; }
-.btn-action { background: #1a5bc4; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
+.btn-action { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
 
 .list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 
@@ -173,7 +173,7 @@ onMounted(() => {
 .route-row { display: flex; align-items: center; gap: 6px; }
 .route-pt { display: flex; align-items: center; gap: 5px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot.from { background: #1a5bc4; }
+.dot.from { background: var(--primary); }
 .dot.to   { background: #d0021b; }
 .city { font-size: 0.95rem; font-weight: 700; color: #222; }
 .country { font-size: 0.68rem; color: #aaa; text-transform: uppercase; }

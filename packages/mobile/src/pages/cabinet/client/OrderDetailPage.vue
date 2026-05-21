@@ -203,10 +203,10 @@ onMounted(load)
 .status-pill { font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 8px; flex-shrink: 0; }
 
 .state-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 24px; }
-.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: #1a5bc4; border-radius: 50%; animation: spin .7s linear infinite; }
+.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error-text { color: #e53935; margin: 0; }
-.btn-action { background: #1a5bc4; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
+.btn-action { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
 
 .content { padding: 12px 16px 32px; display: flex; flex-direction: column; gap: 6px; }
 
@@ -218,13 +218,13 @@ onMounted(load)
 .hint { font-size: 0.8rem; color: #ccc; }
 
 .section-label { font-size: 0.7rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin: 4px 0 4px; display: flex; align-items: center; gap: 6px; }
-.bids-count { background: #1a5bc4; color: white; font-size: 0.65rem; border-radius: 10px; padding: 1px 7px; }
+.bids-count { background: var(--primary); color: white; font-size: 0.65rem; border-radius: 10px; padding: 1px 7px; }
 
 /* Route */
 .route-block { display: flex; flex-direction: column; gap: 12px; }
 .route-pt { display: flex; align-items: center; gap: 12px; }
 .route-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-.route-dot.from { background: #1a5bc4; }
+.route-dot.from { background: var(--primary); }
 .route-dot.to   { background: #d0021b; }
 .route-info { display: flex; flex-direction: column; }
 .route-city { font-size: 1rem; font-weight: 700; color: #1a1a1a; }
@@ -246,16 +246,16 @@ onMounted(load)
 .bid-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
 .bid-row:last-child { border-bottom: none; }
 .bid-name { font-size: 0.88rem; font-weight: 600; color: #222; }
-.bid-price { font-size: 0.88rem; font-weight: 700; color: #1a5bc4; }
+.bid-price { font-size: 0.88rem; font-weight: 700; color: var(--primary); }
 
 .bottom-action { margin-top: 8px; }
 .btn-publish {
-  width: 100%; height: 52px; background: #18a058; color: white;
+  width: 100%; height: 52px; background: var(--primary); color: white;
   border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700;
   cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
   transition: background .2s;
 }
-.btn-publish:active:not(:disabled) { background: #148a49; }
+.btn-publish:active:not(:disabled) { background: var(--primary-dark); }
 .btn-publish:disabled { opacity: 0.6; cursor: not-allowed; }
 .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
 </style>

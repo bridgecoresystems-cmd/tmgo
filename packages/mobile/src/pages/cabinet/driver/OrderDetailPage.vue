@@ -254,10 +254,10 @@ onMounted(load)
 .title { font-size: 1rem; font-weight: 700; color: #1a1a1a; margin: 0; }
 
 .state-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 24px; }
-.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: #18a058; border-radius: 50%; animation: spin .7s linear infinite; }
+.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error-text { color: #e53935; margin: 0; }
-.btn-action { background: #18a058; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
+.btn-action { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
 
 .card { background: white; border-radius: 12px; margin: 12px 12px 0; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 .card-label { font-size: 0.7rem; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
@@ -268,7 +268,7 @@ onMounted(load)
 .route-full { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .route-stop { display: flex; align-items: center; gap: 8px; flex: 1; }
 .stop-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.stop-dot.from { background: #1a5bc4; }
+.stop-dot.from { background: var(--primary); }
 .stop-dot.to   { background: #d0021b; }
 .stop-info { display: flex; flex-direction: column; }
 .stop-city { font-size: 1rem; font-weight: 700; color: #1a1a1a; }
@@ -315,17 +315,17 @@ onMounted(load)
 .bid-error { background: #fff0f0; border-left: 3px solid #e53935; border-radius: 6px; padding: 8px 12px; font-size: 0.82rem; color: #c62828; margin-bottom: 12px; }
 .amount-row { display: flex; gap: 8px; margin-bottom: 10px; }
 .amount-input { flex: 1; border: 1.5px solid #e0e0e0; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; color: #222; outline: none; }
-.amount-input:focus { border-color: #18a058; }
+.amount-input:focus { border-color: var(--primary); }
 .currency-sel { border: 1.5px solid #e0e0e0; border-radius: 8px; padding: 10px 8px; font-size: 0.88rem; color: #222; background: #fafafa; outline: none; }
 .comment-input { width: 100%; border: 1.5px solid #e0e0e0; border-radius: 8px; padding: 10px 12px; font-size: 0.88rem; color: #222; outline: none; resize: none; box-sizing: border-box; font-family: inherit; }
-.comment-input:focus { border-color: #18a058; }
+.comment-input:focus { border-color: var(--primary); }
 .bid-form-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
 .btn-cancel { background: none; border: 1.5px solid #e0e0e0; border-radius: 8px; padding: 10px 16px; font-size: 0.85rem; color: #888; cursor: pointer; }
-.btn-submit { background: #18a058; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.btn-submit { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 .btn-submit:disabled { opacity: 0.6; }
 .mini-spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
 
-.success-banner { background: #e8f5e9; border-left: 3px solid #18a058; border-radius: 8px; padding: 12px 16px; margin: 12px 12px 0; font-size: 0.88rem; color: #2e7d32; font-weight: 600; }
+.success-banner { background: #e8f5e9; border-left: 3px solid var(--primary); border-radius: 8px; padding: 12px 16px; margin: 12px 12px 0; font-size: 0.88rem; color: #2e7d32; font-weight: 600; }
 
 .bottom-space { height: 24px; }
 
@@ -335,5 +335,5 @@ onMounted(load)
   padding: 12px 16px; padding-bottom: calc(12px + var(--safe-area-bottom));
   z-index: 20;
 }
-.btn-bid { width: 100%; height: 50px; background: #18a058; color: white; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+.btn-bid { width: 100%; height: 50px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
 </style>

@@ -232,7 +232,7 @@ async function nearMe() {
       if (userMarker) userMarker.remove()
       userMarker = L.marker([lat, lng], {
         icon: L.divIcon({
-          html: `<div style="width:18px;height:18px;background:#1a5bc4;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(26,91,196,.5)"></div>`,
+          html: `<div style="width:18px;height:18px;background:#ff6b4a;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(255,107,74,.5)"></div>`,
           className: '',
           iconSize: [18, 18],
           iconAnchor: [9, 9],
@@ -418,15 +418,15 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
   color: #999; cursor: pointer; display: flex; align-items: center;
   transition: all 0.2s;
 }
-.toggle-btn.active { background: #fff; color: #1a5bc4; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.toggle-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
 
 /* Filter strip */
 .filter-strip {
   background: white; border-bottom: 1px solid #eee;
   padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
 }
-.filter-chip { background: #e8f0fe; color: #1a5bc4; font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
-.filter-edit { background: none; border: none; color: #1a5bc4; font-size: 0.72rem; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 0; margin-left: auto; }
+.filter-chip { background: var(--primary-light); color: var(--primary); font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
+.filter-edit { background: none; border: none; color: var(--primary); font-size: 0.72rem; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 0; margin-left: auto; }
 
 /* Map */
 .map-section { display: flex; flex-direction: column; }
@@ -441,22 +441,22 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 
 .btn-pick {
   background: #f0f4ff; border: 1px solid #d0daf5; border-radius: 8px;
-  padding: 6px 12px; font-size: 0.78rem; font-weight: 600; color: #1a5bc4;
+  padding: 6px 12px; font-size: 0.78rem; font-weight: 600; color: var(--primary);
   cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
 .btn-pick.active {
-  background: #1a5bc4; color: #fff; border-color: #1a5bc4;
+  background: var(--primary); color: #fff; border-color: var(--primary);
   animation: pulse 1.2s infinite;
 }
 .btn-pick:disabled { opacity: 0.6; cursor: not-allowed; }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(26,91,196,0.4); }
-  50%       { box-shadow: 0 0 0 5px rgba(26,91,196,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,107,74,0.4); }
+  50%       { box-shadow: 0 0 0 5px rgba(255,107,74,0); }
 }
 
 .btn-near-me {
-  background: #1a5bc4; color: #fff; border: none; border-radius: 8px;
+  background: var(--primary); color: #fff; border: none; border-radius: 8px;
   padding: 6px 12px; font-size: 0.78rem; font-weight: 600;
   cursor: pointer; white-space: nowrap; flex-shrink: 0;
 }
@@ -474,7 +474,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 }
 .legend-dot.green  { background: #18a058; }
 .legend-dot.orange { background: #f0a020; }
-.legend-loading { margin-left: auto; color: #1a5bc4; }
+.legend-loading { margin-left: auto; color: var(--primary); }
 
 .map-container {
   width: 100%;
@@ -488,7 +488,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
   align-items: center; justify-content: center;
   padding: 40px 24px; gap: 12px; text-align: center;
 }
-.spinner { width: 34px; height: 34px; border: 3px solid #e0e0e0; border-top-color: #1a5bc4; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.spinner { width: 34px; height: 34px; border: 3px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .empty-icon { color: #ccc; }
@@ -496,7 +496,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 .empty-sub { font-size: 0.85rem; color: #999; }
 .error-text { color: #e53935; font-size: 0.9rem; }
 
-.btn-action { background: #1a5bc4; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
+.btn-action { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
 
 .results-list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 
@@ -505,7 +505,7 @@ onUnmounted(() => { if (leafletMap) { leafletMap.remove(); leafletMap = null } }
 .route-row { display: flex; align-items: center; gap: 6px; }
 .route-point { display: flex; align-items: center; gap: 5px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-from { background: #1a5bc4; }
+.dot-from { background: var(--primary); }
 .dot-to   { background: #d0021b; }
 .city { font-size: 0.95rem; font-weight: 700; color: #222; }
 .country { font-size: 0.7rem; color: #999; text-transform: uppercase; }

@@ -377,7 +377,7 @@ const today = new Date().toISOString().split('T')[0]
 .step-hint { font-size: 0.72rem; color: #999; }
 .step-dots { display: flex; gap: 5px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #e0e0e0; transition: background .2s; }
-.dot.active { background: #1a5bc4; }
+.dot.active { background: var(--primary); }
 
 .error-box { background: #fff0f0; border-left: 3px solid #e53935; margin: 12px 16px; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; color: #c62828; }
 
@@ -394,7 +394,7 @@ const today = new Date().toISOString().split('T')[0]
 .fl { font-size: 1rem; flex-shrink: 0; padding-top: 16px; width: 22px; text-align: center; }
 .field-content { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .fl-label { font-size: 0.68rem; color: #aaa; font-weight: 400; display: flex; align-items: center; gap: 4px; }
-.loading-dot { color: #1a5bc4; font-weight: 700; }
+.loading-dot { color: var(--primary); font-weight: 700; }
 
 .field-input { border: none; outline: none; font-size: 0.95rem; font-weight: 500; color: #222; background: transparent; width: 100%; padding: 2px 0; }
 .field-input::placeholder { color: #ccc; font-weight: 400; }
@@ -430,7 +430,7 @@ const today = new Date().toISOString().split('T')[0]
   width: 44px; height: 24px; border-radius: 12px; background: #e0e0e0;
   position: relative; transition: background .2s; flex-shrink: 0;
 }
-.toggle-track.on { background: #1a5bc4; }
+.toggle-track.on { background: var(--primary); }
 .toggle-thumb {
   position: absolute; top: 3px; left: 3px;
   width: 18px; height: 18px; border-radius: 50%; background: white;
@@ -440,12 +440,12 @@ const today = new Date().toISOString().split('T')[0]
 
 .footer-btn { padding: 8px 0 0; }
 .btn-next {
-  width: 100%; height: 52px; background: #1a5bc4; color: white;
+  width: 100%; height: 52px; background: var(--primary); color: white;
   border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700;
   letter-spacing: 0.5px; cursor: pointer; display: flex; align-items: center;
   justify-content: center; gap: 10px; transition: background .2s;
 }
-.btn-next:active:not(:disabled) { background: #154da0; }
+.btn-next:active:not(:disabled) { background: var(--primary-dark); }
 .btn-next:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }

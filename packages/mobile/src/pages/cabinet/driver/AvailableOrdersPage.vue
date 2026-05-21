@@ -163,7 +163,7 @@ onMounted(load)
 }
 .icon-btn { background: none; border: none; color: #555; padding: 6px; cursor: pointer; display: flex; align-items: center; }
 .filter-btn { color: #aaa; }
-.filter-btn.active { color: #18a058; }
+.filter-btn.active { color: var(--primary); }
 .header-info { flex: 1; }
 .title { font-size: 1rem; font-weight: 700; color: #1a1a1a; margin: 0; }
 .sub { font-size: 0.72rem; color: #999; }
@@ -177,13 +177,13 @@ onMounted(load)
 .filter-sel { flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 10px; font-size: 0.88rem; color: #222; background: #fafafa; outline: none; }
 .filter-actions { display: flex; gap: 8px; justify-content: flex-end; padding-top: 4px; }
 .btn-reset { background: none; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 14px; font-size: 0.82rem; color: #888; cursor: pointer; }
-.btn-apply { background: #18a058; color: white; border: none; border-radius: 8px; padding: 8px 18px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.btn-apply { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 8px 18px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
 
 .state-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 24px; text-align: center; }
-.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: #18a058; border-radius: 50%; animation: spin .7s linear infinite; }
+.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error-text { color: #e53935; margin: 0; }
-.btn-action { background: #18a058; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
+.btn-action { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
 
 .list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 
@@ -191,7 +191,7 @@ onMounted(load)
 .route-row { display: flex; align-items: center; gap: 6px; }
 .route-pt { display: flex; align-items: center; gap: 5px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot.from { background: #1a5bc4; }
+.dot.from { background: var(--primary); }
 .dot.to   { background: #d0021b; }
 .city { font-size: 0.95rem; font-weight: 700; color: #222; }
 .country { font-size: 0.68rem; color: #aaa; text-transform: uppercase; }
@@ -207,5 +207,5 @@ onMounted(load)
 .right { display: flex; align-items: center; gap: 8px; }
 .price { font-size: 0.82rem; font-weight: 700; color: #1a1a1a; }
 .bids-cnt { font-size: 0.72rem; color: #f0a020; font-weight: 600; }
-.respond-hint { font-size: 0.75rem; color: #18a058; font-weight: 700; }
+.respond-hint { font-size: 0.75rem; color: var(--primary); font-weight: 700; }
 </style>

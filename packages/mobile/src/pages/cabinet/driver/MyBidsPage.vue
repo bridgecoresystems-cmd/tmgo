@@ -120,13 +120,13 @@ onMounted(load)
 
 .tabs { display: flex; background: white; border-bottom: 1px solid #eee; padding: 0 16px; gap: 0; }
 .tab { flex: 1; background: none; border: none; border-bottom: 2px solid transparent; padding: 11px 0; font-size: 0.82rem; font-weight: 600; color: #aaa; cursor: pointer; transition: all .15s; }
-.tab.active { color: #18a058; border-bottom-color: #18a058; }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
 .state-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 24px; }
-.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: #18a058; border-radius: 50%; animation: spin .7s linear infinite; }
+.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error-text { color: #e53935; margin: 0; }
-.btn-retry { background: #18a058; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
+.btn-retry { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; cursor: pointer; }
 
 .list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 
@@ -134,7 +134,7 @@ onMounted(load)
 
 .route-row { display: flex; align-items: center; gap: 5px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot.from { background: #1a5bc4; }
+.dot.from { background: var(--primary); }
 .dot.to   { background: #d0021b; }
 .city { font-size: 0.9rem; font-weight: 700; color: #222; }
 .country { font-size: 0.65rem; color: #bbb; text-transform: uppercase; }
